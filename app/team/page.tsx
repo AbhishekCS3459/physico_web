@@ -1,10 +1,10 @@
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
+import { EnhancedFooter } from "@/components/enhanced-footer"
+import { MainNavigation } from "@/components/main-navigation"
 import { PersistentCTA } from "@/components/persistent-cta"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Users, Heart, Award, BookOpen, Shield, Star } from "lucide-react"
+import { Award, BookOpen, Heart, Shield, Star, Users } from "lucide-react"
 
 export default function TeamPage() {
   const teamQualities = [
@@ -12,7 +12,7 @@ export default function TeamPage() {
     "Passion for patient-centered care",
     "Commitment to ongoing education and innovation",
     "Friendly, approachable, and respectful professionals",
-    "Focused on functional recovery in real-life environments",
+    "Focused on functional recovery in your real-life environments",
   ]
 
   const physiotherapyServices = [
@@ -49,9 +49,9 @@ export default function TeamPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="py-16">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <MainNavigation />
+      <main className="py-16 flex-1">
         <div className="container px-4">
           {/* Header */}
           <div className="text-center mb-16">
@@ -78,7 +78,7 @@ export default function TeamPage() {
               <CardDescription>Our commitment to excellence in patient care</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {teamQualities.map((quality, index) => (
                   <div key={index} className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
                     <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -101,7 +101,7 @@ export default function TeamPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                       <Award className="h-5 w-5 text-primary" />
@@ -129,7 +129,7 @@ export default function TeamPage() {
 
                 <div>
                   <h4 className="font-semibold mb-3">Treatment Techniques</h4>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                     {physiotherapyServices.map((service, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {service}
@@ -161,7 +161,7 @@ export default function TeamPage() {
 
                 <div>
                   <h4 className="font-semibold mb-3">Services Include</h4>
-                  <div className="grid md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {otServices.map((service, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
@@ -201,7 +201,7 @@ export default function TeamPage() {
 
                 <div>
                   <h4 className="font-semibold mb-3">Services Offered</h4>
-                  <div className="grid md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {massageServices.map((service, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
@@ -213,7 +213,7 @@ export default function TeamPage() {
 
                 <div className="bg-secondary/5 p-6 rounded-lg border border-secondary/20">
                   <h4 className="font-semibold mb-3">Benefits of In-Home Massage Therapy</h4>
-                  <div className="grid md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="flex items-start gap-2">
                       <Heart className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
                       <span className="text-sm">Comfort and privacy of your own space</span>
@@ -254,7 +254,7 @@ export default function TeamPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <EnhancedFooter />
       <PersistentCTA />
     </div>
   )

@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Home, UserCheck, TrendingUp, CreditCard, Sparkles } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CreditCard, Home, Sparkles, TrendingUp, UserCheck } from "lucide-react"
 
 const valueProps = [
   {
@@ -40,7 +40,7 @@ const valueProps = [
 
 export function ValueProposition() {
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-16 md:py-24 flex flex-col items-center justify-center">
       <div className="container px-4">
         <div className="text-center mb-12">
           <Badge variant="secondary" className="mb-4">
@@ -54,7 +54,7 @@ export function ValueProposition() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {valueProps.map((prop, index) => {
             const Icon = prop.icon
             return (

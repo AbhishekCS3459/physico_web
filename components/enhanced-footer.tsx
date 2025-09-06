@@ -1,25 +1,25 @@
 "use client"
 
-import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
-  Phone,
-  Mail,
-  MapPin,
-  Clock,
-  Shield,
-  Heart,
-  Star,
-  CheckCircle,
   ArrowRight,
+  Award,
+  CheckCircle,
+  Clock,
   Facebook,
+  Heart,
   Instagram,
   Linkedin,
-  Award,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  Star,
 } from "lucide-react"
 import { motion } from "motion/react"
+import Link from "next/link"
 import { useState } from "react"
 
 const insurers = [
@@ -61,14 +61,14 @@ export function EnhancedFooter() {
   }
 
   return (
-    <footer className="bg-gradient-to-br from-muted/30 via-background to-primary/5 border-t border-primary/10 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden">
+    <footer className="flex items-center justify-center bg-gradient-to-br from-muted/30 via-background to-primary/5 border-t border-primary/10 relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden w-full">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="container px-4 py-16 relative z-10">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+      <div className="container px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 mb-8 sm:mb-12 lg:mb-16">
           <motion.div
             className="space-y-6"
             initial={{ opacity: 0, y: 30 }}
@@ -187,7 +187,7 @@ export function EnhancedFooter() {
               <MapPin className="h-5 w-5 text-primary" />
               Service Areas
             </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-3">
               {serviceAreas.map((area, index) => (
                 <motion.div
                   key={area}
@@ -290,7 +290,7 @@ export function EnhancedFooter() {
             </h4>
             <p className="text-muted-foreground">We work with most major insurance providers</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4">
             {insurers.map((insurer, index) => (
               <motion.div
                 key={insurer}
@@ -312,23 +312,23 @@ export function EnhancedFooter() {
         </motion.div>
 
         <motion.div
-          className="border-t border-primary/10 pt-8 text-center"
+          className="border-t border-primary/10 pt-6 sm:pt-8 lg:pt-10 text-center"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">&copy; 2024 Physio Rehab at Home. All rights reserved.</p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">&copy; 2024 Physio Rehab at Home. All rights reserved.</p>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <Link href="/terms" className="hover:text-primary transition-colors">
                 Terms of Service
               </Link>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <Link href="/privacy" className="hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <Link href="/accessibility" className="hover:text-primary transition-colors">
                 Accessibility
               </Link>

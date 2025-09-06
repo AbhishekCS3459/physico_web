@@ -1,20 +1,20 @@
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
+import { EnhancedFooter } from "@/components/enhanced-footer"
+import { MainNavigation } from "@/components/main-navigation"
 import { PersistentCTA } from "@/components/persistent-cta"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Phone, Mail, Clock, Send, Calendar } from "lucide-react"
+import { Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react"
 
 export default function ContactPage() {
   const serviceAreas = ["Calgary", "Airdrie", "Okotoks", "Cochrane", "Crossfield"]
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <MainNavigation />
       <main className="py-16">
         <div className="container px-4">
           {/* Header */}
@@ -32,7 +32,7 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12">
             {/* Contact Information */}
             <div className="space-y-8">
               {/* Contact Details */}
@@ -111,7 +111,7 @@ export default function ContactPage() {
                   <CardDescription>We serve Calgary and surrounding communities</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {serviceAreas.map((area) => (
                       <div key={area} className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                         <MapPin className="h-4 w-4 text-primary" />
@@ -232,7 +232,7 @@ export default function ContactPage() {
           </Card>
         </div>
       </main>
-      <Footer />
+      <EnhancedFooter />
       <PersistentCTA />
     </div>
   )

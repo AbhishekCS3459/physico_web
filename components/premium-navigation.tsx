@@ -1,27 +1,26 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Badge } from "@/components/ui/badge"
 import {
-  Menu,
-  Phone,
-  Calendar,
-  Heart,
-  Shield,
-  Clock,
-  ChevronDown,
   Activity,
   Brain,
-  PackageIcon as MassageIcon,
-  Zap,
-  MapPin,
-  Users,
+  Calendar,
+  ChevronDown,
+  Clock,
   DollarSign,
+  Heart,
+  PackageIcon as MassageIcon,
+  Menu,
+  Phone,
+  Shield,
+  Users,
+  Zap
 } from "lucide-react"
-import { motion, AnimatePresence } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 const navigationItems = [
   {
@@ -36,8 +35,6 @@ const navigationItems = [
   },
   { name: "Pricing", href: "/pricing", icon: DollarSign },
   { name: "Direct Billing", href: "/direct-billing", icon: Shield },
-  { name: "How It Works", href: "/how-it-works" },
-  { name: "Areas We Serve", href: "/areas", icon: MapPin },
   { name: "Team", href: "/team", icon: Users },
 ]
 

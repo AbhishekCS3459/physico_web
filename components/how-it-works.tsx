@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, Phone, Home, CheckCircle, Clock } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Calendar, CheckCircle, Clock, Home, Phone } from "lucide-react"
 
 const steps = [
   {
@@ -37,7 +37,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-16 md:py-24 flex flex-col items-center justify-center">
       <div className="container px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
@@ -46,7 +46,7 @@ export function HowItWorks() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8 sm:mb-12">
           {steps.map((step, index) => (
             <Card key={index} className="relative text-center">
               <CardContent className="p-6">

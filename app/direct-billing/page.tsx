@@ -1,10 +1,10 @@
-import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
+import { Navigation } from "@/components/navigation"
 import { PersistentCTA } from "@/components/persistent-cta"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Shield, FileText, Phone, AlertCircle } from "lucide-react"
+import { AlertCircle, Check, FileText, Phone, Shield } from "lucide-react"
 
 export default function DirectBillingPage() {
   const insuranceProviders = [
@@ -44,7 +44,7 @@ export default function DirectBillingPage() {
               <CardDescription>Simple, hassle-free process</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-primary font-bold">1</span>
@@ -83,7 +83,7 @@ export default function DirectBillingPage() {
               <CardDescription>Major insurance providers accepted</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {insuranceProviders.map((provider) => (
                   <div key={provider} className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                     <Check className="h-4 w-4 text-primary" />
@@ -115,7 +115,7 @@ export default function DirectBillingPage() {
               <CardDescription>Why choose direct billing with us</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5" />

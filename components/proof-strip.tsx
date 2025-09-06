@@ -1,7 +1,7 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Shield, Clock, Award, Users, MapPin } from "lucide-react"
+import { Award, Clock, MapPin, Shield, Users } from "lucide-react"
 
 const trustIndicators = [
   {
@@ -42,7 +42,7 @@ export function ProofStrip() {
           <h2 className="text-2xl font-semibold text-balance">Why Calgary Families Choose Us</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
           {trustIndicators.map((item, index) => {
             const Icon = item.icon
             return (

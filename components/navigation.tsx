@@ -1,17 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Phone, Calendar } from "lucide-react"
+import { Calendar, Menu, Phone } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
 
 const navigationItems = [
   { name: "Services", href: "/services" },
   { name: "Pricing", href: "/pricing" },
   { name: "Direct Billing", href: "/direct-billing" },
-  { name: "How It Works", href: "/how-it-works" },
-  { name: "Areas We Serve", href: "/areas" },
   { name: "Team", href: "/team" },
 ]
 

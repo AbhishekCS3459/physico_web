@@ -1,16 +1,16 @@
 "use client"
+import {
+  IconBrain,
+  IconClock,
+  IconCurrencyDollar,
+  IconHandFinger,
+  IconHeart,
+  IconMapPin,
+  IconShield,
+  IconStethoscope,
+} from "@tabler/icons-react"
 import { motion } from "motion/react"
 import { useState } from "react"
-import {
-  IconStethoscope,
-  IconHeart,
-  IconBrain,
-  IconHandFinger,
-  IconCurrencyDollar,
-  IconMapPin,
-  IconClock,
-  IconShield,
-} from "@tabler/icons-react"
 
 export function ResponsiveServices() {
   const [activeService, setActiveService] = useState(0)
@@ -120,7 +120,7 @@ export function ResponsiveServices() {
         </div>
 
         {/* Service Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16">
           {services.map((service, index) => (
             <motion.div
               key={index}
@@ -159,7 +159,7 @@ export function ResponsiveServices() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-900/20 dark:to-teal-900/20 rounded-2xl p-6 sm:p-8 mb-12 sm:mb-16"
+          className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-900/20 dark:to-teal-900/20 rounded-2xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
@@ -204,7 +204,7 @@ export function ResponsiveServices() {
         </motion.div>
 
         {/* Benefits Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {benefits.map((benefit, index) => (
             <motion.div
               key={index}

@@ -1,10 +1,10 @@
 "use client"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Award, CheckCircle, Clock, Heart, MapPin, Phone, Shield, Star, Users } from "lucide-react"
 import { motion } from "motion/react"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Phone, MapPin, Clock, Shield, Star, CheckCircle, Heart, Users, Award } from "lucide-react"
 
 export default function ResponsiveHero() {
   const [isBookingOpen, setIsBookingOpen] = useState(false)
@@ -143,24 +143,20 @@ export default function ResponsiveHero() {
                   <img
                     src="/professional-physiotherapist-working-with-elderly-.jpg"
                     alt="Professional physiotherapy session at home"
-                    className="w-full h-[300px] sm:h-[400px] lg:h-[500px] object-cover"
+                    className="w-full h-[300px] sm:h-[400px] lg:h-[500px] object-cover object-center block"
                   />
                   {/* Overlay with key benefits */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3">
+                  <div className="absolute bottom-4 sm:bottom-6 inset-x-4 sm:inset-x-6">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3 max-w-md mx-auto">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse" />
                         <span className="text-xs sm:text-sm font-medium text-foreground">Available Now</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-primary shrink-0" />
                           <span>Calgary & Area</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-primary shrink-0" />
-                          <span>Direct Billing</span>
                         </div>
                       </div>
                     </div>
