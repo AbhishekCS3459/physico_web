@@ -1,10 +1,11 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Phone, MapPin, Clock, Shield, Heart, Star, Users, Award, CheckCircle } from "lucide-react"
+import { Award, Calendar, CheckCircle, Clock, Heart, MapPin, Phone, Shield, Star, Users } from "lucide-react"
 import { motion } from "motion/react"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
 export function PremiumHero() {
@@ -99,9 +100,12 @@ export function PremiumHero() {
               <Button
                 size="lg"
                 className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                asChild
               >
-                <Calendar className="h-5 w-5 mr-2" />
-                Book Your Assessment
+                <Link href="/book">
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Book Physiotherapy
+                </Link>
               </Button>
               <Button
                 variant="outline"

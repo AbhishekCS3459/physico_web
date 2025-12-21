@@ -1,33 +1,34 @@
 "use client"
 
+import Link from "next/link"
 import type React from "react"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
 import {
-  Phone,
+  Activity,
+  ArrowRight,
+  Brain,
+  Calculator,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  FileText,
   Mail,
   MapPin,
-  Clock,
-  Shield,
-  DollarSign,
-  Calculator,
-  CheckCircle,
-  Calendar,
-  Users,
-  Activity,
-  Brain,
   PackageIcon as MassageIcon,
-  Zap,
-  ArrowRight,
+  Phone,
   Send,
-  FileText,
+  Shield,
+  Users,
+  Zap,
 } from "lucide-react"
 import { motion } from "motion/react"
 import { useState } from "react"
@@ -265,9 +266,11 @@ export function InteractivePricingContact() {
                   </div>
 
                   <div className="flex gap-3">
-                    <Button className="flex-1 bg-gradient-to-r from-primary to-accent">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Book Now
+                    <Button className="flex-1 bg-gradient-to-r from-primary to-accent" asChild>
+                      <Link href="/book">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Book Now
+                      </Link>
                     </Button>
                     <Button variant="outline" className="bg-transparent">
                       <Shield className="h-4 w-4 mr-2" />

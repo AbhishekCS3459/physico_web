@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Phone, Calendar } from "lucide-react"
+import { Calendar, Phone } from "lucide-react"
 
 export function PersistentCTA() {
   return (

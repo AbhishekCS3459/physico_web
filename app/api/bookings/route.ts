@@ -1,0 +1,172 @@
+import { getSession, getUserSession, requireUserAuth } from '@/lib/auth'
+import { sendBookingConfirmationEmail } from '@/lib/email'
+import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+
+const bookingSchema = z.object({
+  // Service Information
+  serviceType: z.string().min(1),
+  appointmentType: z.string().min(1),
+  preferredDate: z.string(),
+  preferredTime: z.string().min(1),
+  serviceLocation: z.string().min(1),
+  fullAddress: z.string().min(1),
+  
+  // Personal Information
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email(),
+  phoneNumber: z.string().min(1),
+  dateOfBirth: z.string().optional(),
+  condition: z.string().optional(),
+  medicalHistory: z.string().optional(),
+  
+  // Insurance Information
+  useDirectBilling: z.boolean().default(false),
+  insuranceProvider: z.string().optional(),
+  policyNumber: z.string().optional(),
+  groupNumber: z.string().optional(),
+  
+  // Additional Information
+  emergencyContact: z.string().optional(),
+  specialInstructions: z.string().optional(),
+})
+
+export async function POST(request: NextRequest) {
+  try {
+    // Require user authentication
+    const userSession = await requireUserAuth()
+
+    const body = await request.json()
+    const validatedData = bookingSchema.parse(body)
+
+    // Convert date strings to DateTime
+    const preferredDate = new Date(validatedData.preferredDate)
+    const dateOfBirth = validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null
+
+    const booking = await prisma.therapyBooking.create({
+      data: {
+        serviceType: validatedData.serviceType,
+        appointmentType: validatedData.appointmentType,
+        preferredDate,
+        preferredTime: validatedData.preferredTime,
+        serviceLocation: validatedData.serviceLocation,
+        fullAddress: validatedData.fullAddress,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phoneNumber: validatedData.phoneNumber,
+        dateOfBirth,
+        condition: validatedData.condition,
+        medicalHistory: validatedData.medicalHistory,
+        useDirectBilling: validatedData.useDirectBilling,
+        insuranceProvider: validatedData.insuranceProvider,
+        policyNumber: validatedData.policyNumber,
+        groupNumber: validatedData.groupNumber,
+        emergencyContact: validatedData.emergencyContact,
+        specialInstructions: validatedData.specialInstructions,
+        userId: userSession.id, // Associate booking with logged-in user
+      } as any,
+    })
+
+    // Send confirmation emails (non-blocking)
+    sendBookingConfirmationEmail({
+      firstName: booking.firstName,
+      lastName: booking.lastName,
+      email: booking.email,
+      phoneNumber: booking.phoneNumber,
+      serviceType: booking.serviceType,
+      appointmentType: booking.appointmentType,
+      preferredDate: booking.preferredDate.toISOString(),
+      preferredTime: booking.preferredTime,
+      serviceLocation: booking.serviceLocation,
+      fullAddress: booking.fullAddress,
+      condition: booking.condition,
+      medicalHistory: booking.medicalHistory,
+      useDirectBilling: booking.useDirectBilling,
+      insuranceProvider: booking.insuranceProvider,
+      policyNumber: booking.policyNumber,
+      groupNumber: booking.groupNumber,
+      emergencyContact: booking.emergencyContact,
+      specialInstructions: booking.specialInstructions,
+      dateOfBirth: booking.dateOfBirth ? booking.dateOfBirth.toISOString() : null,
+    }).catch((error) => {
+      console.error('Failed to send confirmation emails:', error)
+      // Don't fail the request if email fails
+    })
+
+    return NextResponse.json(
+      { 
+        success: true, 
+        message: 'Booking request submitted successfully',
+        bookingId: booking.id 
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Validation error', details: error.errors },
+        { status: 400 }
+      )
+    }
+
+    console.error('Error creating booking:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to create booking' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const skip = (page - 1) * limit
+
+    // Check if admin is logged in (admins can see all bookings)
+    const adminSession = await getSession()
+    
+    // Check if user is logged in
+    const userSession = await getUserSession()
+    
+    const where: any = status ? { status } : {}
+    
+    // If user is logged in (not admin), filter by userId
+    // Admins can see all bookings
+    if (userSession && !adminSession) {
+      where.userId = userSession.id
+    }
+
+    const [bookings, total] = await Promise.all([
+      prisma.therapyBooking.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.therapyBooking.count({ where }),
+    ])
+
+    return NextResponse.json({
+      success: true,
+      data: bookings,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    })
+  } catch (error) {
+    console.error('Error fetching bookings:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch bookings' },
+      { status: 500 }
+    )
+  }
+}

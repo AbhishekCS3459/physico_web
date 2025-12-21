@@ -11,6 +11,7 @@ import {
   Clock,
   DollarSign,
   Heart,
+  LogIn,
   PackageIcon as MassageIcon,
   Menu,
   Phone,
@@ -139,17 +140,34 @@ export function PremiumNavigation() {
               variant="outline"
               size="sm"
               className="text-sm xl:text-base bg-transparent border-primary/20 hover:border-primary hover:bg-primary/5 min-h-[44px] px-4 xl:px-6 transition-all duration-300"
+              asChild
             >
-              <Phone className="h-4 w-4 xl:h-5 xl:w-5 mr-2" />
-              <span className="hidden xl:inline">(587) 586-5566</span>
-              <span className="xl:hidden">Call</span>
+              <a href="tel:587-586-5566">
+                <Phone className="h-4 w-4 xl:h-5 xl:w-5 mr-2" />
+                <span className="hidden xl:inline">(587) 586-5566</span>
+                <span className="xl:hidden">Call</span>
+              </a>
             </Button>
             <Button
               size="sm"
               className="text-sm xl:text-base min-h-[44px] px-4 xl:px-6 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              asChild
             >
-              <Calendar className="h-4 w-4 xl:h-5 xl:w-5 mr-2" />
-              Book Now
+              <Link href="/book">
+                <Calendar className="h-4 w-4 xl:h-5 xl:w-5 mr-2" />
+                Book Physiotherapy
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-sm xl:text-base min-h-[44px] px-3 transition-all duration-300"
+              asChild
+            >
+              <Link href="/login">
+                <LogIn className="h-4 w-4 xl:h-5 xl:w-5 mr-1" />
+                <span className="hidden xl:inline">Admin</span>
+              </Link>
             </Button>
           </div>
 
@@ -219,13 +237,24 @@ export function PremiumNavigation() {
                   <Button
                     variant="outline"
                     className="w-full justify-start bg-transparent border-primary/20 hover:bg-primary/5 min-h-[52px] text-base"
+                    asChild
                   >
-                    <Phone className="h-5 w-5 mr-3" />
-                    (587) 586-5566
+                    <a href="tel:587-586-5566">
+                      <Phone className="h-5 w-5 mr-3" />
+                      (587) 586-5566
+                    </a>
                   </Button>
-                  <Button className="w-full justify-start min-h-[52px] text-base bg-gradient-to-r from-primary to-accent">
-                    <Calendar className="h-5 w-5 mr-3" />
-                    Book Now
+                  <Button className="w-full justify-start min-h-[52px] text-base bg-gradient-to-r from-primary to-accent" asChild>
+                    <Link href="/book" onClick={() => setIsOpen(false)}>
+                      <Calendar className="h-5 w-5 mr-3" />
+                      Book Physiotherapy
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start min-h-[52px] text-base" asChild>
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <LogIn className="h-5 w-5 mr-3" />
+                      Admin Login
+                    </Link>
                   </Button>
                 </div>
 
@@ -256,17 +285,23 @@ export function PremiumNavigation() {
               variant="outline"
               size="lg"
               className="flex-1 bg-transparent border-primary/20 hover:bg-primary/5 min-h-[52px] text-base font-medium transition-all duration-300"
+              asChild
             >
-              <Phone className="h-5 w-5 mr-2" />
-              <span className="hidden sm:inline">Call Now</span>
-              <span className="sm:hidden">Call</span>
+              <a href="tel:587-586-5566">
+                <Phone className="h-5 w-5 mr-2" />
+                <span className="hidden sm:inline">Call Now</span>
+                <span className="sm:hidden">Call</span>
+              </a>
             </Button>
             <Button
               size="lg"
               className="flex-1 min-h-[52px] text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg transition-all duration-300 transform hover:scale-105"
+              asChild
             >
-              <Calendar className="h-5 w-5 mr-2" />
-              Book Now
+              <Link href="/book">
+                <Calendar className="h-5 w-5 mr-2" />
+                Book Physiotherapy
+              </Link>
             </Button>
           </div>
         </motion.div>

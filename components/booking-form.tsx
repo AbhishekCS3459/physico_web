@@ -1,20 +1,73 @@
 "use client"
 
-import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, User, Shield, Phone, Mail } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon, CheckCircle2, Loader2, Shield, Sparkles, User } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
+import { useState } from "react"
+import toast from "react-hot-toast"
+
+interface BookingFormData {
+  serviceType: string
+  appointmentType: string
+  preferredDate: string
+  preferredTime: string
+  serviceLocation: string
+  fullAddress: string
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string
+  dateOfBirth: string
+  condition: string
+  medicalHistory: string
+  useDirectBilling: boolean
+  insuranceProvider: string
+  policyNumber: string
+  groupNumber: string
+  emergencyContact: string
+  specialInstructions: string
+  termsAccepted: boolean
+  consentGiven: boolean
+}
 
 export function BookingForm() {
   const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const totalSteps = 4
+
+  const [formData, setFormData] = useState<Partial<BookingFormData>>({
+    serviceType: "",
+    appointmentType: "",
+    preferredDate: "",
+    preferredTime: "",
+    serviceLocation: "",
+    fullAddress: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    dateOfBirth: "",
+    condition: "",
+    medicalHistory: "",
+    useDirectBilling: false,
+    insuranceProvider: "",
+    policyNumber: "",
+    groupNumber: "",
+    emergencyContact: "",
+    specialInstructions: "",
+    termsAccepted: false,
+    consentGiven: false,
+  })
 
   const services = [
     {
@@ -75,117 +128,289 @@ export function BookingForm() {
     "Other",
   ]
 
-  const nextStep = () => setCurrentStep(Math.min(currentStep + 1, totalSteps))
+  const nextStep = () => {
+    // Validate current step before proceeding
+    if (currentStep === 1 && !formData.serviceType) {
+      toast.error("Please select a service type")
+      return
+    }
+    if (currentStep === 2 && (!formData.preferredDate || !formData.preferredTime || !formData.fullAddress)) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+    if (currentStep === 3 && (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber)) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+    setCurrentStep(Math.min(currentStep + 1, totalSteps))
+  }
+  
   const prevStep = () => setCurrentStep(Math.max(currentStep - 1, 1))
+
+  const handleSubmit = async () => {
+    if (!formData.termsAccepted || !formData.consentGiven) {
+      toast.error("Please accept the terms and conditions")
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          serviceType: formData.serviceType,
+          appointmentType: formData.appointmentType,
+          preferredDate: formData.preferredDate,
+          preferredTime: formData.preferredTime,
+          serviceLocation: formData.serviceLocation,
+          fullAddress: formData.fullAddress,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          dateOfBirth: formData.dateOfBirth || undefined,
+          condition: formData.condition || undefined,
+          medicalHistory: formData.medicalHistory || undefined,
+          useDirectBilling: formData.useDirectBilling || false,
+          insuranceProvider: formData.insuranceProvider || undefined,
+          policyNumber: formData.policyNumber || undefined,
+          groupNumber: formData.groupNumber || undefined,
+          emergencyContact: formData.emergencyContact || undefined,
+          specialInstructions: formData.specialInstructions || undefined,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success("Booking request submitted successfully! We'll contact you soon.")
+        // Reset form
+        setFormData({
+          serviceType: "",
+          appointmentType: "",
+          preferredDate: "",
+          preferredTime: "",
+          serviceLocation: "",
+          fullAddress: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          phoneNumber: "",
+          dateOfBirth: "",
+          condition: "",
+          medicalHistory: "",
+          useDirectBilling: false,
+          insuranceProvider: "",
+          policyNumber: "",
+          groupNumber: "",
+          emergencyContact: "",
+          specialInstructions: "",
+          termsAccepted: false,
+          consentGiven: false,
+        })
+        setCurrentStep(1)
+      } else {
+        toast.error(data.error || "Failed to submit booking request")
+      }
+    } catch (error) {
+      console.error("Error submitting booking:", error)
+      toast.error("An error occurred. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const stepLabels = ["Service", "Schedule", "Personal Info", "Confirmation"]
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Progress Indicator */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex items-center justify-between mb-4 px-2">
-          {Array.from({ length: totalSteps }, (_, i) => (
-            <div key={i} className="flex items-center">
-              <div
-                style={{
-                  width: i + 1 <= currentStep ? "2.5rem" : "2rem",
-                  height: i + 1 <= currentStep ? "2.5rem" : "2rem",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  border: "2px solid",
-                  backgroundColor: i + 1 <= currentStep ? "#164e63" : "#ffffff",
-                  color: i + 1 <= currentStep ? "#ffffff" : "#1f2937",
-                  borderColor: i + 1 <= currentStep ? "#164e63" : "#6b7280",
-                }}
-              >
-                {i + 1}
-              </div>
-              {i < totalSteps - 1 && (
-                <div
-                  style={{
-                    height: "2px",
-                    width: "3rem",
-                    margin: "0 0.5rem",
-                    backgroundColor: i + 1 < currentStep ? "#164e63" : "#d1d5db",
+      {/* Enhanced Progress Indicator */}
+      <div className="mb-8 sm:mb-12">
+        <div className="flex items-center justify-between mb-6 px-2 relative">
+          {/* Progress line background */}
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-1/2 -z-10 rounded-full" />
+          <div 
+            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-primary to-accent -translate-y-1/2 -z-10 rounded-full transition-all duration-500"
+            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+          />
+          
+          {Array.from({ length: totalSteps }, (_, i) => {
+            const stepNum = i + 1
+            const isActive = stepNum <= currentStep
+            const isCurrent = stepNum === currentStep
+            
+            return (
+              <div key={i} className="flex flex-col items-center flex-1">
+                <motion.div
+                  className={`relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 font-semibold text-base sm:text-lg transition-all duration-300 ${
+                    isActive
+                      ? "bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110"
+                      : "bg-background text-muted-foreground border-muted-foreground/30"
+                  }`}
+                  initial={false}
+                  animate={{
+                    scale: isCurrent ? 1.1 : isActive ? 1.05 : 1,
                   }}
-                />
-              )}
-            </div>
-          ))}
+                  transition={{ duration: 0.3 }}
+                >
+                  {isActive && stepNum < currentStep ? (
+                    <CheckCircle2 className="h-6 w-6 sm:h-7 sm:w-7" />
+                  ) : (
+                    stepNum
+                  )}
+                  {isCurrent && (
+                    <motion.div
+                      className="absolute inset-0 rounded-full border-2 border-primary"
+                      animate={{
+                        scale: [1, 1.3, 1],
+                        opacity: [0.5, 0, 0.5],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                      }}
+                    />
+                  )}
+                </motion.div>
+                <span className={`mt-2 text-xs sm:text-sm font-medium hidden sm:block ${
+                  isActive ? "text-foreground" : "text-muted-foreground"
+                }`}>
+                  {stepLabels[i]}
+                </span>
+              </div>
+            )
+          })}
         </div>
         <div className="text-center">
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <motion.p
+            key={currentStep}
+            className="text-sm sm:text-base font-medium text-foreground"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             Step {currentStep} of {totalSteps}
-          </p>
+          </motion.p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-4 sm:pb-6">
-          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-            {currentStep === 1 && (
-              <>
-                <User className="h-5 w-5" /> Service Selection
-              </>
-            )}
-            {currentStep === 2 && (
-              <>
-                <Calendar className="h-5 w-5" /> Schedule Appointment
-              </>
-            )}
-            {currentStep === 3 && (
-              <>
-                <User className="h-5 w-5" /> Personal Information
-              </>
-            )}
-            {currentStep === 4 && (
-              <>
-                <Shield className="h-5 w-5" /> Insurance & Confirmation
-              </>
-            )}
+      <motion.div
+        key={currentStep}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Card className="border-2 border-primary/10 shadow-2xl bg-gradient-to-br from-card via-background to-primary/5 backdrop-blur-sm">
+        <CardHeader className="pb-4 sm:pb-6 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 border-b border-primary/10">
+          <CardTitle className="flex items-center gap-3 text-2xl sm:text-3xl font-bold">
+            <motion.div
+              key={currentStep}
+              initial={{ rotate: -180, scale: 0 }}
+              animate={{ rotate: 0, scale: 1 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10"
+            >
+              {currentStep === 1 && <User className="h-6 w-6 text-primary" />}
+              {currentStep === 2 && <CalendarIcon className="h-6 w-6 text-primary" />}
+              {currentStep === 3 && <User className="h-6 w-6 text-primary" />}
+              {currentStep === 4 && <Shield className="h-6 w-6 text-primary" />}
+            </motion.div>
+            <motion.span
+              key={`title-${currentStep}`}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {currentStep === 1 && "Service Selection"}
+              {currentStep === 2 && "Schedule Appointment"}
+              {currentStep === 3 && "Personal Information"}
+              {currentStep === 4 && "Insurance & Confirmation"}
+            </motion.span>
           </CardTitle>
-          <CardDescription className="text-base sm:text-lg">
-            {currentStep === 1 && "Choose the service you need"}
-            {currentStep === 2 && "Select your preferred date and time"}
-            {currentStep === 3 && "Tell us about yourself and your needs"}
-            {currentStep === 4 && "Insurance details and final confirmation"}
-          </CardDescription>
+          <motion.div
+            key={`desc-${currentStep}`}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <CardDescription className="text-base sm:text-lg mt-2">
+              {currentStep === 1 && "Choose the service you need"}
+              {currentStep === 2 && "Select your preferred date and time"}
+              {currentStep === 3 && "Tell us about yourself and your needs"}
+              {currentStep === 4 && "Insurance details and final confirmation"}
+            </CardDescription>
+          </motion.div>
         </CardHeader>
-        <CardContent className="space-y-6 sm:space-y-8">
-          {/* Step 1: Service Selection */}
-          {currentStep === 1 && (
+        <CardContent className="space-y-6 sm:space-y-8 p-6 sm:p-8">
+          <AnimatePresence mode="wait">
+            {/* Step 1: Service Selection */}
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
             <div className="space-y-6 sm:space-y-8">
               <div>
                 <Label className="text-lg sm:text-xl font-medium mb-4 sm:mb-6 block">Select Service Type</Label>
-                <RadioGroup defaultValue="" className="space-y-4 sm:space-y-6">
-                  {services.map((service) => (
-                    <div
+                <RadioGroup 
+                  value={formData.serviceType || ""} 
+                  onValueChange={(value) => setFormData({ ...formData, serviceType: value })}
+                  className="space-y-4 sm:space-y-6"
+                >
+                  {services.map((service, index) => (
+                    <motion.div
                       key={service.id}
-                      className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      className="group"
                     >
-                      <RadioGroupItem value={service.id} id={service.id} className="mt-1 w-5 h-5 sm:w-6 sm:h-6" />
-                      <div className="flex-1">
-                        <Label
-                          htmlFor={service.id}
-                          className="text-base sm:text-lg font-medium cursor-pointer leading-relaxed"
-                        >
-                          {service.name}
-                        </Label>
-                        <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 leading-relaxed">
-                          {service.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(service.prices).map(([type, price]) => (
-                            <Badge key={type} variant="outline" className="text-xs sm:text-sm">
-                              {price}
-                            </Badge>
-                          ))}
+                      <div 
+                        className={`flex items-start space-x-3 sm:space-x-4 p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                          formData.serviceType === service.id
+                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                            : "border-border hover:border-primary/50 bg-gradient-to-br from-background to-card/50 hover:shadow-lg hover:shadow-primary/10"
+                        }`}
+                        onClick={() => setFormData({ ...formData, serviceType: service.id })}
+                      >
+                        <RadioGroupItem 
+                          value={service.id} 
+                          id={service.id} 
+                          className="mt-1 w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" 
+                        />
+                        <div className="flex-1">
+                          <Label
+                            htmlFor={service.id}
+                            className="text-base sm:text-lg font-semibold cursor-pointer leading-relaxed flex items-center gap-2 group-hover:text-primary transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {service.name}
+                            <Sparkles className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </Label>
+                          <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 leading-relaxed mt-1">
+                            {service.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(service.prices).map(([type, price]) => (
+                              <Badge 
+                                key={type} 
+                                variant="outline" 
+                                className="text-xs sm:text-sm bg-primary/5 border-primary/20 text-primary font-medium hover:bg-primary/10 transition-colors"
+                              >
+                                {price}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </RadioGroup>
               </div>
@@ -194,8 +419,11 @@ export function BookingForm() {
                 <Label htmlFor="appointment-type" className="text-base sm:text-lg font-medium">
                   Appointment Type
                 </Label>
-                <Select>
-                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base">
+                <Select 
+                  value={formData.appointmentType || ""}
+                  onValueChange={(value) => setFormData({ ...formData, appointmentType: value })}
+                >
+                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue placeholder="Select appointment type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -212,24 +440,57 @@ export function BookingForm() {
                 </Select>
               </div>
             </div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Step 2: Schedule */}
-          {currentStep === 2 && (
+            {/* Step 2: Schedule */}
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
             <div className="space-y-6 sm:space-y-8">
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <Label htmlFor="date" className="text-base sm:text-lg font-medium">
                     Preferred Date
                   </Label>
-                  <Input type="date" id="date" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <div className="relative mt-2 sm:mt-3">
+                    <CalendarIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 z-10 pointer-events-none" />
+                    <Input
+                      id="date"
+                      type="date"
+                      value={formData.preferredDate || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, preferredDate: e.target.value })
+                      }}
+                      min={new Date().toISOString().split('T')[0]}
+                      className={cn(
+                        "pl-12 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-background/50 backdrop-blur-sm",
+                        formData.preferredDate && "border-primary/50 bg-primary/5"
+                      )}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                  {formData.preferredDate && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Selected: {format(new Date(formData.preferredDate), "PPP")}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="time" className="text-base sm:text-lg font-medium">
                     Preferred Time
                   </Label>
-                  <Select>
-                    <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base">
+                  <Select 
+                    value={formData.preferredTime || ""}
+                    onValueChange={(value) => setFormData({ ...formData, preferredTime: value })}
+                  >
+                    <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent>
@@ -247,8 +508,11 @@ export function BookingForm() {
                 <Label htmlFor="location" className="text-base sm:text-lg font-medium">
                   Service Location
                 </Label>
-                <Select>
-                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base">
+                <Select 
+                  value={formData.serviceLocation || ""}
+                  onValueChange={(value) => setFormData({ ...formData, serviceLocation: value })}
+                >
+                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue placeholder="Where should we visit?" />
                   </SelectTrigger>
                   <SelectContent>
@@ -269,31 +533,51 @@ export function BookingForm() {
                 <Label htmlFor="address" className="text-base sm:text-lg font-medium">
                   Full Address
                 </Label>
-                <Textarea
+                  <Textarea
                   id="address"
                   placeholder="Please provide your complete address including postal code"
-                  className="mt-2 sm:mt-3 text-base min-h-[100px] sm:min-h-[120px]"
+                  value={formData.fullAddress || ""}
+                  onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
+                  className="mt-2 sm:mt-3 text-base min-h-[100px] sm:min-h-[120px] border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   rows={3}
                 />
               </div>
             </div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Step 3: Personal Information */}
-          {currentStep === 3 && (
+            {/* Step 3: Personal Information */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
             <div className="space-y-6 sm:space-y-8">
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <Label htmlFor="first-name" className="text-base sm:text-lg font-medium">
                     First Name
                   </Label>
-                  <Input id="first-name" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <Input 
+                    id="first-name" 
+                    value={formData.firstName || ""}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="last-name" className="text-base sm:text-lg font-medium">
                     Last Name
                   </Label>
-                  <Input id="last-name" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <Input 
+                    id="last-name" 
+                    value={formData.lastName || ""}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  />
                 </div>
               </div>
 
@@ -302,13 +586,25 @@ export function BookingForm() {
                   <Label htmlFor="phone" className="text-base sm:text-lg font-medium">
                     Phone Number
                   </Label>
-                  <Input id="phone" type="tel" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    value={formData.phoneNumber || ""}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="email" className="text-base sm:text-lg font-medium">
                     Email Address
                   </Label>
-                  <Input id="email" type="email" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={formData.email || ""}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  />
                 </div>
               </div>
 
@@ -316,7 +612,13 @@ export function BookingForm() {
                 <Label htmlFor="date-of-birth" className="text-base sm:text-lg font-medium">
                   Date of Birth
                 </Label>
-                <Input id="date-of-birth" type="date" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                <Input 
+                  id="date-of-birth" 
+                  type="date" 
+                  value={formData.dateOfBirth || ""}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                />
               </div>
 
               <div>
@@ -326,7 +628,9 @@ export function BookingForm() {
                 <Textarea
                   id="condition"
                   placeholder="Please describe your condition, symptoms, or reason for seeking treatment"
-                  className="mt-2 sm:mt-3 text-base min-h-[120px] sm:min-h-[140px]"
+                  value={formData.condition || ""}
+                  onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                  className="mt-2 sm:mt-3 text-base min-h-[120px] sm:min-h-[140px] border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   rows={4}
                 />
               </div>
@@ -338,29 +642,53 @@ export function BookingForm() {
                 <Textarea
                   id="medical-history"
                   placeholder="Any relevant medical history, surgeries, medications, or conditions we should know about"
-                  className="mt-2 sm:mt-3 text-base min-h-[100px] sm:min-h-[120px]"
+                  value={formData.medicalHistory || ""}
+                  onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
+                  className="mt-2 sm:mt-3 text-base min-h-[100px] sm:min-h-[120px] border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   rows={3}
                 />
               </div>
             </div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Step 4: Insurance & Confirmation */}
-          {currentStep === 4 && (
+            {/* Step 4: Insurance & Confirmation */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
             <div className="space-y-6 sm:space-y-8">
-              <div className="flex items-center space-x-3 p-3 sm:p-4 rounded-lg border">
-                <Checkbox id="direct-billing" className="w-5 h-5 sm:w-6 sm:h-6" />
-                <Label htmlFor="direct-billing" className="text-base sm:text-lg font-medium cursor-pointer">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center space-x-3 p-4 sm:p-5 rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent hover:border-primary/40 hover:from-primary/10 transition-all duration-300"
+              >
+                <Checkbox 
+                  id="direct-billing" 
+                  checked={formData.useDirectBilling || false}
+                  onCheckedChange={(checked) => setFormData({ ...formData, useDirectBilling: checked as boolean })}
+                  className="w-5 h-5 sm:w-6 sm:h-6 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary" 
+                />
+                <Label htmlFor="direct-billing" className="text-base sm:text-lg font-semibold cursor-pointer flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
                   I would like to use direct billing
                 </Label>
-              </div>
+              </motion.div>
 
               <div>
                 <Label htmlFor="insurance-provider" className="text-base sm:text-lg font-medium">
                   Insurance Provider
                 </Label>
-                <Select>
-                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base">
+                <Select 
+                  value={formData.insuranceProvider || ""}
+                  onValueChange={(value) => setFormData({ ...formData, insuranceProvider: value })}
+                >
+                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue placeholder="Select your insurance provider" />
                   </SelectTrigger>
                   <SelectContent>
@@ -382,13 +710,23 @@ export function BookingForm() {
                   <Label htmlFor="policy-number" className="text-base sm:text-lg font-medium">
                     Policy Number
                   </Label>
-                  <Input id="policy-number" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <Input 
+                    id="policy-number" 
+                    value={formData.policyNumber || ""}
+                    onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
+                    className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="group-number" className="text-base sm:text-lg font-medium">
                     Group Number (if applicable)
                   </Label>
-                  <Input id="group-number" className="mt-2 sm:mt-3 h-12 sm:h-14 text-base" />
+                  <Input 
+                    id="group-number" 
+                    value={formData.groupNumber || ""}
+                    onChange={(e) => setFormData({ ...formData, groupNumber: e.target.value })}
+                    className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
+                  />
                 </div>
               </div>
 
@@ -399,7 +737,9 @@ export function BookingForm() {
                 <Input
                   id="emergency-contact"
                   placeholder="Name and phone number"
-                  className="mt-2 sm:mt-3 h-12 sm:h-14 text-base"
+                  value={formData.emergencyContact || ""}
+                  onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                  className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               </div>
 
@@ -410,74 +750,97 @@ export function BookingForm() {
                 <Textarea
                   id="special-instructions"
                   placeholder="Any special instructions for our visit (parking, building access, etc.)"
-                  className="mt-2 sm:mt-3 text-base min-h-[100px] sm:min-h-[120px]"
+                  value={formData.specialInstructions || ""}
+                  onChange={(e) => setFormData({ ...formData, specialInstructions: e.target.value })}
+                  className="mt-2 sm:mt-3 text-base min-h-[100px] sm:min-h-[120px] border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   rows={3}
                 />
               </div>
 
               <div className="space-y-4 sm:space-y-6">
-                <div className="flex items-start space-x-3 p-3 sm:p-4 rounded-lg border">
-                  <Checkbox id="terms" className="w-5 h-5 sm:w-6 sm:h-6 mt-0.5" />
-                  <Label htmlFor="terms" className="text-sm sm:text-base cursor-pointer leading-relaxed">
-                    I agree to the terms and conditions and privacy policy
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-start space-x-3 p-4 sm:p-5 rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent hover:border-primary/40 hover:from-primary/10 transition-all duration-300"
+                >
+                  <Checkbox 
+                    id="terms" 
+                    checked={formData.termsAccepted || false}
+                    onCheckedChange={(checked) => setFormData({ ...formData, termsAccepted: checked as boolean })}
+                    className="w-5 h-5 sm:w-6 sm:h-6 mt-0.5 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary" 
+                  />
+                  <Label htmlFor="terms" className="text-sm sm:text-base cursor-pointer leading-relaxed flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>I agree to the terms and conditions and privacy policy</span>
                   </Label>
-                </div>
-                <div className="flex items-start space-x-3 p-3 sm:p-4 rounded-lg border">
-                  <Checkbox id="consent" className="w-5 h-5 sm:w-6 sm:h-6 mt-0.5" />
-                  <Label htmlFor="consent" className="text-sm sm:text-base cursor-pointer leading-relaxed">
-                    I consent to treatment and understand the fees involved
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  className="flex items-start space-x-3 p-4 sm:p-5 rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent hover:border-primary/40 hover:from-primary/10 transition-all duration-300"
+                >
+                  <Checkbox 
+                    id="consent" 
+                    checked={formData.consentGiven || false}
+                    onCheckedChange={(checked) => setFormData({ ...formData, consentGiven: checked as boolean })}
+                    className="w-5 h-5 sm:w-6 sm:h-6 mt-0.5 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary" 
+                  />
+                  <Label htmlFor="consent" className="text-sm sm:text-base cursor-pointer leading-relaxed flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>I consent to treatment and understand the fees involved</span>
                   </Label>
-                </div>
+                </motion.div>
               </div>
             </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 sm:pt-8 border-t">
+          {/* Enhanced Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 sm:pt-8 border-t border-primary/10">
             <Button
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="order-2 sm:order-1 min-h-[52px] text-base font-medium bg-transparent"
+              className="order-2 sm:order-1 min-h-[52px] text-base font-medium bg-transparent border-2 hover:bg-primary/5 hover:border-primary/50 transition-all disabled:opacity-50"
             >
               Previous
             </Button>
 
             {currentStep < totalSteps ? (
-              <Button onClick={nextStep} className="order-1 sm:order-2 min-h-[52px] text-base font-medium">
+              <Button 
+                onClick={nextStep} 
+                className="order-1 sm:order-2 min-h-[52px] text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
                 Next Step
+                <Sparkles className="h-4 w-4 ml-2" />
               </Button>
             ) : (
-              <Button className="order-1 sm:order-2 min-h-[52px] text-base font-medium">
-                <Calendar className="h-5 w-5 mr-2" />
-                Book Appointment
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isSubmitting}
+                className="order-1 sm:order-2 min-h-[52px] text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 disabled:opacity-70 disabled:hover:scale-100"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CalendarIcon className="h-5 w-5 mr-2" />
+                    Book Appointment
+                    <CheckCircle2 className="h-4 w-4 ml-2" />
+                  </>
+                )}
               </Button>
             )}
           </div>
         </CardContent>
-      </Card>
-
-      {/* Contact Info */}
-      <Card className="mt-6 sm:mt-8">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center">
-            <h3 className="font-semibold mb-2 text-base sm:text-lg">Need Help Booking?</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4 leading-relaxed">
-              Our team is available to assist you with booking or answer any questions.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Button variant="outline" size="sm" className="min-h-[44px] text-base bg-transparent">
-                <Phone className="h-4 w-4 mr-2" />
-                Call (587) 586-5566
-              </Button>
-              <Button variant="outline" size="sm" className="min-h-[44px] text-base bg-transparent">
-                <Mail className="h-4 w-4 mr-2" />
-                Email Us
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   )
 }

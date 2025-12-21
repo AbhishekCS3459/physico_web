@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Note: The url property is valid for Prisma 5.x and earlier
+  // If upgrading to Prisma 7+, you may need to use prisma.config.ts instead
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  firstName String?
+  lastName  String?
+  phoneNumber String?
+  role      String   @default("user") // user, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings TherapyBooking[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model TherapyBooking {
+  id                    String   @id @default(cuid())
+  // Service Information
+  serviceType           String
+  appointmentType       String
+  preferredDate         DateTime
+  preferredTime         String
+  serviceLocation       String
+  fullAddress           String
+  
+  // Personal Information
+  firstName             String
+  lastName              String
+  email                 String
+  phoneNumber           String
+  dateOfBirth           DateTime?
+  condition             String?
+  medicalHistory        String?
+  
+  // Insurance Information
+  useDirectBilling      Boolean  @default(false)
+  insuranceProvider     String?
+  policyNumber          String?
+  groupNumber           String?
+  
+  // Additional Information
+  emergencyContact      String?
+  specialInstructions   String?
+  
+  // Status
+  status                String   @default("pending") // pending, confirmed, cancelled, completed
+  
+  // User relationship
+  userId                String?
+  user                  User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}

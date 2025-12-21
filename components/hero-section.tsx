@@ -1,9 +1,10 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Phone, MapPin, Clock, Shield, Heart } from "lucide-react"
+import { Calendar, Clock, Heart, MapPin, Phone, Shield } from "lucide-react"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
@@ -29,13 +30,17 @@ export function HeroSection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="text-lg px-8 py-6">
-                <Calendar className="h-5 w-5 mr-2" />
-                Book Your Assessment
+              <Button size="lg" className="text-lg px-8 py-6" asChild>
+                <Link href="/book">
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Book Physiotherapy
+                </Link>
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-transparent">
-                <Phone className="h-5 w-5 mr-2" />
-                (587) 586-5566
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-transparent" asChild>
+                <a href="tel:587-586-5566">
+                  <Phone className="h-5 w-5 mr-2" />
+                  (587) 586-5566
+                </a>
               </Button>
             </div>
 

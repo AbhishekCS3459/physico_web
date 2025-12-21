@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import { Clock, MapPin, Menu, Phone } from "lucide-react"
+import { Clock, LogIn, MapPin, Menu, Phone } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -50,18 +50,32 @@ export function MainNavigation() {
                 )}
               </Link>
             ))}
-            <Button size="sm" className="ml-4 px-4 xl:px-6 py-2 text-sm xl:text-base">
-              Book Now
+            <Button size="sm" className="ml-4 px-4 xl:px-6 py-2 text-sm xl:text-base" asChild>
+              <Link href="/book">
+                Book Physiotherapy
+              </Link>
+            </Button>
+            <Button size="sm" variant="ghost" className="ml-2 px-3 py-2 text-sm xl:text-base" asChild>
+              <Link href="/login">
+                <LogIn className="h-4 w-4 mr-1" />
+                <span className="hidden xl:inline">Admin</span>
+              </Link>
             </Button>
           </nav>
 
           {/* Tablet Navigation - Enhanced responsive behavior */}
           <div className="hidden md:flex lg:hidden items-center space-x-3 xl:space-x-4">
-            <Button size="sm" variant="outline" className="text-sm">
-              <Phone className="h-4 w-4 mr-1" />
-              Call
+            <Button size="sm" variant="outline" className="text-sm" asChild>
+              <a href="tel:587-586-5566">
+                <Phone className="h-4 w-4 mr-1" />
+                Call
+              </a>
             </Button>
-            <Button size="sm" className="text-sm">Book</Button>
+            <Button size="sm" className="text-sm" asChild>
+              <Link href="/book">
+                Book Physiotherapy
+              </Link>
+            </Button>
           </div>
 
           {/* Mobile Navigation */}
@@ -98,10 +112,22 @@ export function MainNavigation() {
                 </nav>
 
                 <div className="space-y-3">
-                  <Button className="w-full py-3 text-base">Book Now</Button>
-                  <Button variant="outline" className="w-full py-3 text-base bg-transparent">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call (587) 586-5566
+                  <Button className="w-full py-3 text-base" asChild>
+                    <Link href="/book" onClick={() => setIsOpen(false)}>
+                      Book Physiotherapy
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full py-3 text-base bg-transparent" asChild>
+                    <a href="tel:587-586-5566">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call (587) 586-5566
+                    </a>
+                  </Button>
+                  <Button variant="ghost" className="w-full py-3 text-base" asChild>
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Admin Login
+                    </Link>
                   </Button>
                 </div>
 

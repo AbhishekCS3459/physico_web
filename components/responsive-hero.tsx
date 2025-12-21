@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Award, CheckCircle, Clock, Heart, MapPin, Phone, Shield, Star, Users } from "lucide-react"
 import { motion } from "motion/react"
+import Link from "next/link"
 import { useState } from "react"
 
 export default function ResponsiveHero() {
@@ -93,10 +94,12 @@ export default function ResponsiveHero() {
               <Button
                 size="lg"
                 className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-6 shadow-lg hover:shadow-xl transition-all duration-300 flex-1 sm:flex-none"
-                onClick={() => setIsBookingOpen(true)}
+                asChild
               >
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Book Home Visit
+                <Link href="/book">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Book Physiotherapy
+                </Link>
               </Button>
               <Button
                 variant="outline"
