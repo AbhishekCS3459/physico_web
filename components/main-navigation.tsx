@@ -2,10 +2,11 @@
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import { Clock, LogIn, MapPin, Menu, Phone } from "lucide-react"
+import { Clock, LogIn, MapPin, Menu, Phone, User } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -17,6 +18,19 @@ const navigationItems = [
 export function MainNavigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+
+  useEffect(() => {
+    // Check if user is logged in
+    fetch("/api/auth/user/me")
+      .then((res) => res.json())
+      .then((data) => {
+        setIsUserLoggedIn(data.authenticated || false)
+      })
+      .catch(() => {
+        setIsUserLoggedIn(false)
+      })
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -24,8 +38,14 @@ export function MainNavigation() {
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 min-w-0">
-            <div className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
-              <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-primary-foreground" />
+            <div className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-lg shrink-0 relative">
+              <Image
+                width={96}
+                height={96}
+                src="/logo-removebg-preview.png"
+                alt="Physio Rehab at Home"
+                className="object-contain"
+              />
             </div>
             <span className="font-serif font-bold text-lg sm:text-xl lg:text-2xl text-foreground truncate">
               <span className="hidden xs:inline">Physio Rehab at Home</span>
@@ -40,21 +60,40 @@ export function MainNavigation() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-sm xl:text-base font-medium transition-colors hover:text-primary py-2 px-1 relative group",
-                  pathname === item.href ? "text-primary" : "text-muted-foreground",
+                  "text-sm xl:text-base font-medium transition-all duration-300 hover:text-primary py-2 px-1 relative group",
+                  pathname === item.href ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {item.name}
-                {pathname === item.href && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />
-                )}
+                <span className={cn(
+                  "absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-300",
+                  pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
+                )} />
               </Link>
             ))}
-            <Button size="sm" className="ml-4 px-4 xl:px-6 py-2 text-sm xl:text-base" asChild>
+            <Button 
+              size="sm" 
+              className="ml-4 px-4 xl:px-6 py-2 text-sm xl:text-base bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105" 
+              asChild
+            >
               <Link href="/book">
                 Book Physiotherapy
               </Link>
             </Button>
+            {isUserLoggedIn && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="ml-2 px-3 py-2 text-sm xl:text-base border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105" 
+                asChild
+              >
+                <Link href="/my-bookings">
+                  <User className="h-4 w-4 mr-1" />
+                  <span className="hidden xl:inline">My Bookings</span>
+                  <span className="xl:hidden">Bookings</span>
+                </Link>
+              </Button>
+            )}
             <Button size="sm" variant="ghost" className="ml-2 px-3 py-2 text-sm xl:text-base" asChild>
               <Link href="/login">
                 <LogIn className="h-4 w-4 mr-1" />
@@ -76,6 +115,14 @@ export function MainNavigation() {
                 Book Physiotherapy
               </Link>
             </Button>
+            {isUserLoggedIn && (
+              <Button size="sm" variant="outline" className="text-sm" asChild>
+                <Link href="/my-bookings">
+                  <User className="h-4 w-4 mr-1" />
+                  Bookings
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Navigation */}
@@ -89,8 +136,13 @@ export function MainNavigation() {
             <SheetContent side="right" className="w-[300px] sm:w-80">
               <div className="flex flex-col space-y-6 mt-6">
                 <Link href="/" className="flex items-center space-x-2">
-                  <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                    <Phone className="h-4 w-4 text-primary-foreground" />
+                  <div className="h-20 w-20 rounded-lg relative">
+                    <Image
+                      src="/logo-removebg-preview.png"
+                      alt="Physio Rehab at Home"
+                      fill
+                      className="object-contain"
+                    />
                   </div>
                   <span className="font-serif font-bold text-xl">Physio Rehab</span>
                 </Link>
@@ -102,28 +154,40 @@ export function MainNavigation() {
                       href={item.href}
                       onClick={() => setIsOpen(false)}
                       className={cn(
-                        "text-lg font-medium transition-colors hover:text-primary py-3 px-2 rounded-lg hover:bg-primary/5",
-                        pathname === item.href ? "text-primary bg-primary/10" : "text-foreground",
+                        "text-lg font-medium transition-all duration-300 hover:text-primary py-3 px-2 rounded-lg hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 relative group",
+                        pathname === item.href ? "text-primary bg-gradient-to-r from-primary/10 to-accent/10" : "text-foreground",
                       )}
                     >
                       {item.name}
+                      <span className={cn(
+                        "absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-accent rounded-r-full transition-all duration-300",
+                        pathname === item.href ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                      )} />
                     </Link>
                   ))}
                 </nav>
 
                 <div className="space-y-3">
-                  <Button className="w-full py-3 text-base" asChild>
+                  <Button className="w-full py-3 text-base bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105" asChild>
                     <Link href="/book" onClick={() => setIsOpen(false)}>
                       Book Physiotherapy
                     </Link>
                   </Button>
-                  <Button variant="outline" className="w-full py-3 text-base bg-transparent" asChild>
+                  {isUserLoggedIn && (
+                    <Button variant="outline" className="w-full py-3 text-base bg-transparent border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105" asChild>
+                      <Link href="/my-bookings" onClick={() => setIsOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        My Bookings
+                      </Link>
+                    </Button>
+                  )}
+                  <Button variant="outline" className="w-full py-3 text-base bg-transparent border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105" asChild>
                     <a href="tel:587-586-5566">
                       <Phone className="h-4 w-4 mr-2" />
                       Call (587) 586-5566
                     </a>
                   </Button>
-                  <Button variant="ghost" className="w-full py-3 text-base" asChild>
+                  <Button variant="ghost" className="w-full py-3 text-base hover:bg-primary/5 transition-all duration-300" asChild>
                     <Link href="/login" onClick={() => setIsOpen(false)}>
                       <LogIn className="h-4 w-4 mr-2" />
                       Admin Login

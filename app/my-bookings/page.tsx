@@ -20,6 +20,7 @@ import {
     Calendar,
     CalendarIcon,
     Clock,
+    Home,
     LogOut,
     MapPin,
     Phone,
@@ -30,13 +31,16 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
+import Image from "next/image"
+import Link from "next/link"
 
 interface TherapyBooking {
   id: string
   serviceType: string
   appointmentType: string
   preferredDate: string
-  preferredTime: string
+  preferredTime: string | null
+  endDate: string | null
   serviceLocation: string
   fullAddress: string
   firstName: string
@@ -54,26 +58,12 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true)
   const [userInfo, setUserInfo] = useState<{ email: string; firstName?: string; lastName?: string } | null>(null)
   const [reschedulingBooking, setReschedulingBooking] = useState<TherapyBooking | null>(null)
-  const [newDate, setNewDate] = useState<string>("")
-  const [newTime, setNewTime] = useState<string>("")
+  const [newStartDate, setNewStartDate] = useState<string>("")
+  const [newEndDate, setNewEndDate] = useState<string>("")
   const [isRescheduling, setIsRescheduling] = useState(false)
   const [cancellingBooking, setCancellingBooking] = useState<TherapyBooking | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
 
-  const timeSlots = [
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-  ]
 
   useEffect(() => {
     // Check authentication
@@ -126,8 +116,8 @@ export default function MyBookingsPage() {
   }
 
   const handleReschedule = async () => {
-    if (!reschedulingBooking || !newDate || !newTime) {
-      toast.error("Please select both date and time")
+    if (!reschedulingBooking || !newStartDate || !newEndDate) {
+      toast.error("Please select both start and end dates")
       return
     }
 
@@ -139,8 +129,8 @@ export default function MyBookingsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          preferredDate: newDate,
-          preferredTime: newTime,
+          startDate: newStartDate,
+          endDate: newEndDate,
         }),
       })
 
@@ -148,8 +138,8 @@ export default function MyBookingsPage() {
       if (data.success) {
         toast.success("Booking rescheduled successfully!")
         setReschedulingBooking(null)
-        setNewDate("")
-        setNewTime("")
+        setNewStartDate("")
+        setNewEndDate("")
         fetchBookings()
       } else {
         toast.error(data.error || "Failed to reschedule booking")
@@ -226,6 +216,17 @@ export default function MyBookingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
       <div className="container mx-auto max-w-6xl">
+        {/* Navigation Link to Home */}
+        <div className="mb-6">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-300 group"
+          >
+            <Home className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+            <span className="text-sm font-medium">Back to Home</span>
+          </Link>
+        </div>
+        
         {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -243,10 +244,26 @@ export default function MyBookingsPage() {
             )}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/book")}>
+            <Button 
+              variant="outline" 
+              onClick={() => router.push("/")}
+              className="border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Home
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => router.push("/book")}
+              className="border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105"
+            >
               Book New Appointment
             </Button>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -296,7 +313,10 @@ export default function MyBookingsPage() {
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {format(new Date(booking.preferredDate), "MMM dd, yyyy")} at {booking.preferredTime}
+                            {booking.endDate 
+                              ? `${format(new Date(booking.preferredDate), "MMM dd, yyyy")} - ${format(new Date(booking.endDate), "MMM dd, yyyy")}`
+                              : format(new Date(booking.preferredDate), "MMM dd, yyyy")
+                            }
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -321,8 +341,8 @@ export default function MyBookingsPage() {
                             size="sm"
                             onClick={() => {
                               setReschedulingBooking(booking)
-                              setNewDate(format(new Date(booking.preferredDate), "yyyy-MM-dd"))
-                              setNewTime(booking.preferredTime)
+                              setNewStartDate(format(new Date(booking.preferredDate), "yyyy-MM-dd"))
+                              setNewEndDate(booking.endDate ? format(new Date(booking.endDate), "yyyy-MM-dd") : format(new Date(booking.preferredDate), "yyyy-MM-dd"))
                             }}
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
@@ -354,32 +374,32 @@ export default function MyBookingsPage() {
               <DialogHeader>
                 <DialogTitle>Reschedule Booking</DialogTitle>
                 <DialogDescription>
-                  Select a new date and time for your appointment
+                  Select a new date range for your appointment
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">New Date</label>
+                  <label className="text-sm font-medium mb-2 block">Start Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !newDate && "text-muted-foreground"
+                          !newStartDate && "text-muted-foreground"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newDate ? format(new Date(newDate), "PPP") : "Pick a date"}
+                        {newStartDate ? format(new Date(newStartDate), "PPP") : "Pick a start date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <CalendarComponent
                         mode="single"
-                        selected={newDate ? new Date(newDate) : undefined}
+                        selected={newStartDate ? new Date(newStartDate) : undefined}
                         onSelect={(date) => {
                           if (date) {
-                            setNewDate(format(date, "yyyy-MM-dd"))
+                            setNewStartDate(format(date, "yyyy-MM-dd"))
                           }
                         }}
                         disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
@@ -389,20 +409,43 @@ export default function MyBookingsPage() {
                   </Popover>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">New Time</label>
-                  <Select value={newTime} onValueChange={setNewTime}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium mb-2 block">End Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !newEndDate && "text-muted-foreground"
+                        )}
+                        disabled={!newStartDate}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {newEndDate ? format(new Date(newEndDate), "PPP") : "Pick an end date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={newEndDate ? new Date(newEndDate) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            setNewEndDate(format(date, "yyyy-MM-dd"))
+                          }
+                        }}
+                        disabled={(date) => date < (newStartDate ? new Date(newStartDate) : new Date(new Date().setHours(0, 0, 0, 0)))}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
+                {newStartDate && newEndDate && (
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                    <p className="text-sm font-medium text-primary">
+                      Date Range: {format(new Date(newStartDate), "MMM dd, yyyy")} - {format(new Date(newEndDate), "MMM dd, yyyy")}
+                    </p>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setReschedulingBooking(null)} disabled={isRescheduling}>
@@ -435,7 +478,10 @@ export default function MyBookingsPage() {
               </DialogHeader>
               <div className="mt-4 p-4 bg-muted rounded-lg">
                 <p className="text-sm">
-                  <strong>Date:</strong> {format(new Date(cancellingBooking.preferredDate), "MMM dd, yyyy")} at {cancellingBooking.preferredTime}
+                  <strong>Date Range:</strong> {cancellingBooking.endDate 
+                    ? `${format(new Date(cancellingBooking.preferredDate), "MMM dd, yyyy")} - ${format(new Date(cancellingBooking.endDate), "MMM dd, yyyy")}`
+                    : format(new Date(cancellingBooking.preferredDate), "MMM dd, yyyy")
+                  }
                 </p>
                 <p className="text-sm mt-2">
                   <strong>Service:</strong> {cancellingBooking.serviceType.replace("-", " ")}

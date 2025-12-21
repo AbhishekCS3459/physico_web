@@ -30,9 +30,9 @@ export default function PricingPage() {
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Physiotherapy */}
-            <Card className="relative">
+            <Card className="relative border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group">
               <CardHeader>
-                <CardTitle className="text-2xl">Physiotherapy</CardTitle>
+                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Physiotherapy</CardTitle>
                 <CardDescription>Expert rehabilitation therapy</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -60,9 +60,9 @@ export default function PricingPage() {
             </Card>
 
             {/* Occupational Therapy */}
-            <Card className="relative">
+            <Card className="relative border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group">
               <CardHeader>
-                <CardTitle className="text-2xl">Occupational Therapy</CardTitle>
+                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Occupational Therapy</CardTitle>
                 <CardDescription>Daily living & independence</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -84,9 +84,9 @@ export default function PricingPage() {
             </Card>
 
             {/* Massage Therapy */}
-            <Card className="relative">
+            <Card className="relative border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group">
               <CardHeader>
-                <CardTitle className="text-2xl">Massage Therapy</CardTitle>
+                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Massage Therapy</CardTitle>
                 <CardDescription>Registered Massage Therapist</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

@@ -35,7 +35,8 @@ model TherapyBooking {
   serviceType           String
   appointmentType       String
   preferredDate         DateTime
-  preferredTime         String
+  preferredTime         String?
+  endDate               DateTime?
   serviceLocation       String
   fullAddress           String
   

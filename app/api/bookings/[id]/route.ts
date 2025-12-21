@@ -9,6 +9,8 @@ const updateBookingSchema = z.object({
   appointmentType: z.string().min(1).optional(),
   preferredDate: z.string().optional(),
   preferredTime: z.string().min(1).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   serviceLocation: z.string().min(1).optional(),
   fullAddress: z.string().min(1).optional(),
   
@@ -82,7 +84,14 @@ export async function PUT(
     
     if (validatedData.serviceType) updateData.serviceType = validatedData.serviceType
     if (validatedData.appointmentType) updateData.appointmentType = validatedData.appointmentType
-    if (validatedData.preferredDate) updateData.preferredDate = new Date(validatedData.preferredDate)
+    if (validatedData.startDate) {
+      updateData.preferredDate = new Date(validatedData.startDate)
+    } else if (validatedData.preferredDate) {
+      updateData.preferredDate = new Date(validatedData.preferredDate)
+    }
+    if (validatedData.endDate) {
+      updateData.endDate = new Date(validatedData.endDate)
+    }
     if (validatedData.preferredTime) updateData.preferredTime = validatedData.preferredTime
     if (validatedData.serviceLocation) updateData.serviceLocation = validatedData.serviceLocation
     if (validatedData.fullAddress) updateData.fullAddress = validatedData.fullAddress

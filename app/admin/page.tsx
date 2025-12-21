@@ -57,7 +57,8 @@ interface TherapyBooking {
   serviceType: string
   appointmentType: string
   preferredDate: string
-  preferredTime: string
+  preferredTime: string | null
+  endDate: string | null
   serviceLocation: string
   fullAddress: string
   firstName: string
@@ -197,6 +198,7 @@ export default function AdminDashboard() {
     setEditFormData({
       ...booking,
       preferredDate: booking.preferredDate ? format(new Date(booking.preferredDate), "yyyy-MM-dd") : "",
+      endDate: booking.endDate ? format(new Date(booking.endDate), "yyyy-MM-dd") : null,
       dateOfBirth: booking.dateOfBirth ? format(new Date(booking.dateOfBirth), "yyyy-MM-dd") : null,
     })
   }
@@ -285,7 +287,7 @@ export default function AdminDashboard() {
       "Service Type",
       "Appointment Type",
       "Preferred Date",
-      "Preferred Time",
+      "End Date",
       "Address",
       "Status",
       "Created At",
@@ -298,7 +300,7 @@ export default function AdminDashboard() {
       booking.serviceType,
       booking.appointmentType,
       format(new Date(booking.preferredDate), "yyyy-MM-dd"),
-      booking.preferredTime,
+      booking.endDate ? format(new Date(booking.endDate), "yyyy-MM-dd") : "",
       booking.fullAddress,
       booking.status,
       format(new Date(booking.createdAt), "yyyy-MM-dd HH:mm:ss"),
@@ -496,7 +498,10 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {format(new Date(booking.preferredDate), "MMM dd, yyyy")} at {booking.preferredTime}
+                            {booking.endDate 
+                              ? `${format(new Date(booking.preferredDate), "MMM dd, yyyy")} - ${format(new Date(booking.endDate), "MMM dd, yyyy")}`
+                              : format(new Date(booking.preferredDate), "MMM dd, yyyy")
+                            }
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -620,10 +625,12 @@ export default function AdminDashboard() {
                       <p className="capitalize">{selectedBooking.appointmentType.replace("-", " ")}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Preferred Date & Time</p>
+                      <p className="text-sm text-muted-foreground">Date Range</p>
                       <p>
-                        {format(new Date(selectedBooking.preferredDate), "MMM dd, yyyy")} at{" "}
-                        {selectedBooking.preferredTime}
+                        {selectedBooking.endDate 
+                          ? `${format(new Date(selectedBooking.preferredDate), "MMM dd, yyyy")} - ${format(new Date(selectedBooking.endDate), "MMM dd, yyyy")}`
+                          : format(new Date(selectedBooking.preferredDate), "MMM dd, yyyy")
+                        }
                       </p>
                     </div>
                     <div>
@@ -766,7 +773,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Preferred Date</Label>
+                    <Label>Start Date</Label>
                     <Input
                       type="date"
                       value={editFormData.preferredDate || ""}
@@ -774,10 +781,12 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <Label>Preferred Time</Label>
+                    <Label>End Date</Label>
                     <Input
-                      value={editFormData.preferredTime || ""}
-                      onChange={(e) => setEditFormData({ ...editFormData, preferredTime: e.target.value })}
+                      type="date"
+                      value={editFormData.endDate || ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                      min={editFormData.preferredDate || undefined}
                     />
                   </div>
                 </div>

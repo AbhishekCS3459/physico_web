@@ -58,11 +58,11 @@ export default function ServicesPage() {
           {services.map((service, index) => {
             const Icon = service.icon
             return (
-              <Card key={index} className="h-full hover:shadow-lg transition-shadow">
+              <Card key={index} className="h-full hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 hover:scale-[1.02] group">
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Icon className="h-6 w-6 text-primary" />
+                    <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0 group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-300">
+                      <Icon className="h-6 w-6 text-primary group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <CardTitle className="font-serif text-xl sm:text-xl text-balance">{service.title}</CardTitle>
@@ -84,7 +84,9 @@ export default function ServicesPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button className="w-full py-2.5">Book This Service</Button>
+                  <Button className="w-full py-2.5 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+                    Book This Service
+                  </Button>
                 </CardContent>
               </Card>
             )
@@ -92,7 +94,7 @@ export default function ServicesPage() {
         </div>
 
         {/* Additional Info */}
-        <div className="bg-muted/50 rounded-lg p-6 sm:p-8 text-center">
+        <div className="bg-gradient-to-br from-muted/50 via-background to-primary/5 rounded-xl p-6 sm:p-8 text-center border border-primary/10 shadow-lg">
           <h2 className="font-serif text-xl sm:text-2xl font-bold mb-4 text-balance">Why Choose Mobile Care?</h2>
           <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-6 sm:mt-8">
             <div className="flex flex-col items-center text-center">

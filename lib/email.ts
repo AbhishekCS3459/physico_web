@@ -8,7 +8,8 @@ interface BookingEmailData {
   serviceType: string
   appointmentType: string
   preferredDate: string
-  preferredTime: string
+  preferredTime?: string | null
+  endDate?: string | null
   serviceLocation: string
   fullAddress: string
   condition?: string | null
@@ -71,8 +72,10 @@ export const sendBookingConfirmationEmail = async (bookingData: BookingEmailData
                 <div class="info-label">Appointment Details</div>
                 <p><strong>Service:</strong> ${bookingData.serviceType.replace('-', ' ')}</p>
                 <p><strong>Type:</strong> ${bookingData.appointmentType.replace('-', ' ')}</p>
-                <p><strong>Date:</strong> ${new Date(bookingData.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                <p><strong>Time:</strong> ${bookingData.preferredTime}</p>
+                <p><strong>Date Range:</strong> ${bookingData.endDate 
+                  ? `${new Date(bookingData.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - ${new Date(bookingData.endDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
+                  : new Date(bookingData.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                }</p>
                 <p><strong>Location:</strong> ${bookingData.serviceLocation.replace('-', ' ')}</p>
                 <p><strong>Address:</strong> ${bookingData.fullAddress}</p>
               </div>
@@ -140,8 +143,10 @@ export const sendBookingConfirmationEmail = async (bookingData: BookingEmailData
                 <div class="info-label">Appointment Details</div>
                 <div class="info-row"><strong>Service Type:</strong> ${bookingData.serviceType.replace('-', ' ')}</div>
                 <div class="info-row"><strong>Appointment Type:</strong> ${bookingData.appointmentType.replace('-', ' ')}</div>
-                <div class="info-row"><strong>Preferred Date:</strong> ${new Date(bookingData.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                <div class="info-row"><strong>Preferred Time:</strong> ${bookingData.preferredTime}</div>
+                <div class="info-row"><strong>Date Range:</strong> ${bookingData.endDate 
+                  ? `${new Date(bookingData.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - ${new Date(bookingData.endDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
+                  : new Date(bookingData.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                }</div>
                 <div class="info-row"><strong>Service Location:</strong> ${bookingData.serviceLocation.replace('-', ' ')}</div>
                 <div class="info-row"><strong>Full Address:</strong> ${bookingData.fullAddress}</div>
               </div>

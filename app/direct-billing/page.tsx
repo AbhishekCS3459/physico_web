@@ -38,34 +38,34 @@ export default function DirectBillingPage() {
           </div>
 
           {/* How It Works */}
-          <Card className="mb-16">
+          <Card className="mb-16 border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl">How Direct Billing Works</CardTitle>
+              <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">How Direct Billing Works</CardTitle>
               <CardDescription>Simple, hassle-free process</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-primary font-bold">1</span>
+                <div className="text-center p-4 rounded-lg border border-primary/10 hover:border-primary/20 hover:bg-gradient-to-br hover:from-primary/5 hover:to-accent/5 transition-all duration-300 hover:scale-105 group">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-300">
+                    <span className="text-primary font-bold text-lg">1</span>
                   </div>
                   <h3 className="font-semibold mb-2">We Submit Claims</h3>
                   <p className="text-sm text-muted-foreground">
                     We submit the claim directly to your insurance provider on your behalf
                   </p>
                 </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-primary font-bold">2</span>
+                <div className="text-center p-4 rounded-lg border border-primary/10 hover:border-primary/20 hover:bg-gradient-to-br hover:from-primary/5 hover:to-accent/5 transition-all duration-300 hover:scale-105 group">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-300">
+                    <span className="text-primary font-bold text-lg">2</span>
                   </div>
                   <h3 className="font-semibold mb-2">Full Coverage</h3>
                   <p className="text-sm text-muted-foreground">
                     If your plan covers the full amount, there's no out-of-pocket cost
                   </p>
                 </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-primary font-bold">3</span>
+                <div className="text-center p-4 rounded-lg border border-primary/10 hover:border-primary/20 hover:bg-gradient-to-br hover:from-primary/5 hover:to-accent/5 transition-all duration-300 hover:scale-105 group">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-300">
+                    <span className="text-primary font-bold text-lg">3</span>
                   </div>
                   <h3 className="font-semibold mb-2">Pay Difference</h3>
                   <p className="text-sm text-muted-foreground">

@@ -36,14 +36,14 @@ export default function ContactPage() {
             {/* Contact Information */}
             <div className="space-y-8">
               {/* Contact Details */}
-              <Card>
+              <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Contact Information</CardTitle>
+                  <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Contact Information</CardTitle>
                   <CardDescription>Get in touch with us directly</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center flex-shrink-0 hover:from-primary/20 hover:to-accent/20 transition-all duration-300">
                       <MapPin className="h-6 w-6 text-primary" />
                     </div>
                     <div>
@@ -133,11 +133,11 @@ export default function ContactPage() {
                   <CardDescription>Get started right away</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button size="lg" className="w-full text-lg">
+                  <Button size="lg" className="w-full text-lg bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
                     <Calendar className="h-5 w-5 mr-2" />
                     Book Online Appointment
                   </Button>
-                  <Button variant="outline" size="lg" className="w-full text-lg bg-transparent">
+                  <Button variant="outline" size="lg" className="w-full text-lg bg-transparent border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105">
                     <Phone className="h-5 w-5 mr-2" />
                     Call (587) 586-5566
                   </Button>
@@ -145,74 +145,6 @@ export default function ContactPage() {
               </Card>
             </div>
 
-            {/* Contact Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Send Us a Message</CardTitle>
-                <CardDescription>We'll get back to you within 24 hours</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="contact-first-name" className="text-base font-medium">
-                        First Name
-                      </Label>
-                      <Input id="contact-first-name" className="mt-2" />
-                    </div>
-                    <div>
-                      <Label htmlFor="contact-last-name" className="text-base font-medium">
-                        Last Name
-                      </Label>
-                      <Input id="contact-last-name" className="mt-2" />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="contact-phone" className="text-base font-medium">
-                        Phone Number
-                      </Label>
-                      <Input id="contact-phone" type="tel" className="mt-2" />
-                    </div>
-                    <div>
-                      <Label htmlFor="contact-email" className="text-base font-medium">
-                        Email Address
-                      </Label>
-                      <Input id="contact-email" type="email" className="mt-2" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="contact-service" className="text-base font-medium">
-                      Service Interested In
-                    </Label>
-                    <Input
-                      id="contact-service"
-                      placeholder="e.g., Physiotherapy, Occupational Therapy"
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="contact-message" className="text-base font-medium">
-                      Message
-                    </Label>
-                    <Textarea
-                      id="contact-message"
-                      placeholder="Tell us about your needs, questions, or how we can help you..."
-                      className="mt-2"
-                      rows={5}
-                    />
-                  </div>
-
-                  <Button size="lg" className="w-full text-lg">
-                    <Send className="h-5 w-5 mr-2" />
-                    Send Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Emergency Notice */}

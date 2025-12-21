@@ -69,9 +69,9 @@ export default function TeamPage() {
           </div>
 
           {/* What Sets Us Apart */}
-          <Card className="mb-16">
+          <Card className="mb-16 border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
+              <CardTitle className="text-2xl flex items-center gap-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 <Star className="h-6 w-6 text-primary" />
                 What Sets Us Apart
               </CardTitle>
@@ -80,8 +80,8 @@ export default function TeamPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {teamQualities.map((quality, index) => (
-                  <div key={index} className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
-                    <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div key={index} className="flex items-start gap-3 p-4 bg-gradient-to-br from-muted/50 to-background rounded-lg border border-primary/10 hover:border-primary/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] group">
+                    <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
                     <span className="text-sm font-medium">{quality}</span>
                   </div>
                 ))}

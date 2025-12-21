@@ -8,8 +8,8 @@ const bookingSchema = z.object({
   // Service Information
   serviceType: z.string().min(1),
   appointmentType: z.string().min(1),
-  preferredDate: z.string(),
-  preferredTime: z.string().min(1),
+  startDate: z.string(),
+  endDate: z.string(),
   serviceLocation: z.string().min(1),
   fullAddress: z.string().min(1),
   
@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
     const validatedData = bookingSchema.parse(body)
 
     // Convert date strings to DateTime
-    const preferredDate = new Date(validatedData.preferredDate)
+    const preferredDate = new Date(validatedData.startDate)
+    const endDate = new Date(validatedData.endDate)
     const dateOfBirth = validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null
 
     const booking = await prisma.therapyBooking.create({
@@ -50,7 +51,8 @@ export async function POST(request: NextRequest) {
         serviceType: validatedData.serviceType,
         appointmentType: validatedData.appointmentType,
         preferredDate,
-        preferredTime: validatedData.preferredTime,
+        endDate,
+        preferredTime: null,
         serviceLocation: validatedData.serviceLocation,
         fullAddress: validatedData.fullAddress,
         firstName: validatedData.firstName,
@@ -79,7 +81,8 @@ export async function POST(request: NextRequest) {
       serviceType: booking.serviceType,
       appointmentType: booking.appointmentType,
       preferredDate: booking.preferredDate.toISOString(),
-      preferredTime: booking.preferredTime,
+      preferredTime: booking.preferredTime || "",
+      endDate: booking.endDate ? booking.endDate.toISOString() : null,
       serviceLocation: booking.serviceLocation,
       fullAddress: booking.fullAddress,
       condition: booking.condition,

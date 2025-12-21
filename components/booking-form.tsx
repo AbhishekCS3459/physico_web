@@ -19,8 +19,8 @@ import toast from "react-hot-toast"
 interface BookingFormData {
   serviceType: string
   appointmentType: string
-  preferredDate: string
-  preferredTime: string
+  startDate: string
+  endDate: string
   serviceLocation: string
   fullAddress: string
   firstName: string
@@ -48,8 +48,8 @@ export function BookingForm() {
   const [formData, setFormData] = useState<Partial<BookingFormData>>({
     serviceType: "",
     appointmentType: "",
-    preferredDate: "",
-    preferredTime: "",
+    startDate: "",
+    endDate: "",
     serviceLocation: "",
     fullAddress: "",
     firstName: "",
@@ -102,21 +102,6 @@ export function BookingForm() {
     },
   ]
 
-  const timeSlots = [
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-  ]
-
   const insuranceProviders = [
     "Blue Cross",
     "Manulife",
@@ -134,7 +119,7 @@ export function BookingForm() {
       toast.error("Please select a service type")
       return
     }
-    if (currentStep === 2 && (!formData.preferredDate || !formData.preferredTime || !formData.fullAddress)) {
+    if (currentStep === 2 && (!formData.startDate || !formData.endDate || !formData.fullAddress)) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -163,8 +148,8 @@ export function BookingForm() {
         body: JSON.stringify({
           serviceType: formData.serviceType,
           appointmentType: formData.appointmentType,
-          preferredDate: formData.preferredDate,
-          preferredTime: formData.preferredTime,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
           serviceLocation: formData.serviceLocation,
           fullAddress: formData.fullAddress,
           firstName: formData.firstName,
@@ -191,8 +176,8 @@ export function BookingForm() {
         setFormData({
           serviceType: "",
           appointmentType: "",
-          preferredDate: "",
-          preferredTime: "",
+          startDate: "",
+          endDate: "",
           serviceLocation: "",
           fullAddress: "",
           firstName: "",
@@ -455,54 +440,69 @@ export function BookingForm() {
             <div className="space-y-6 sm:space-y-8">
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <Label htmlFor="date" className="text-base sm:text-lg font-medium">
-                    Preferred Date
+                  <Label htmlFor="start-date" className="text-base sm:text-lg font-medium">
+                    Start Date
                   </Label>
                   <div className="relative mt-2 sm:mt-3">
                     <CalendarIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 z-10 pointer-events-none" />
                     <Input
-                      id="date"
+                      id="start-date"
                       type="date"
-                      value={formData.preferredDate || ""}
+                      value={formData.startDate || ""}
                       onChange={(e) => {
-                        setFormData({ ...formData, preferredDate: e.target.value })
+                        setFormData({ ...formData, startDate: e.target.value })
                       }}
                       min={new Date().toISOString().split('T')[0]}
                       className={cn(
                         "pl-12 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-background/50 backdrop-blur-sm",
-                        formData.preferredDate && "border-primary/50 bg-primary/5"
+                        formData.startDate && "border-primary/50 bg-primary/5"
                       )}
                       disabled={isSubmitting}
                       required
                     />
                   </div>
-                  {formData.preferredDate && (
+                  {formData.startDate && (
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Selected: {format(new Date(formData.preferredDate), "PPP")}
+                      Selected: {format(new Date(formData.startDate), "PPP")}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="time" className="text-base sm:text-lg font-medium">
-                    Preferred Time
+                  <Label htmlFor="end-date" className="text-base sm:text-lg font-medium">
+                    End Date
                   </Label>
-                  <Select 
-                    value={formData.preferredTime || ""}
-                    onValueChange={(value) => setFormData({ ...formData, preferredTime: value })}
-                  >
-                    <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time} className="text-base py-3">
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="relative mt-2 sm:mt-3">
+                    <CalendarIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 z-10 pointer-events-none" />
+                    <Input
+                      id="end-date"
+                      type="date"
+                      value={formData.endDate || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, endDate: e.target.value })
+                      }}
+                      min={formData.startDate || new Date().toISOString().split('T')[0]}
+                      className={cn(
+                        "pl-12 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-background/50 backdrop-blur-sm",
+                        formData.endDate && "border-primary/50 bg-primary/5"
+                      )}
+                      disabled={isSubmitting || !formData.startDate}
+                      required
+                    />
+                  </div>
+                  {formData.endDate && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Selected: {format(new Date(formData.endDate), "PPP")}
+                    </p>
+                  )}
                 </div>
               </div>
+              {formData.startDate && formData.endDate && (
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <p className="text-sm font-medium text-primary">
+                    Date Range: {format(new Date(formData.startDate), "MMM dd, yyyy")} - {format(new Date(formData.endDate), "MMM dd, yyyy")}
+                  </p>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="location" className="text-base sm:text-lg font-medium">
