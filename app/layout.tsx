@@ -25,6 +25,15 @@ export const metadata: Metadata = {
   keywords:
     "mobile physiotherapy Calgary, home physiotherapy, occupational therapy, massage therapy, direct billing, seniors rehab",
   generator: "v0.app",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+    ],
+    apple: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+  },
 }
 
 export default function RootLayout({

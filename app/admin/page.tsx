@@ -93,7 +93,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     // Check authentication
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", {
+      credentials: 'include',
+    })
       .then((res) => res.json())
       .then((data) => {
         if (!data.authenticated) {
@@ -111,6 +113,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
+        credentials: 'include',
       })
       const data = await response.json()
       if (data.success) {

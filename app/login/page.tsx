@@ -18,12 +18,31 @@ export default function LoginPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          credentials: 'include',
+        })
+        const data = await response.json()
+        
+        if (data.authenticated) {
+          router.push("/admin")
+          router.refresh()
+        }
+      } catch (error) {
+        console.error("Auth check error:", error)
+      }
+    }
+    
+    checkAuth()
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
     }
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,6 +59,7 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       })
 

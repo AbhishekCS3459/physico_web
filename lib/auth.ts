@@ -41,6 +41,7 @@ export async function createSession(adminId: string, email: string, name?: strin
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
+    // Ensure cookie persists across browser sessions
   })
 }
 
