@@ -319,7 +319,7 @@ export function EnhancedFooter() {
           transition={{ duration: 0.6 }}
         >
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
-            <p className="text-xs sm:text-sm text-muted-foreground">&copy; 2024 Physio Rehab at Home. All rights reserved.</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">&copy; 2024 Physio Rehab. All rights reserved.</p>
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <Link href="/terms" className="hover:text-primary transition-colors">
                 Terms of Service

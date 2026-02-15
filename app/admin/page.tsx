@@ -46,11 +46,15 @@ import {
     Trash2,
     User,
     X,
+    ClipboardList,
+    Plus,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
+import { InitialAssessmentForm } from "@/components/assessment-forms/initial-assessment-form"
+import { FollowupAssessmentForm } from "@/components/assessment-forms/followup-assessment-form"
 
 interface TherapyBooking {
   id: string
@@ -91,6 +95,11 @@ export default function AdminDashboard() {
   const [editFormData, setEditFormData] = useState<Partial<TherapyBooking>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [adminInfo, setAdminInfo] = useState<{ email: string; name?: string } | null>(null)
+  const [showAssessmentDialog, setShowAssessmentDialog] = useState(false)
+  const [assessmentType, setAssessmentType] = useState<"initial" | "followup" | null>(null)
+  const [assessments, setAssessments] = useState<any[]>([])
+  const [viewingAssessment, setViewingAssessment] = useState<any | null>(null)
+  const [editingAssessment, setEditingAssessment] = useState<any | null>(null)
 
   useEffect(() => {
     // Check authentication
@@ -151,6 +160,24 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchBookings()
   }, [statusFilter])
+
+  const fetchAssessments = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/assessments?bookingId=${bookingId}`)
+      const data = await response.json()
+      if (data.success) {
+        setAssessments(data.data)
+      }
+    } catch (error) {
+      console.error("Error fetching assessments:", error)
+    }
+  }
+
+  useEffect(() => {
+    if (selectedBooking) {
+      fetchAssessments(selectedBooking.id)
+    }
+  }, [selectedBooking])
 
   const filteredBookings = bookings.filter((booking) => {
     const searchLower = searchTerm.toLowerCase()
@@ -701,6 +728,113 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
+                {/* Assessments Section */}
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <ClipboardList className="h-5 w-5" />
+                      Assessments ({assessments.length})
+                    </h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setAssessmentType("initial")
+                          setEditingAssessment(null)
+                          setShowAssessmentDialog(true)
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Initial Assessment
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setAssessmentType("followup")
+                          setEditingAssessment(null)
+                          setShowAssessmentDialog(true)
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Follow-up Assessment
+                      </Button>
+                    </div>
+                  </div>
+                  {assessments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No assessments yet. Create an initial or follow-up assessment.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {assessments.map((assessment) => (
+                        <Card key={assessment.id} className="border-2">
+                          <CardContent className="pt-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline">
+                                    {assessment.assessmentType === "initial"
+                                      ? "Initial"
+                                      : "Follow-up"}
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
+                                    {format(
+                                      new Date(assessment.createdAt),
+                                      "MMM dd, yyyy"
+                                    )}
+                                  </span>
+                                </div>
+                                {assessment.clinicalImpression && (
+                                  <p className="text-sm line-clamp-2">
+                                    {assessment.clinicalImpression.substring(0, 100)}
+                                    {assessment.clinicalImpression.length > 100
+                                      ? "..."
+                                      : ""}
+                                  </p>
+                                )}
+                                {assessment.plan && !assessment.clinicalImpression && (
+                                  <p className="text-sm line-clamp-2">
+                                    {assessment.plan.substring(0, 100)}
+                                    {assessment.plan.length > 100 ? "..." : ""}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setViewingAssessment(assessment)
+                                  }}
+                                >
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  View
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingAssessment(assessment)
+                                    setAssessmentType(
+                                      assessment.assessmentType as "initial" | "followup"
+                                    )
+                                    setShowAssessmentDialog(true)
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Timestamps */}
                 <div className="pt-4 border-t">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
@@ -721,6 +855,210 @@ export default function AdminDashboard() {
                   setSelectedBooking(null)
                   handleEdit(selectedBooking)
                 }}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Assessment Dialog */}
+        {showAssessmentDialog && selectedBooking && assessmentType && (
+          <Dialog
+            open={showAssessmentDialog}
+            onOpenChange={(open) => {
+              if (!open) {
+                setShowAssessmentDialog(false)
+                setAssessmentType(null)
+                setEditingAssessment(null)
+              }
+            }}
+          >
+            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingAssessment
+                    ? `Edit ${assessmentType === "initial" ? "Initial" : "Follow-up"} Assessment`
+                    : `Create ${assessmentType === "initial" ? "Initial" : "Follow-up"} Assessment`}
+                </DialogTitle>
+                <DialogDescription>
+                  Patient: {selectedBooking.firstName} {selectedBooking.lastName}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4">
+                {assessmentType === "initial" ? (
+                  <InitialAssessmentForm
+                    bookingId={selectedBooking.id}
+                    initialData={editingAssessment}
+                    onSuccess={() => {
+                      setShowAssessmentDialog(false)
+                      setAssessmentType(null)
+                      setEditingAssessment(null)
+                      if (selectedBooking) {
+                        fetchAssessments(selectedBooking.id)
+                      }
+                    }}
+                    onCancel={() => {
+                      setShowAssessmentDialog(false)
+                      setAssessmentType(null)
+                      setEditingAssessment(null)
+                    }}
+                  />
+                ) : (
+                  <FollowupAssessmentForm
+                    bookingId={selectedBooking.id}
+                    initialData={editingAssessment}
+                    onSuccess={() => {
+                      setShowAssessmentDialog(false)
+                      setAssessmentType(null)
+                      setEditingAssessment(null)
+                      if (selectedBooking) {
+                        fetchAssessments(selectedBooking.id)
+                      }
+                    }}
+                    onCancel={() => {
+                      setShowAssessmentDialog(false)
+                      setAssessmentType(null)
+                      setEditingAssessment(null)
+                    }}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* View Assessment Dialog */}
+        {viewingAssessment && (
+          <Dialog
+            open={!!viewingAssessment}
+            onOpenChange={() => setViewingAssessment(null)}
+          >
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {viewingAssessment.assessmentType === "initial"
+                    ? "Initial Assessment"
+                    : "Follow-up Assessment"}
+                </DialogTitle>
+                <DialogDescription>
+                  Created: {format(new Date(viewingAssessment.createdAt), "MMM dd, yyyy HH:mm:ss")}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 space-y-4">
+                {viewingAssessment.assessmentType === "initial" ? (
+                  <div className="space-y-4">
+                    {viewingAssessment.reasonForReferral && (
+                      <div>
+                        <Label className="font-semibold">Reason for Referral</Label>
+                        <p className="mt-1">{viewingAssessment.reasonForReferral}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.hpi && (
+                      <div>
+                        <Label className="font-semibold">HPI</Label>
+                        <p className="mt-1">{viewingAssessment.hpi}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.painDescription && (
+                      <div>
+                        <Label className="font-semibold">Pain Description</Label>
+                        <p className="mt-1">{viewingAssessment.painDescription}</p>
+                      </div>
+                    )}
+                    {(viewingAssessment.painLevel || viewingAssessment.painType) && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {viewingAssessment.painLevel && (
+                          <div>
+                            <Label className="font-semibold">Pain Level</Label>
+                            <p className="mt-1">{viewingAssessment.painLevel}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.painType && (
+                          <div>
+                            <Label className="font-semibold">Pain Type</Label>
+                            <p className="mt-1">{viewingAssessment.painType}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {viewingAssessment.clinicalImpression && (
+                      <div>
+                        <Label className="font-semibold">Clinical Impression</Label>
+                        <p className="mt-1">{viewingAssessment.clinicalImpression}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.goals && (
+                      <div>
+                        <Label className="font-semibold">Goals</Label>
+                        <p className="mt-1">{viewingAssessment.goals}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.treatment && (
+                      <div>
+                        <Label className="font-semibold">Treatment</Label>
+                        <p className="mt-1">{viewingAssessment.treatment}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.plan && (
+                      <div>
+                        <Label className="font-semibold">Plan</Label>
+                        <p className="mt-1">{viewingAssessment.plan}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {viewingAssessment.subjectivePain && (
+                      <div>
+                        <Label className="font-semibold">Subjective - Pain</Label>
+                        <p className="mt-1">{viewingAssessment.subjectivePain}</p>
+                      </div>
+                    )}
+                    {(viewingAssessment.romFollowupFlexion ||
+                      viewingAssessment.romFollowupAbduction) && (
+                      <div>
+                        <Label className="font-semibold">Objective - ROM</Label>
+                        <div className="grid grid-cols-2 gap-4 mt-1">
+                          {viewingAssessment.romFollowupFlexion && (
+                            <p>Flexion: {viewingAssessment.romFollowupFlexion}</p>
+                          )}
+                          {viewingAssessment.romFollowupAbduction && (
+                            <p>Abduction: {viewingAssessment.romFollowupAbduction}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {viewingAssessment.assessmentROM && (
+                      <div>
+                        <Label className="font-semibold">Assessment - ROM</Label>
+                        <p className="mt-1">{viewingAssessment.assessmentROM}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.plan && (
+                      <div>
+                        <Label className="font-semibold">Plan</Label>
+                        <p className="mt-1">{viewingAssessment.plan}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setViewingAssessment(null)}>
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingAssessment(viewingAssessment)
+                    setAssessmentType(
+                      viewingAssessment.assessmentType as "initial" | "followup"
+                    )
+                    setViewingAssessment(null)
+                    setShowAssessmentDialog(true)
+                  }}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from "lucide-react"
 import { motion } from "motion/react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
@@ -235,9 +236,17 @@ export default function LoginPage() {
                 transition={{ delay: 0.5 }}
                 className="space-y-2"
               >
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </Label>
+                  <Link
+                    href="/admin/forgot-password"
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 transition-colors group-focus-within:text-primary z-10" />
                   <Input

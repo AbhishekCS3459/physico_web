@@ -20,6 +20,8 @@ model User {
   lastName  String?
   phoneNumber String?
   role      String   @default("user") // user, admin
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -27,6 +29,103 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([resetPasswordToken])
+}
+
+model Assessment {
+  id                    String   @id @default(cuid())
+  
+  // Assessment Type
+  assessmentType        String   // "initial" or "followup"
+  
+  // Link to Booking
+  bookingId             String
+  booking               TherapyBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  // Initial Assessment Fields
+  reasonForReferral     String?
+  hpi                   String?
+  painDescription       String?
+  painLevel             String?  // "___/10"
+  painType              String?  // "Intermittent" or "Constant"
+  whatMakesWorse        String?
+  whatHelps             String?
+  pmhx                  String?  // Past Medical History
+  associatedImaging     String?
+  baselineActivity      String?
+  observation           String?
+  swellingCirculation   String?
+  
+  // ROM - Initial
+  romInitial            String?  // Flexion: ___, Abduction: ___
+  
+  // ROM - Follow-up
+  romFollowupFlexion    String?  // Flexion with pain
+  romFollowupAbduction  String?  // Abduction within functional limits
+  
+  // Strength - Initial
+  strengthInitial       String?  // Flex: ___/5, Abd: ___/5
+  
+  // Strength - Follow-up
+  strengthFollowupFlexion   String?  // Flexion: ___/5
+  strengthFollowupAbduction String?  // Abduction: ___/5
+  
+  // Palpation
+  palpation             String?
+  
+  // Neuro
+  neuro                 String?
+  
+  // Special Tests / Outcome Measures
+  specialTests          String?
+  
+  // Clinical Impression
+  clinicalImpression    String?
+  goals                 String?
+  
+  // Subjective (Follow-up)
+  subjectivePain        String?
+  subjectiveActivity    String?
+  subjectiveExercises   String?
+  subjectiveModalities  String?
+  subjectiveMedications String?
+  
+  // Objective (Follow-up)
+  objectiveFindings     String?
+  
+  // Assessment (Follow-up)
+  assessmentModalities  String?
+  assessmentROM         String?
+  assessmentStrengthening String?
+  assessmentHEP         String?
+  assessmentEducation   String?
+  assessmentRestrictions String?
+  assessmentHandouts    String?
+  
+  // Treatment / Plan
+  treatment             String?
+  treatmentModality     String?
+  treatmentROM          String?
+  treatmentStrengthening String?
+  treatmentStretching   String?
+  treatmentHEP          String?
+  treatmentEducation    String?
+  treatmentRestrictions String?
+  treatmentHandouts     String?
+  
+  // Plan (Both types)
+  plan                  String?
+  
+  // Admin/User who created the assessment
+  createdBy             String?
+  
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([assessmentType])
+  @@index([createdAt])
 }
 
 model TherapyBooking {
@@ -70,6 +169,9 @@ model TherapyBooking {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  // Assessments relationship
+  assessments           Assessment[]
+
   @@index([email])
   @@index([status])
   @@index([createdAt])
@@ -81,8 +183,11 @@ model Admin {
   email     String   @unique
   password  String   // Hashed password
   name      String?
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([email])
+  @@index([resetPasswordToken])
 }

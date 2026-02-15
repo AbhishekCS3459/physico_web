@@ -208,3 +208,138 @@ export const sendBookingConfirmationEmail = async (bookingData: BookingEmailData
   }
 }
 
+export const sendPasswordResetEmail = async (email: string, resetToken: string, firstName?: string) => {
+  try {
+    const transporter = createTransporter()
+    
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password/${resetToken}`
+    
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .button:hover { opacity: 0.9; }
+            .info-section { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #667eea; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+            .warning { color: #e74c3c; font-size: 12px; margin-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Password Reset Request</h1>
+              <p>We received a request to reset your password</p>
+            </div>
+            <div class="content">
+              <p>Dear ${firstName || 'User'},</p>
+              <p>You recently requested to reset your password for your Physio Rehab account. Click the button below to reset it:</p>
+              
+              <div style="text-align: center;">
+                <a href="${resetUrl}" class="button">Reset Password</a>
+              </div>
+              
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #667eea;">${resetUrl}</p>
+              
+              <div class="warning">
+                <p><strong>Important:</strong> This link will expire in 1 hour for security reasons.</p>
+                <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
+              </div>
+              
+              <div class="footer">
+                <p>Best regards,<br>Physio Rehab Team</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject: 'Password Reset Request - Physio Rehab',
+      html: emailHtml,
+    })
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error sending password reset email:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+export const sendAdminPasswordResetEmail = async (email: string, resetToken: string, name?: string) => {
+  try {
+    const transporter = createTransporter()
+    
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/reset-password/${resetToken}`
+    
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .button:hover { opacity: 0.9; }
+            .info-section { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #667eea; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+            .warning { color: #e74c3c; font-size: 12px; margin-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Admin Password Reset Request</h1>
+              <p>We received a request to reset your admin password</p>
+            </div>
+            <div class="content">
+              <p>Dear ${name || 'Admin'},</p>
+              <p>You recently requested to reset your password for your Physio Rehab admin account. Click the button below to reset it:</p>
+              
+              <div style="text-align: center;">
+                <a href="${resetUrl}" class="button">Reset Password</a>
+              </div>
+              
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #667eea;">${resetUrl}</p>
+              
+              <div class="warning">
+                <p><strong>Important:</strong> This link will expire in 1 hour for security reasons.</p>
+                <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
+              </div>
+              
+              <div class="footer">
+                <p>Best regards,<br>Physio Rehab Team</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject: 'Admin Password Reset Request - Physio Rehab',
+      html: emailHtml,
+    })
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error sending admin password reset email:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}

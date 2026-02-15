@@ -24,7 +24,7 @@ export default function ContactPage() {
               Get In Touch
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-              Contact <span className="text-primary">Physio Rehab at Home</span>
+              Contact <span className="text-primary">Physio Rehab</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
               Ready to start your journey to better health? We're here to answer your questions and schedule your first

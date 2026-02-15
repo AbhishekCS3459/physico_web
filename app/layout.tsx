@@ -19,7 +19,7 @@ const sourceSans = Source_Sans_3({
 })
 
 export const metadata: Metadata = {
-  title: "Physio Rehab at Home | Mobile Physiotherapy Calgary",
+  title: "Physio Rehab | Mobile Physiotherapy Calgary",
   description:
     "Professional mobile physiotherapy, occupational therapy, and massage services in Calgary. Direct billing available. Book your in-home rehab session today.",
   keywords:
