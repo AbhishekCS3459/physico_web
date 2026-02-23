@@ -131,17 +131,21 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const skip = (page - 1) * limit
 
-    // Check if admin is logged in (admins can see all bookings)
-    const adminSession = await getSession()
-    
-    // Check if user is logged in
-    const userSession = await getUserSession()
-    
+    // Roles: 1) admin/super_admin – full admin privileges; 2) staff – can see all bookings; 3) patient – only their bookings.
+    const adminSession = await getSession()   // staff or super_admin
+    const userSession = await getUserSession() // patient (User)
+
+    if (!userSession && !adminSession) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const where: any = status ? { status } : {}
-    
-    // If user is logged in (not admin), filter by userId
-    // Admins can see all bookings
-    if (userSession && !adminSession) {
+
+    // Patient: only their bookings. Staff/super_admin: all bookings (no filter).
+    if (userSession) {
       where.userId = userSession.id
     }
 

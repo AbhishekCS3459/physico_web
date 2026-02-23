@@ -55,6 +55,9 @@ const updateAssessmentSchema = z.object({
   treatmentEducation: z.string().optional().nullable(),
   treatmentRestrictions: z.string().optional().nullable(),
   treatmentHandouts: z.string().optional().nullable(),
+  planAxStrength: z.string().optional().nullable(),
+  planAxROM: z.string().optional().nullable(),
+  planExerciseProgression: z.string().optional().nullable(),
 })
 
 export async function GET(

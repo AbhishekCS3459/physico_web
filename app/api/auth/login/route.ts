@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create session
-    await createSession(admin.id, admin.email, admin.name || undefined)
+    const role = (admin.role === 'super_admin' ? 'super_admin' : 'staff') as import('@/lib/auth').AdminRole
+    await createSession(admin.id, admin.email, admin.name || undefined, role)
 
     return NextResponse.json({
       success: true,
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
         id: admin.id,
         email: admin.email,
         name: admin.name,
+        role,
       },
     })
   } catch (error) {

@@ -2,11 +2,13 @@ import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 import { prisma } from './prisma'
 
+export type AdminRole = 'staff' | 'super_admin'
+
 export interface AdminSession {
   id: string
   email: string
   name?: string
-  role: 'admin'
+  role: AdminRole
 }
 
 export interface UserSession {
@@ -25,13 +27,13 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword)
 }
 
-export async function createSession(adminId: string, email: string, name?: string): Promise<void> {
+export async function createSession(adminId: string, email: string, name?: string, role?: AdminRole): Promise<void> {
   const cookieStore = await cookies()
   const sessionData: AdminSession = {
     id: adminId,
     email,
     name,
-    role: 'admin',
+    role: role ?? 'staff',
   }
   
   // Set session cookie (expires in 7 days)
@@ -54,18 +56,25 @@ export async function getSession(): Promise<AdminSession | null> {
       return null
     }
 
-    const session = JSON.parse(sessionCookie.value) as AdminSession
+    const parsed = JSON.parse(sessionCookie.value) as { id: string; email: string; name?: string; role?: AdminRole }
     
-    // Verify admin still exists
+    // Verify admin still exists and get current role from DB
     const admin = await prisma.admin.findUnique({
-      where: { id: session.id },
+      where: { id: parsed.id },
+      select: { id: true, email: true, name: true, role: true },
     })
 
     if (!admin) {
       return null
     }
 
-    return session
+    const role = (admin.role === 'super_admin' ? 'super_admin' : 'staff') as AdminRole
+    return {
+      id: admin.id,
+      email: admin.email,
+      name: admin.name ?? undefined,
+      role,
+    }
   } catch {
     return null
   }
@@ -83,6 +92,15 @@ export async function requireAuth(): Promise<AdminSession> {
     throw new Error('Unauthorized')
   }
 
+  return session
+}
+
+/** Use for routes that only super_admin may access (e.g. dashboard, edit/delete bookings). */
+export async function requireSuperAdmin(): Promise<AdminSession> {
+  const session = await requireAuth()
+  if (session.role !== 'super_admin') {
+    throw new Error('Forbidden')
+  }
   return session
 }
 

@@ -25,22 +25,23 @@ const badgeVariants = cva(
   }
 )
 
-function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+const Badge = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<"span"> &
+    VariantProps<typeof badgeVariants> & { asChild?: boolean }
+>(function Badge({ className, variant, asChild = false, ...props }, ref) {
   const Comp = asChild ? Slot : "span"
-
+  const refProp =
+    typeof ref === "string" ? undefined : (ref as unknown as React.Ref<HTMLElement>)
   return (
     <Comp
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={refProp as any}
       data-slot="badge"
       className={cn(badgeVariants({ variant }), className)}
       {...props}
     />
   )
-}
+})
 
 export { Badge, badgeVariants }

@@ -56,6 +56,9 @@ const assessmentSchema = z.object({
   treatmentEducation: z.string().optional(),
   treatmentRestrictions: z.string().optional(),
   treatmentHandouts: z.string().optional(),
+  planAxStrength: z.string().optional(),
+  planAxROM: z.string().optional(),
+  planExerciseProgression: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -140,6 +143,9 @@ export async function POST(request: NextRequest) {
         treatmentEducation: validatedData.treatmentEducation,
         treatmentRestrictions: validatedData.treatmentRestrictions,
         treatmentHandouts: validatedData.treatmentHandouts,
+        planAxStrength: validatedData.planAxStrength,
+        planAxROM: validatedData.planAxROM,
+        planExerciseProgression: validatedData.planExerciseProgression,
         createdBy: adminSession.id,
       },
     })

@@ -57,6 +57,9 @@ export function FollowupAssessmentForm({
     treatmentHandouts: initialData?.treatmentHandouts || "",
     // Plan
     plan: initialData?.plan || "",
+    planAxStrength: initialData?.planAxStrength || "",
+    planAxROM: initialData?.planAxROM || "",
+    planExerciseProgression: initialData?.planExerciseProgression || "",
   })
 
   const handleCheckboxChange = (
@@ -138,7 +141,7 @@ export function FollowupAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, subjectivePain: e.target.value })
             }
-            placeholder="e.g., Right shoulder pain has significantly improved. Patient is able to move the arm with less pain."
+            placeholder="e.g., Right Shoulder pain lot better, able to move arm more with less pain."
             className="mt-2"
             rows={3}
           />
@@ -152,7 +155,7 @@ export function FollowupAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, subjectiveActivity: e.target.value })
             }
-            placeholder="e.g., Continues to experience discomfort during internal rotation."
+            placeholder="e.g., Still having discomfort with internal rotation."
             className="mt-2"
             rows={2}
           />
@@ -173,7 +176,7 @@ export function FollowupAssessmentForm({
         </div>
 
         <div>
-          <Label htmlFor="subjectiveModalities">Modalities</Label>
+          <Label htmlFor="subjectiveModalities">Applying heat</Label>
           <Textarea
             id="subjectiveModalities"
             value={formData.subjectiveModalities}
@@ -197,7 +200,7 @@ export function FollowupAssessmentForm({
                 subjectiveMedications: e.target.value,
               })
             }
-            placeholder="e.g., Taking pain medication as needed."
+            placeholder="e.g., Taking pain meds as needed."
             className="mt-2"
             rows={2}
           />
@@ -209,11 +212,11 @@ export function FollowupAssessmentForm({
         <h3 className="text-lg font-semibold">Objective</h3>
 
         <div>
-          <Label>Range of Motion (ROM)</Label>
+          <Label>Range of Motion</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div>
               <Label htmlFor="romFollowupFlexion" className="text-sm font-normal">
-                Flexion
+                Flex
               </Label>
               <Input
                 id="romFollowupFlexion"
@@ -224,7 +227,7 @@ export function FollowupAssessmentForm({
                     romFollowupFlexion: e.target.value,
                   })
                 }
-                placeholder="e.g., ___ degrees with pain"
+                placeholder="deg pain"
               />
             </div>
             <div>
@@ -232,7 +235,7 @@ export function FollowupAssessmentForm({
                 htmlFor="romFollowupAbduction"
                 className="text-sm font-normal"
               >
-                Abduction
+                Abd
               </Label>
               <Input
                 id="romFollowupAbduction"
@@ -243,21 +246,21 @@ export function FollowupAssessmentForm({
                     romFollowupAbduction: e.target.value,
                   })
                 }
-                placeholder="e.g., Within functional limits"
+                placeholder="Within functional limits"
               />
             </div>
           </div>
         </div>
 
         <div>
-          <Label>Strength</Label>
+          <Label>Strength Flex /5, Abd /5</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div>
               <Label
                 htmlFor="strengthFollowupFlexion"
                 className="text-sm font-normal"
               >
-                Flexion
+                Flex
               </Label>
               <Input
                 id="strengthFollowupFlexion"
@@ -268,7 +271,7 @@ export function FollowupAssessmentForm({
                     strengthFollowupFlexion: e.target.value,
                   })
                 }
-                placeholder="e.g., ___/5"
+                placeholder="/5"
               />
             </div>
             <div>
@@ -276,7 +279,7 @@ export function FollowupAssessmentForm({
                 htmlFor="strengthFollowupAbduction"
                 className="text-sm font-normal"
               >
-                Abduction
+                Abd
               </Label>
               <Input
                 id="strengthFollowupAbduction"
@@ -287,14 +290,14 @@ export function FollowupAssessmentForm({
                     strengthFollowupAbduction: e.target.value,
                   })
                 }
-                placeholder="e.g., ___/5"
+                placeholder="/5"
               />
             </div>
           </div>
         </div>
 
         <div>
-          <Label htmlFor="palpation">Palpation</Label>
+          <Label htmlFor="palpation">Tenderness</Label>
           <Textarea
             id="palpation"
             value={formData.palpation}
@@ -330,7 +333,7 @@ export function FollowupAssessmentForm({
         <h3 className="text-lg font-semibold">Assessment</h3>
 
         <div>
-          <Label htmlFor="assessmentModalities">Modalities</Label>
+          <Label htmlFor="assessmentModalities">Modality</Label>
           <Textarea
             id="assessmentModalities"
             value={formData.assessmentModalities}
@@ -378,14 +381,14 @@ export function FollowupAssessmentForm({
         </div>
 
         <div>
-          <Label htmlFor="assessmentHEP">Home Exercise Program (HEP)</Label>
+          <Label htmlFor="assessmentHEP">HEP</Label>
           <Textarea
             id="assessmentHEP"
             value={formData.assessmentHEP}
             onChange={(e) =>
               setFormData({ ...formData, assessmentHEP: e.target.value })
             }
-            placeholder="e.g., Reviewed and patient advised to continue."
+            placeholder="e.g., reviewed advised to continue"
             className="mt-2"
             rows={2}
           />
@@ -426,7 +429,7 @@ export function FollowupAssessmentForm({
         </div>
 
         <div>
-          <Label htmlFor="assessmentHandouts">Handouts</Label>
+          <Label htmlFor="assessmentHandouts">Print outs given to the patient</Label>
           <Textarea
             id="assessmentHandouts"
             value={formData.assessmentHandouts}
@@ -436,7 +439,7 @@ export function FollowupAssessmentForm({
                 assessmentHandouts: e.target.value,
               })
             }
-            placeholder="e.g., Printed materials provided to the patient."
+            placeholder="e.g., Print outs given to the patient."
             className="mt-2"
             rows={2}
           />
@@ -580,14 +583,43 @@ export function FollowupAssessmentForm({
         <h3 className="text-lg font-semibold">Plan</h3>
 
         <div>
-          <Label htmlFor="plan">Plan</Label>
-          <Textarea
-            id="plan"
-            value={formData.plan}
-            onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-            placeholder="e.g., Address shoulder strength. Address range of motion. Progress exercises as tolerated."
+          <Label htmlFor="planAxStrength">Ax strength</Label>
+          <Input
+            id="planAxStrength"
+            value={formData.planAxStrength}
+            onChange={(e) =>
+              setFormData({ ...formData, planAxStrength: e.target.value })
+            }
+            placeholder="e.g., Continue strengthening"
             className="mt-2"
-            rows={4}
+          />
+        </div>
+        <div>
+          <Label htmlFor="planAxROM">Ax Range of Motion</Label>
+          <Input
+            id="planAxROM"
+            value={formData.planAxROM}
+            onChange={(e) =>
+              setFormData({ ...formData, planAxROM: e.target.value })
+            }
+            placeholder="e.g., Continue ROM exercises"
+            className="mt-2"
+          />
+        </div>
+        <div>
+          <Label htmlFor="planExerciseProgression">Exercise progression</Label>
+          <Textarea
+            id="planExerciseProgression"
+            value={formData.planExerciseProgression}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                planExerciseProgression: e.target.value,
+              })
+            }
+            placeholder="e.g., Progress exercises as tolerated"
+            className="mt-2"
+            rows={2}
           />
         </div>
       </div>

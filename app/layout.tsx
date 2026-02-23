@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 import type { Metadata } from "next"
 import { Playfair_Display, Source_Sans_3 } from "next/font/google"
 import type React from "react"
@@ -54,6 +55,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            {/* Global dark/light toggle - visible on all pages including login */}
+            <div className="fixed top-4 right-4 z-[100] rounded-full p-0.5">
+              <ThemeToggle />
+            </div>
             <Toaster 
               position="top-right"
               reverseOrder={false}

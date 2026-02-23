@@ -45,6 +45,14 @@ export function InitialAssessmentForm({
     clinicalImpression: initialData?.clinicalImpression || "",
     goals: initialData?.goals || "",
     treatment: initialData?.treatment || "",
+    treatmentModality: initialData?.treatmentModality || "",
+    treatmentROM: initialData?.treatmentROM || "",
+    treatmentStrengthening: initialData?.treatmentStrengthening || "",
+    treatmentStretching: initialData?.treatmentStretching || "",
+    treatmentHEP: initialData?.treatmentHEP || "",
+    treatmentEducation: initialData?.treatmentEducation || "",
+    treatmentRestrictions: initialData?.treatmentRestrictions || "",
+    treatmentHandouts: initialData?.treatmentHandouts || "",
     plan: initialData?.plan || "",
   })
 
@@ -93,14 +101,14 @@ export function InitialAssessmentForm({
     <form onSubmit={handleSubmit} className="space-y-6 max-h-[80vh] overflow-y-auto pr-2">
       <div className="space-y-4">
         <div>
-          <Label htmlFor="reasonForReferral">Reason for Referral *</Label>
+          <Label htmlFor="reasonForReferral">Reason for Referral</Label>
           <Textarea
             id="reasonForReferral"
             value={formData.reasonForReferral}
             onChange={(e) =>
               setFormData({ ...formData, reasonForReferral: e.target.value })
             }
-            placeholder="Enter reason for referral"
+            placeholder="***"
             className="mt-2"
             rows={3}
             required
@@ -108,25 +116,25 @@ export function InitialAssessmentForm({
         </div>
 
         <div>
-          <Label htmlFor="hpi">HPI (History of Present Illness)</Label>
+          <Label htmlFor="hpi">HPI</Label>
           <Textarea
             id="hpi"
             value={formData.hpi}
             onChange={(e) => setFormData({ ...formData, hpi: e.target.value })}
-            placeholder="Enter HPI"
+            placeholder="***"
             className="mt-2"
             rows={4}
           />
         </div>
 
         <div>
-          <Label>Pain Description</Label>
+          <Label>Pain description</Label>
           <Textarea
             value={formData.painDescription}
             onChange={(e) =>
               setFormData({ ...formData, painDescription: e.target.value })
             }
-            placeholder="Describe the pain"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
@@ -142,13 +150,13 @@ export function InitialAssessmentForm({
               onChange={(e) =>
                 setFormData({ ...formData, painLevel: e.target.value })
               }
-              placeholder="e.g., 7/10"
+              placeholder="e.g., 7"
               className="mt-2"
             />
           </div>
 
           <div>
-            <Label>Pain Type</Label>
+            <Label>Intermittent / Constant</Label>
             <RadioGroup
               value={formData.painType}
               onValueChange={(value) =>
@@ -173,14 +181,14 @@ export function InitialAssessmentForm({
         </div>
 
         <div>
-          <Label htmlFor="whatMakesWorse">What makes the pain worse</Label>
+          <Label htmlFor="whatMakesWorse">What make the pain worse</Label>
           <Textarea
             id="whatMakesWorse"
             value={formData.whatMakesWorse}
             onChange={(e) =>
               setFormData({ ...formData, whatMakesWorse: e.target.value })
             }
-            placeholder="Enter what makes the pain worse"
+            placeholder="***"
             className="mt-2"
             rows={2}
           />
@@ -194,19 +202,19 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, whatHelps: e.target.value })
             }
-            placeholder="e.g., Rest, Pain medication, Heat/cold pack"
+            placeholder="e.g., Rest, Pain medication, Heat/ cold pack"
             className="mt-2"
             rows={2}
           />
         </div>
 
         <div>
-          <Label htmlFor="pmhx">PMHx (Past Medical History)</Label>
+          <Label htmlFor="pmhx">PMHx</Label>
           <Textarea
             id="pmhx"
             value={formData.pmhx}
             onChange={(e) => setFormData({ ...formData, pmhx: e.target.value })}
-            placeholder="Enter past medical history"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
@@ -220,7 +228,7 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, associatedImaging: e.target.value })
             }
-            placeholder="Enter imaging results"
+            placeholder="***"
             className="mt-2"
             rows={2}
           />
@@ -228,7 +236,7 @@ export function InitialAssessmentForm({
 
         <div>
           <Label htmlFor="baselineActivity">
-            Baseline Physical Activity/Occupation/Leisure Activities
+            Baseline Physical Activity/occupation/leisure activities
           </Label>
           <Textarea
             id="baselineActivity"
@@ -236,7 +244,7 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, baselineActivity: e.target.value })
             }
-            placeholder="Enter baseline activity information"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
@@ -250,35 +258,35 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, observation: e.target.value })
             }
-            placeholder="Enter observations"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
         </div>
 
         <div>
-          <Label htmlFor="swellingCirculation">Swelling/Circulation</Label>
+          <Label htmlFor="swellingCirculation">Swelling/circulation</Label>
           <Textarea
             id="swellingCirculation"
             value={formData.swellingCirculation}
             onChange={(e) =>
               setFormData({ ...formData, swellingCirculation: e.target.value })
             }
-            placeholder="Enter swelling/circulation findings"
+            placeholder="***"
             className="mt-2"
             rows={2}
           />
         </div>
 
         <div>
-          <Label htmlFor="romInitial">ROM (Range of Motion)</Label>
+          <Label htmlFor="romInitial">ROM</Label>
           <Textarea
             id="romInitial"
             value={formData.romInitial}
             onChange={(e) =>
               setFormData({ ...formData, romInitial: e.target.value })
             }
-            placeholder="e.g., Flex: ___ degrees, Abd: ___ degrees"
+            placeholder="Flex: ___, Abd: ___"
             className="mt-2"
             rows={2}
           />
@@ -292,7 +300,7 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, strengthInitial: e.target.value })
             }
-            placeholder="e.g., Flex: ___/5, Abd: ___/5"
+            placeholder="Flex /5, Abd /5"
             className="mt-2"
             rows={2}
           />
@@ -304,7 +312,7 @@ export function InitialAssessmentForm({
             id="neuro"
             value={formData.neuro}
             onChange={(e) => setFormData({ ...formData, neuro: e.target.value })}
-            placeholder="Enter neurological findings"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
@@ -318,21 +326,21 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, palpation: e.target.value })
             }
-            placeholder="Enter palpation findings"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
         </div>
 
         <div>
-          <Label htmlFor="specialTests">Special Tests/Outcome Measures</Label>
+          <Label htmlFor="specialTests">Special Tests/Outcome measures</Label>
           <Textarea
             id="specialTests"
             value={formData.specialTests}
             onChange={(e) =>
               setFormData({ ...formData, specialTests: e.target.value })
             }
-            placeholder="Enter special tests and outcome measures"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
@@ -346,19 +354,19 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, clinicalImpression: e.target.value })
             }
-            placeholder="Enter clinical impression and analysis"
+            placeholder="***"
             className="mt-2"
             rows={4}
           />
         </div>
 
         <div>
-          <Label htmlFor="goals">Goals</Label>
+          <Label htmlFor="goals">Goal</Label>
           <Textarea
             id="goals"
             value={formData.goals}
             onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-            placeholder="Enter treatment goals"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />
@@ -372,10 +380,129 @@ export function InitialAssessmentForm({
             onChange={(e) =>
               setFormData({ ...formData, treatment: e.target.value })
             }
-            placeholder="Enter treatment plan"
+            placeholder="***"
             className="mt-2"
-            rows={4}
+            rows={2}
           />
+        </div>
+
+        {/* Treatment subsection */}
+        <div className="space-y-4 border-t pt-4">
+          <h3 className="text-lg font-semibold">Treatment</h3>
+          <div>
+            <Label htmlFor="treatmentModality">Modality</Label>
+            <Input
+              id="treatmentModality"
+              value={formData.treatmentModality}
+              onChange={(e) =>
+                setFormData({ ...formData, treatmentModality: e.target.value })
+              }
+              placeholder="***"
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentROM">ROM</Label>
+            <Input
+              id="treatmentROM"
+              value={formData.treatmentROM}
+              onChange={(e) =>
+                setFormData({ ...formData, treatmentROM: e.target.value })
+              }
+              placeholder="***"
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentStrengthening">Strengthening</Label>
+            <Input
+              id="treatmentStrengthening"
+              value={formData.treatmentStrengthening}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  treatmentStrengthening: e.target.value,
+                })
+              }
+              placeholder="***"
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentStretching">Stretching</Label>
+            <Input
+              id="treatmentStretching"
+              value={formData.treatmentStretching}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  treatmentStretching: e.target.value,
+                })
+              }
+              placeholder="***"
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentHEP">HEP</Label>
+            <Textarea
+              id="treatmentHEP"
+              value={formData.treatmentHEP}
+              onChange={(e) =>
+                setFormData({ ...formData, treatmentHEP: e.target.value })
+              }
+              placeholder="e.g., reviewed advised to continue"
+              className="mt-2"
+              rows={2}
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentEducation">Education</Label>
+            <Textarea
+              id="treatmentEducation"
+              value={formData.treatmentEducation}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  treatmentEducation: e.target.value,
+                })
+              }
+              placeholder="e.g., Education and postural retraining."
+              className="mt-2"
+              rows={2}
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentRestrictions">Restrictions</Label>
+            <Input
+              id="treatmentRestrictions"
+              value={formData.treatmentRestrictions}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  treatmentRestrictions: e.target.value,
+                })
+              }
+              placeholder="***"
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label htmlFor="treatmentHandouts">Print outs given to the patient</Label>
+            <Textarea
+              id="treatmentHandouts"
+              value={formData.treatmentHandouts}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  treatmentHandouts: e.target.value,
+                })
+              }
+              placeholder="e.g., print outs given to the patient."
+              className="mt-2"
+              rows={2}
+            />
+          </div>
         </div>
 
         <div>
@@ -384,7 +511,7 @@ export function InitialAssessmentForm({
             id="plan"
             value={formData.plan}
             onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-            placeholder="Enter plan"
+            placeholder="***"
             className="mt-2"
             rows={3}
           />

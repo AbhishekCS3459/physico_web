@@ -48,6 +48,7 @@ import {
     X,
     ClipboardList,
     Plus,
+    Users,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -94,15 +95,19 @@ export default function AdminDashboard() {
   const [deletingBooking, setDeletingBooking] = useState<TherapyBooking | null>(null)
   const [editFormData, setEditFormData] = useState<Partial<TherapyBooking>>({})
   const [isSaving, setIsSaving] = useState(false)
-  const [adminInfo, setAdminInfo] = useState<{ email: string; name?: string } | null>(null)
+  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; name?: string; role?: "staff" | "super_admin" } | null>(null)
+  const [staffList, setStaffList] = useState<{ id: string; email: string; name: string | null; role: string }[]>([])
+  const [updatingRoleFor, setUpdatingRoleFor] = useState<string | null>(null)
   const [showAssessmentDialog, setShowAssessmentDialog] = useState(false)
   const [assessmentType, setAssessmentType] = useState<"initial" | "followup" | null>(null)
   const [assessments, setAssessments] = useState<any[]>([])
   const [viewingAssessment, setViewingAssessment] = useState<any | null>(null)
   const [editingAssessment, setEditingAssessment] = useState<any | null>(null)
+  const [chartForBooking, setChartForBooking] = useState<{ id: string } | null | "loading">(null)
+  const [creatingChart, setCreatingChart] = useState(false)
 
   useEffect(() => {
-    // Check authentication
+    // Check authentication; staff may only access patient charts (redirect handled by middleware + here as backup)
     fetch("/api/auth/me", {
       credentials: 'include',
     })
@@ -110,6 +115,8 @@ export default function AdminDashboard() {
       .then((data) => {
         if (!data.authenticated) {
           router.push("/login")
+        } else if (data.admin?.role === "staff") {
+          router.replace("/admin/charts")
         } else {
           setAdminInfo(data.admin)
         }
@@ -118,6 +125,16 @@ export default function AdminDashboard() {
         router.push("/login")
       })
   }, [router])
+
+  useEffect(() => {
+    if (adminInfo?.role !== "super_admin") return
+    fetch("/api/admins", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) setStaffList(data.data)
+      })
+      .catch(() => {})
+  }, [adminInfo?.role])
 
   const handleLogout = async () => {
     try {
@@ -134,6 +151,32 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Logout error:", error)
       toast.error("Failed to logout")
+    }
+  }
+
+  const handleRoleChange = async (adminId: string, newRole: "staff" | "super_admin") => {
+    if (adminInfo?.role !== "super_admin" || adminId === adminInfo?.id) return
+    setUpdatingRoleFor(adminId)
+    try {
+      const res = await fetch(`/api/admins/${adminId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ role: newRole }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setStaffList((prev) =>
+          prev.map((a) => (a.id === adminId ? { ...a, role: newRole } : a))
+        )
+        toast.success("Role updated")
+      } else {
+        toast.error(data.error || "Failed to update role")
+      }
+    } catch {
+      toast.error("Failed to update role")
+    } finally {
+      setUpdatingRoleFor(null)
     }
   }
 
@@ -176,6 +219,19 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (selectedBooking) {
       fetchAssessments(selectedBooking.id)
+      setChartForBooking("loading")
+      fetch(`/api/patient-charts?bookingId=${selectedBooking.id}`, { credentials: "include" })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.data?.length > 0) {
+            setChartForBooking({ id: d.data[0].id })
+          } else {
+            setChartForBooking(null)
+          }
+        })
+        .catch(() => setChartForBooking(null))
+    } else {
+      setChartForBooking(null)
     }
   }, [selectedBooking])
 
@@ -367,13 +423,24 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-muted-foreground text-lg">Manage therapy booking requests</p>
             {adminInfo && (
-              <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+              <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2 flex-wrap">
                 <User className="h-4 w-4" />
                 Logged in as: {adminInfo.email}
+                {adminInfo.role && (
+                  <Badge variant={adminInfo.role === "super_admin" ? "default" : "secondary"} className="text-xs">
+                    {adminInfo.role === "super_admin" ? "Super admin" : "Staff"}
+                  </Badge>
+                )}
               </p>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" asChild className="w-full md:w-auto">
+              <Link href="/admin/charts">
+                <ClipboardList className="h-4 w-4 mr-2" />
+                Patient Charts
+              </Link>
+            </Button>
             <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -435,6 +502,68 @@ export default function AdminDashboard() {
             </CardHeader>
           </Card>
         </div>
+
+        {/* Team / Staff management (super_admin only) */}
+        {adminInfo?.role === "super_admin" && (
+          <Card className="mb-6 border-2 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Team
+              </CardTitle>
+              <CardDescription>
+                Change staff roles. You cannot change your own role.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 font-medium">Email</th>
+                      <th className="text-left py-2 font-medium">Name</th>
+                      <th className="text-left py-2 font-medium">Role</th>
+                      <th className="text-left py-2 font-medium">Change role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {staffList.map((staff) => (
+                      <tr key={staff.id} className="border-b last:border-0">
+                        <td className="py-2">{staff.email}</td>
+                        <td className="py-2">{staff.name ?? "—"}</td>
+                        <td className="py-2">
+                          <Badge variant={staff.role === "super_admin" ? "default" : "secondary"}>
+                            {staff.role === "super_admin" ? "Super admin" : "Staff"}
+                          </Badge>
+                        </td>
+                        <td className="py-2">
+                          {staff.id === adminInfo?.id ? (
+                            <span className="text-muted-foreground text-xs">(you)</span>
+                          ) : updatingRoleFor === staff.id ? (
+                            <span className="text-muted-foreground text-xs">Updating...</span>
+                          ) : (
+                            <Select
+                              value={staff.role}
+                              onValueChange={(v) => handleRoleChange(staff.id, v as "staff" | "super_admin")}
+                            >
+                              <SelectTrigger className="w-[140px] h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="super_admin">Super admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Enhanced Filters and Actions */}
         <Card className="mb-6 border-2 shadow-lg">
@@ -835,6 +964,63 @@ export default function AdminDashboard() {
                   )}
                 </div>
 
+                {/* Patient chart */}
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <ClipboardList className="h-5 w-5" />
+                      Patient chart
+                    </h3>
+                    <div className="flex gap-2">
+                      {chartForBooking === "loading" ? (
+                        <span className="text-sm text-muted-foreground">Checking...</span>
+                      ) : chartForBooking ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/admin/charts/${chartForBooking.id}`}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Open chart
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={creatingChart}
+                          onClick={async () => {
+                            if (!selectedBooking) return
+                            setCreatingChart(true)
+                            try {
+                              const res = await fetch("/api/patient-charts", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                credentials: "include",
+                                body: JSON.stringify({ bookingId: selectedBooking.id }),
+                              })
+                              const data = await res.json()
+                              if (data.success) {
+                                toast.success("Chart created")
+                                setChartForBooking({ id: data.data.id })
+                                router.push(`/admin/charts/${data.data.id}`)
+                              } else {
+                                toast.error(data.error || "Failed to create chart")
+                              }
+                            } catch {
+                              toast.error("Failed to create chart")
+                            } finally {
+                              setCreatingChart(false)
+                            }
+                          }}
+                        >
+                          {creatingChart ? "Creating..." : "Create chart"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Shared chart for this patient. Doctors with access can view or edit notes.
+                  </p>
+                </div>
+
                 {/* Timestamps */}
                 <div className="pt-4 border-t">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
@@ -963,7 +1149,7 @@ export default function AdminDashboard() {
                     )}
                     {viewingAssessment.painDescription && (
                       <div>
-                        <Label className="font-semibold">Pain Description</Label>
+                        <Label className="font-semibold">Pain description</Label>
                         <p className="mt-1">{viewingAssessment.painDescription}</p>
                       </div>
                     )}
@@ -971,27 +1157,99 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-2 gap-4">
                         {viewingAssessment.painLevel && (
                           <div>
-                            <Label className="font-semibold">Pain Level</Label>
+                            <Label className="font-semibold">Pain /10</Label>
                             <p className="mt-1">{viewingAssessment.painLevel}</p>
                           </div>
                         )}
                         {viewingAssessment.painType && (
                           <div>
-                            <Label className="font-semibold">Pain Type</Label>
+                            <Label className="font-semibold">Intermittent / Constant</Label>
                             <p className="mt-1">{viewingAssessment.painType}</p>
                           </div>
                         )}
                       </div>
                     )}
+                    {viewingAssessment.whatMakesWorse && (
+                      <div>
+                        <Label className="font-semibold">What make the pain worse</Label>
+                        <p className="mt-1">{viewingAssessment.whatMakesWorse}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.whatHelps && (
+                      <div>
+                        <Label className="font-semibold">What helps</Label>
+                        <p className="mt-1">{viewingAssessment.whatHelps}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.pmhx && (
+                      <div>
+                        <Label className="font-semibold">PMHx</Label>
+                        <p className="mt-1">{viewingAssessment.pmhx}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.associatedImaging && (
+                      <div>
+                        <Label className="font-semibold">Associated/Relevant Imaging</Label>
+                        <p className="mt-1">{viewingAssessment.associatedImaging}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.baselineActivity && (
+                      <div>
+                        <Label className="font-semibold">Baseline Physical Activity/occupation/leisure activities</Label>
+                        <p className="mt-1">{viewingAssessment.baselineActivity}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.observation && (
+                      <div>
+                        <Label className="font-semibold">Observation</Label>
+                        <p className="mt-1">{viewingAssessment.observation}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.swellingCirculation && (
+                      <div>
+                        <Label className="font-semibold">Swelling/circulation</Label>
+                        <p className="mt-1">{viewingAssessment.swellingCirculation}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.romInitial && (
+                      <div>
+                        <Label className="font-semibold">ROM</Label>
+                        <p className="mt-1">{viewingAssessment.romInitial}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.strengthInitial && (
+                      <div>
+                        <Label className="font-semibold">RIM/Strength</Label>
+                        <p className="mt-1">{viewingAssessment.strengthInitial}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.neuro && (
+                      <div>
+                        <Label className="font-semibold">Neuro (screening, reflexes, tension tests)</Label>
+                        <p className="mt-1">{viewingAssessment.neuro}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.palpation && (
+                      <div>
+                        <Label className="font-semibold">Palpation</Label>
+                        <p className="mt-1">{viewingAssessment.palpation}</p>
+                      </div>
+                    )}
+                    {viewingAssessment.specialTests && (
+                      <div>
+                        <Label className="font-semibold">Special Tests/Outcome measures</Label>
+                        <p className="mt-1">{viewingAssessment.specialTests}</p>
+                      </div>
+                    )}
                     {viewingAssessment.clinicalImpression && (
                       <div>
-                        <Label className="font-semibold">Clinical Impression</Label>
+                        <Label className="font-semibold">Clinical Impression/Analysis</Label>
                         <p className="mt-1">{viewingAssessment.clinicalImpression}</p>
                       </div>
                     )}
                     {viewingAssessment.goals && (
                       <div>
-                        <Label className="font-semibold">Goals</Label>
+                        <Label className="font-semibold">Goal</Label>
                         <p className="mt-1">{viewingAssessment.goals}</p>
                       </div>
                     )}
@@ -999,6 +1257,66 @@ export default function AdminDashboard() {
                       <div>
                         <Label className="font-semibold">Treatment</Label>
                         <p className="mt-1">{viewingAssessment.treatment}</p>
+                      </div>
+                    )}
+                    {(viewingAssessment.treatmentModality ||
+                      viewingAssessment.treatmentROM ||
+                      viewingAssessment.treatmentStrengthening ||
+                      viewingAssessment.treatmentStretching ||
+                      viewingAssessment.treatmentHEP ||
+                      viewingAssessment.treatmentEducation ||
+                      viewingAssessment.treatmentRestrictions ||
+                      viewingAssessment.treatmentHandouts) && (
+                      <div className="border-t pt-4">
+                        <Label className="font-semibold text-base">Treatment</Label>
+                        {viewingAssessment.treatmentModality && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Modality</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentModality}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentROM && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">ROM</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentROM}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentStrengthening && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Strengthening</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentStrengthening}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentStretching && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Stretching</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentStretching}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentHEP && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">HEP</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentHEP}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentEducation && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Education</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentEducation}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentRestrictions && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Restrictions</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentRestrictions}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.treatmentHandouts && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Print outs given to the patient</Label>
+                            <p className="mt-1">{viewingAssessment.treatmentHandouts}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                     {viewingAssessment.plan && (
@@ -1010,36 +1328,182 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {viewingAssessment.subjectivePain && (
-                      <div>
-                        <Label className="font-semibold">Subjective - Pain</Label>
-                        <p className="mt-1">{viewingAssessment.subjectivePain}</p>
+                    {/* Subjective */}
+                    {(viewingAssessment.subjectivePain ||
+                      viewingAssessment.subjectiveActivity ||
+                      viewingAssessment.subjectiveExercises ||
+                      viewingAssessment.subjectiveModalities ||
+                      viewingAssessment.subjectiveMedications) && (
+                      <div className="border-b pb-4">
+                        <Label className="font-semibold text-base">Subjective</Label>
+                        {viewingAssessment.subjectivePain && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Pain</Label>
+                            <p className="mt-1">{viewingAssessment.subjectivePain}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.subjectiveActivity && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Activity</Label>
+                            <p className="mt-1">{viewingAssessment.subjectiveActivity}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.subjectiveExercises && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Exercises</Label>
+                            <p className="mt-1">{viewingAssessment.subjectiveExercises}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.subjectiveModalities && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Applying heat</Label>
+                            <p className="mt-1">{viewingAssessment.subjectiveModalities}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.subjectiveMedications && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Medications</Label>
+                            <p className="mt-1">{viewingAssessment.subjectiveMedications}</p>
+                          </div>
+                        )}
                       </div>
                     )}
+                    {/* Objective */}
                     {(viewingAssessment.romFollowupFlexion ||
-                      viewingAssessment.romFollowupAbduction) && (
-                      <div>
-                        <Label className="font-semibold">Objective - ROM</Label>
-                        <div className="grid grid-cols-2 gap-4 mt-1">
-                          {viewingAssessment.romFollowupFlexion && (
-                            <p>Flexion: {viewingAssessment.romFollowupFlexion}</p>
-                          )}
-                          {viewingAssessment.romFollowupAbduction && (
-                            <p>Abduction: {viewingAssessment.romFollowupAbduction}</p>
-                          )}
-                        </div>
+                      viewingAssessment.romFollowupAbduction ||
+                      viewingAssessment.strengthFollowupFlexion ||
+                      viewingAssessment.strengthFollowupAbduction ||
+                      viewingAssessment.palpation ||
+                      viewingAssessment.objectiveFindings) && (
+                      <div className="border-b pb-4">
+                        <Label className="font-semibold text-base">Objective</Label>
+                        {(viewingAssessment.romFollowupFlexion ||
+                          viewingAssessment.romFollowupAbduction) && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Range of Motion</Label>
+                            <div className="grid grid-cols-2 gap-4 mt-1">
+                              {viewingAssessment.romFollowupFlexion && (
+                                <p>Flex: {viewingAssessment.romFollowupFlexion}</p>
+                              )}
+                              {viewingAssessment.romFollowupAbduction && (
+                                <p>Abd: {viewingAssessment.romFollowupAbduction}</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {(viewingAssessment.strengthFollowupFlexion ||
+                          viewingAssessment.strengthFollowupAbduction) && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Strength Flex /5, Abd /5</Label>
+                            <div className="grid grid-cols-2 gap-4 mt-1">
+                              {viewingAssessment.strengthFollowupFlexion && (
+                                <p>Flex: {viewingAssessment.strengthFollowupFlexion}</p>
+                              )}
+                              {viewingAssessment.strengthFollowupAbduction && (
+                                <p>Abd: {viewingAssessment.strengthFollowupAbduction}</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {viewingAssessment.palpation && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Tenderness</Label>
+                            <p className="mt-1">{viewingAssessment.palpation}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.objectiveFindings && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Additional Objective Findings</Label>
+                            <p className="mt-1">{viewingAssessment.objectiveFindings}</p>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {viewingAssessment.assessmentROM && (
-                      <div>
-                        <Label className="font-semibold">Assessment - ROM</Label>
-                        <p className="mt-1">{viewingAssessment.assessmentROM}</p>
+                    {/* Assessment */}
+                    {(viewingAssessment.assessmentModalities ||
+                      viewingAssessment.assessmentROM ||
+                      viewingAssessment.assessmentStrengthening ||
+                      viewingAssessment.assessmentHEP ||
+                      viewingAssessment.assessmentEducation ||
+                      viewingAssessment.assessmentRestrictions ||
+                      viewingAssessment.assessmentHandouts) && (
+                      <div className="border-b pb-4">
+                        <Label className="font-semibold text-base">Assessment</Label>
+                        {viewingAssessment.assessmentModalities && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Modality</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentModalities}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.assessmentROM && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">ROM</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentROM}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.assessmentStrengthening && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Strengthening</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentStrengthening}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.assessmentHEP && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">HEP</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentHEP}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.assessmentEducation && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Education</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentEducation}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.assessmentRestrictions && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Restrictions</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentRestrictions}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.assessmentHandouts && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Print outs given to the patient</Label>
+                            <p className="mt-1">{viewingAssessment.assessmentHandouts}</p>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {viewingAssessment.plan && (
+                    {/* Plan */}
+                    {(viewingAssessment.planAxStrength ||
+                      viewingAssessment.planAxROM ||
+                      viewingAssessment.planExerciseProgression ||
+                      viewingAssessment.plan) && (
                       <div>
-                        <Label className="font-semibold">Plan</Label>
-                        <p className="mt-1">{viewingAssessment.plan}</p>
+                        <Label className="font-semibold text-base">Plan</Label>
+                        {viewingAssessment.planAxStrength && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Ax strength</Label>
+                            <p className="mt-1">{viewingAssessment.planAxStrength}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.planAxROM && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Ax Range of Motion</Label>
+                            <p className="mt-1">{viewingAssessment.planAxROM}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.planExerciseProgression && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Exercise progression</Label>
+                            <p className="mt-1">{viewingAssessment.planExerciseProgression}</p>
+                          </div>
+                        )}
+                        {viewingAssessment.plan && (
+                          <div className="mt-2">
+                            <Label className="font-semibold text-sm">Plan (general)</Label>
+                            <p className="mt-1">{viewingAssessment.plan}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

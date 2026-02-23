@@ -1,0 +1,1 @@
+- charting/notes regards for a patient in the admin page/ where user can write about patient/ other clitinitian can edit them also and will be reflected to all.

@@ -115,7 +115,10 @@ model Assessment {
   
   // Plan (Both types)
   plan                  String?
-  
+  planAxStrength        String?  // Ax strength
+  planAxROM             String?  // Ax Range of Motion
+  planExerciseProgression String? // Exercise progression
+
   // Admin/User who created the assessment
   createdBy             String?
   
@@ -172,10 +175,103 @@ model TherapyBooking {
   // Assessments relationship
   assessments           Assessment[]
 
+  // Patient chart (one per booking for doctor charting)
+  patientChart          PatientChart?
+
   @@index([email])
   @@index([status])
   @@index([createdAt])
   @@index([userId])
+}
+
+// Standalone patient (created from chart section: email, name, phone optional)
+model Patient {
+  id          String   @id @default(cuid())
+  email       String
+  firstName   String
+  lastName    String?
+  phoneNumber String?
+  createdById String?
+  createdBy   Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chart PatientChart?
+
+  @@index([email])
+  @@index([createdById])
+}
+
+// Patient chart: shared clinical notes per patient/booking (doctors only)
+model PatientChart {
+  id          String   @id @default(cuid())
+  bookingId   String?  @unique
+  booking     TherapyBooking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  patientId   String?  @unique
+  patient     Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  // Rich text content (JSON from Tiptap/ProseMirror)
+  content     String?  @db.Text
+  createdById String?
+  createdBy   Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  accessList  PatientChartAccess[]
+  events      PatientChartEvent[]
+  invitations ChartInvitation[]
+
+  @@index([bookingId])
+  @@index([patientId])
+  @@index([createdById])
+}
+
+// Pending chart invitations (like GitHub collaborator invites)
+model ChartInvitation {
+  id          String   @id @default(cuid())
+  chartId     String
+  chart       PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  inviteeId   String   // admin who is invited
+  invitee     Admin    @relation("invitationsReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
+  invitedById String   // admin who sent the invite
+  invitedBy   Admin    @relation("invitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  permission  String   // "view" | "edit"
+  status      String   @default("pending") // "pending" | "accepted" | "declined"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([chartId, inviteeId])
+  @@index([chartId])
+  @@index([inviteeId])
+  @@index([status])
+}
+
+// Which doctor has view or edit access to a chart
+model PatientChartAccess {
+  id         String   @id @default(cuid())
+  chartId    String
+  chart      PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  adminId    String
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  permission String   // "view" | "edit"
+  createdAt  DateTime @default(now())
+
+  @@unique([chartId, adminId])
+  @@index([chartId])
+  @@index([adminId])
+}
+
+// Timeline events: created, updated (for activity feed)
+model PatientChartEvent {
+  id        String       @id @default(cuid())
+  chartId   String
+  chart     PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  adminId   String?
+  admin     Admin?       @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  action    String       // "created" | "updated"
+  createdAt DateTime     @default(now())
+
+  @@index([chartId])
+  @@index([createdAt])
 }
 
 model Admin {
@@ -183,11 +279,20 @@ model Admin {
   email     String   @unique
   password  String   // Hashed password
   name      String?
+  role      String   @default("staff") // "staff" | "super_admin"
   resetPasswordToken String?
   resetPasswordExpires DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  patientChartAccess   PatientChartAccess[]
+  patientChartEvents   PatientChartEvent[]
+  patientChartsCreated PatientChart[]
+  patientsCreated      Patient[]
+  invitationsSent      ChartInvitation[] @relation("invitationsSent")
+  invitationsReceived ChartInvitation[] @relation("invitationsReceived")
+
   @@index([email])
+  @@index([role])
   @@index([resetPasswordToken])
 }

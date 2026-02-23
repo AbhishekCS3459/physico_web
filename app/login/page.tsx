@@ -19,23 +19,27 @@ export default function LoginPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
-    // Check if user is already logged in
+    // If already logged in (admin or patient), redirect to the right place
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/me", {
-          credentials: 'include',
-        })
-        const data = await response.json()
-        
-        if (data.authenticated) {
-          router.push("/admin")
-          router.refresh()
+        const [adminRes, userRes] = await Promise.all([
+          fetch("/api/auth/me", { credentials: 'include' }),
+          fetch("/api/auth/user/me", { credentials: 'include' }),
+        ])
+        const adminData = await adminRes.json()
+        const userData = await userRes.json()
+        if (adminData.authenticated) {
+          router.replace(adminData.admin?.role === "staff" ? "/admin/charts" : "/admin")
+          return
+        }
+        if (userData.authenticated) {
+          router.replace("/my-bookings")
+          return
         }
       } catch (error) {
         console.error("Auth check error:", error)
       }
     }
-    
     checkAuth()
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -55,11 +59,9 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/signin", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: 'include',
         body: JSON.stringify({ email, password }),
       })
@@ -68,7 +70,11 @@ export default function LoginPage() {
 
       if (data.success) {
         toast.success("Login successful!")
-        router.push("/admin")
+        if (data.role === "admin") {
+          router.push(data.admin?.role === "staff" ? "/admin/charts" : "/admin")
+        } else {
+          router.push("/my-bookings")
+        }
         router.refresh()
       } else {
         toast.error(data.error || "Login failed")
@@ -189,10 +195,10 @@ export default function LoginPage() {
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Admin Login
+                Sign in
               </h1>
               <p className="text-muted-foreground text-sm md:text-base">
-                Enter your credentials to access the admin dashboard
+                Use your email and password. We’ll take you to the right place.
               </p>
             </motion.div>
 
@@ -219,7 +225,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@physiorehab.com"
+                    placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-12 h-12 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-background/50 backdrop-blur-sm"
@@ -298,6 +304,16 @@ export default function LoginPage() {
                 </Button>
               </motion.div>
             </motion.form>
+
+            <p className="text-center text-sm text-muted-foreground mt-6 space-x-4">
+              <Link href="/register" className="text-primary hover:underline font-medium">
+                Register as patient
+              </Link>
+              <span>·</span>
+              <Link href="/register-staff" className="text-primary hover:underline font-medium">
+                Staff sign up
+              </Link>
+            </p>
 
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -z-10" />

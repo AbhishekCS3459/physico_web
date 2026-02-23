@@ -46,18 +46,26 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateBookingSchema.parse(body)
 
-    // Check authentication
+    // Roles: admin/super_admin = full privileges; staff = view all bookings only; patient = own only.
+    // Only super_admin may edit others' bookings; patients may edit their own.
     const adminSession = await getSession()
     const userSession = await getUserSession()
-    
-    if (!adminSession && !userSession) {
+
+    if (adminSession) {
+      if (adminSession.role !== 'super_admin') {
+        return NextResponse.json(
+          { success: false, error: 'Only super admin can edit bookings' },
+          { status: 403 }
+        )
+      }
+    } else if (!userSession) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    // Check if booking exists and verify ownership (unless admin)
+    // Check if booking exists and verify ownership (unless super_admin)
     const booking = await prisma.therapyBooking.findUnique({
       where: { id },
     })
@@ -157,18 +165,25 @@ export async function DELETE(
   try {
     const { id } = params
 
-    // Check authentication
+    // Only super_admin may delete others' bookings; patients may delete their own.
     const adminSession = await getSession()
     const userSession = await getUserSession()
-    
-    if (!adminSession && !userSession) {
+
+    if (adminSession) {
+      if (adminSession.role !== 'super_admin') {
+        return NextResponse.json(
+          { success: false, error: 'Only super admin can delete bookings' },
+          { status: 403 }
+        )
+      }
+    } else if (!userSession) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    // Check if booking exists and verify ownership (unless admin)
+    // Check if booking exists and verify ownership (unless super_admin)
     const booking = await prisma.therapyBooking.findUnique({
       where: { id },
     })
