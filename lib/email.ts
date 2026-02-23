@@ -23,6 +23,9 @@ interface BookingEmailData {
   dateOfBirth?: string | null
 }
 
+// Base URL for links in emails (reset password, etc.). Set NEXT_PUBLIC_APP_URL in .env for production.
+const getAppBaseUrl = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
 // Create transporter - configure with your email service
 const createTransporter = () => {
   // For Gmail, you'll need to use an App Password
@@ -212,7 +215,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
   try {
     const transporter = createTransporter()
     
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password/${resetToken}`
+    const resetUrl = `${getAppBaseUrl()}/reset-password/${resetToken}`
     
     const emailHtml = `
       <!DOCTYPE html>
@@ -280,7 +283,7 @@ export const sendAdminPasswordResetEmail = async (email: string, resetToken: str
   try {
     const transporter = createTransporter()
     
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/reset-password/${resetToken}`
+    const resetUrl = `${getAppBaseUrl()}/admin/reset-password/${resetToken}`
     
     const emailHtml = `
       <!DOCTYPE html>
