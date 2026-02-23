@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { notifyInvitationReceived } from '@/lib/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -27,6 +28,12 @@ export async function GET(
           where: { status: 'pending' },
           include: { invitee: { select: { id: true, email: true, name: true } }, invitedBy: { select: { id: true, email: true, name: true } } },
         },
+        accessRequests: {
+          where: { status: 'pending' },
+          include: { requestedBy: { select: { id: true, email: true, name: true } } },
+        },
+        booking: true,
+        patient: true,
       },
     })
 
@@ -52,6 +59,13 @@ export async function GET(
         invitee: { id: inv.invitee.id, email: inv.invitee.email, name: inv.invitee.name },
         invitedBy: { id: inv.invitedBy.id, email: inv.invitedBy.email, name: inv.invitedBy.name },
         createdAt: inv.createdAt.toISOString(),
+      })),
+      pendingRequests: chart.accessRequests.map((req) => ({
+        id: req.id,
+        requestedById: req.requestedById,
+        permission: req.permission,
+        requestedBy: { id: req.requestedBy.id, email: req.requestedBy.email, name: req.requestedBy.name },
+        createdAt: req.createdAt.toISOString(),
       })),
     }
 
@@ -141,8 +155,20 @@ export async function POST(
 
     const invitation = await prisma.chartInvitation.create({
       data: { chartId: id, inviteeId: adminId, invitedById: session.id, permission, status: 'pending' },
-      include: { invitee: { select: { id: true, email: true, name: true } }, invitedBy: { select: { id: true, email: true, name: true } } },
+      include: {
+        invitee: { select: { id: true, email: true, name: true } },
+        invitedBy: { select: { id: true, email: true, name: true } },
+        chart: { include: { booking: true, patient: true } },
+      },
     })
+
+    const chartLabel = invitation.chart.booking
+      ? `${invitation.chart.booking.firstName} ${invitation.chart.booking.lastName}`
+      : invitation.chart.patient
+        ? `${invitation.chart.patient.firstName} ${invitation.chart.patient.lastName ?? ''}`.trim()
+        : 'Patient chart'
+    const inviterName = session.name || session.email || 'A colleague'
+    await notifyInvitationReceived(adminId, id, chartLabel, inviterName, permission)
 
     return NextResponse.json(
       {

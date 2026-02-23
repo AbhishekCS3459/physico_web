@@ -42,6 +42,7 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import toast from "react-hot-toast"
+import { NotificationsBell } from "@/components/notifications-bell"
 
 interface ChartData {
   id: string
@@ -83,6 +84,13 @@ interface ChartData {
     invitedBy: { id: string; email: string; name: string | null }
     createdAt: string
   }[]
+  pendingRequests?: {
+    id: string
+    requestedById: string
+    permission: string
+    requestedBy: { id: string; email: string; name: string | null }
+    createdAt: string
+  }[]
   myPermission: "view" | "edit"
 }
 
@@ -114,16 +122,27 @@ export default function ChartDetailPage() {
   const [sharePermission, setSharePermission] = useState<"view" | "edit">("view")
   const [addingShare, setAddingShare] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [accessError, setAccessError] = useState<"none" | "forbidden" | "not_found">("none")
+  const [requestAccessPermission, setRequestAccessPermission] = useState<"view" | "edit">("view")
+  const [requestingAccess, setRequestingAccess] = useState(false)
+  const [requestAccessSent, setRequestAccessSent] = useState(false)
 
   const fetchChart = useCallback(async () => {
     try {
+      setAccessError("none")
       const res = await fetch(`/api/patient-charts/${id}`, { credentials: "include" })
       const data = await res.json()
       if (data.success) {
         setChart(data.data)
       } else {
-        if (res.status === 403 || res.status === 404) {
+        if (res.status === 403) {
+          setAccessError("forbidden")
+          setChart(null)
           toast.error(data.error || "Access denied")
+        } else if (res.status === 404) {
+          setAccessError("not_found")
+          setChart(null)
+          toast.error("Chart not found")
           router.push("/admin/charts")
         } else {
           toast.error(data.error || "Failed to load chart")
@@ -263,13 +282,76 @@ export default function ChartDetailPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success("Access revoked")
+        toast.success("Access revoked — they will be notified")
         fetchChart()
       } else {
         toast.error(data.error || "Failed to revoke")
       }
     } catch {
       toast.error("Failed to revoke")
+    }
+  }
+
+  const updateAccessPermission = async (adminId: string, permission: "view" | "edit") => {
+    try {
+      const res = await fetch(`/api/patient-charts/${id}/access/${adminId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ permission }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success("Permission updated")
+        fetchChart()
+      } else {
+        toast.error(data.error || "Failed to update")
+      }
+    } catch {
+      toast.error("Failed to update")
+    }
+  }
+
+  const respondToRequest = async (requestId: string, action: "grant" | "deny") => {
+    try {
+      const res = await fetch(`/api/patient-charts/${id}/access-request/${requestId}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(action === "grant" ? "Access granted — they will be notified and can see all notes" : "Request denied")
+        fetchChart()
+      } else {
+        toast.error(data.error || "Failed to respond")
+      }
+    } catch {
+      toast.error("Failed to respond")
+    }
+  }
+
+  const requestAccess = async () => {
+    setRequestingAccess(true)
+    try {
+      const res = await fetch(`/api/patient-charts/${id}/request-access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ permission: requestAccessPermission }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setRequestAccessSent(true)
+        toast.success("Request sent — the chart owner will be notified and can grant access")
+      } else {
+        toast.error(data.error || "Failed to request access")
+      }
+    } catch {
+      toast.error("Failed to request access")
+    } finally {
+      setRequestingAccess(false)
     }
   }
 
@@ -291,7 +373,7 @@ export default function ChartDetailPage() {
     }
   }
 
-  if (loading || !chart) {
+  if (loading || (!chart && accessError === "none")) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
         <div className="text-center">
@@ -300,6 +382,67 @@ export default function ChartDetailPage() {
         </div>
       </div>
     )
+  }
+
+  if (accessError === "forbidden") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-6">
+        <div className="container max-w-6xl mx-auto">
+          <div className="mb-6">
+            <Button variant="outline" size="icon" asChild>
+              <Link href="/admin/charts">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <Card className="max-w-md border-2">
+            <CardHeader>
+              <CardTitle>You don&apos;t have access to this chart</CardTitle>
+              <CardDescription>
+                Request view or edit access. The chart owner will be notified and can grant you access. Once granted, you can see all notes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {requestAccessSent ? (
+                <p className="text-sm text-primary font-medium">Request sent. You will be notified when access is granted.</p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Access type</Label>
+                    <Select
+                      value={requestAccessPermission}
+                      onValueChange={(v) => setRequestAccessPermission(v as "view" | "edit")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="view">View only</SelectItem>
+                        <SelectItem value="edit">Can edit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={requestAccess} disabled={requestingAccess} className="w-full">
+                    {requestingAccess ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Request access"
+                    )}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (!chart) {
+    return null
   }
 
   return (
@@ -329,6 +472,7 @@ export default function ChartDetailPage() {
             </Badge>
           </div>
           <div className="flex gap-2 items-center">
+            <NotificationsBell />
             <Button variant="outline" size="sm" onClick={copyLink}>
               <Copy className="h-4 w-4 mr-2" />
               {linkCopied ? "Copied!" : "Copy link"}
@@ -517,7 +661,7 @@ export default function ChartDetailPage() {
                     </li>
                   )}
                   {chart.accessList.map((a) => (
-                    <li key={a.adminId} className="flex items-center justify-between">
+                    <li key={a.adminId} className="flex items-center justify-between gap-2">
                       <span>
                         {a.admin.name || a.admin.email}
                         <Badge variant="secondary" className="ml-2 text-xs">
@@ -525,14 +669,56 @@ export default function ChartDetailPage() {
                         </Badge>
                       </span>
                       {chart.myPermission === "edit" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => revokeAccess(a.adminId)}
-                        >
-                          Revoke
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Select
+                            value={a.permission}
+                            onValueChange={(v) => updateAccessPermission(a.adminId, v as "view" | "edit")}
+                          >
+                            <SelectTrigger className="h-8 w-[100px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="view">View</SelectItem>
+                              <SelectItem value="edit">Edit</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => revokeAccess(a.adminId)}
+                          >
+                            Revoke
+                          </Button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                  {(chart.pendingRequests ?? []).map((req) => (
+                    <li key={req.id} className="flex items-center justify-between">
+                      <span>
+                        {req.requestedBy.name || req.requestedBy.email}
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          Requested {req.permission}
+                        </Badge>
+                      </span>
+                      {chart.myPermission === "edit" && (
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => respondToRequest(req.id, "deny")}
+                          >
+                            Deny
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => respondToRequest(req.id, "grant")}
+                          >
+                            Grant
+                          </Button>
+                        </div>
                       )}
                     </li>
                   ))}
@@ -556,7 +742,7 @@ export default function ChartDetailPage() {
                       )}
                     </li>
                   ))}
-                  {(!chart.createdBy || chart.accessList.length === 0) && (chart.pendingInvitations?.length ?? 0) === 0 && (
+                  {(!chart.createdBy || chart.accessList.length === 0) && (chart.pendingInvitations?.length ?? 0) === 0 && (chart.pendingRequests?.length ?? 0) === 0 && (
                     <li className="text-muted-foreground">Only the owner has access.</li>
                   )}
                 </ul>

@@ -39,6 +39,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { NotificationsBell } from "@/components/notifications-bell"
 import toast from "react-hot-toast"
 
 interface ChartItem {
@@ -401,6 +402,7 @@ export default function AdminChartsPage() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap items-center shrink-0">
+              <NotificationsBell />
               {adminInfo?.role === "super_admin" && (
                 <Button variant="outline" asChild className="border-border">
                   <Link href="/admin">

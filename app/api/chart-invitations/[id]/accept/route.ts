@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { notifyAccessGranted } from '@/lib/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Accept a chart invitation (invitee only)
@@ -13,6 +14,10 @@ export async function POST(
 
     const invitation = await prisma.chartInvitation.findUnique({
       where: { id: invitationId, status: 'pending' },
+      include: {
+        chart: { include: { booking: true, patient: true } },
+        invitedBy: { select: { id: true, email: true, name: true } },
+      },
     })
 
     if (!invitation) {
@@ -34,6 +39,14 @@ export async function POST(
         data: { status: 'accepted' },
       }),
     ])
+
+    const chartLabel = invitation.chart.booking
+      ? `${invitation.chart.booking.firstName} ${invitation.chart.booking.lastName}`
+      : invitation.chart.patient
+        ? `${invitation.chart.patient.firstName} ${invitation.chart.patient.lastName ?? ''}`.trim()
+        : 'Patient chart'
+    const grantedBy = invitation.invitedBy?.name || invitation.invitedBy?.email || 'Chart owner'
+    await notifyAccessGranted(session.id, invitation.chartId, chartLabel, grantedBy)
 
     return NextResponse.json({
       success: true,

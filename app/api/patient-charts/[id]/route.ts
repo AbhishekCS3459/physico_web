@@ -30,6 +30,10 @@ export async function GET(
           where: { status: 'pending' },
           include: { invitee: { select: { id: true, email: true, name: true } }, invitedBy: { select: { id: true, email: true, name: true } } },
         },
+        accessRequests: {
+          where: { status: 'pending' },
+          include: { requestedBy: { select: { id: true, email: true, name: true } } },
+        },
       },
     })
 
@@ -85,6 +89,13 @@ export async function GET(
         invitee: { id: inv.invitee.id, email: inv.invitee.email, name: inv.invitee.name },
         invitedBy: { id: inv.invitedBy.id, email: inv.invitedBy.email, name: inv.invitedBy.name },
         createdAt: inv.createdAt.toISOString(),
+      })),
+      pendingRequests: chart.accessRequests.map((req) => ({
+        id: req.id,
+        requestedById: req.requestedById,
+        permission: req.permission,
+        requestedBy: { id: req.requestedBy.id, email: req.requestedBy.email, name: req.requestedBy.name },
+        createdAt: req.createdAt.toISOString(),
       })),
       myPermission: permission,
     }

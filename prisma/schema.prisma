@@ -219,6 +219,7 @@ model PatientChart {
   accessList  PatientChartAccess[]
   events      PatientChartEvent[]
   invitations ChartInvitation[]
+  accessRequests ChartAccessRequest[]
 
   @@index([bookingId])
   @@index([patientId])
@@ -243,6 +244,44 @@ model ChartInvitation {
   @@index([chartId])
   @@index([inviteeId])
   @@index([status])
+}
+
+// Staff can request access to a chart; owner can grant or deny
+model ChartAccessRequest {
+  id             String    @id @default(cuid())
+  chartId        String
+  chart          PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  requestedById  String
+  requestedBy    Admin     @relation("accessRequestsSent", fields: [requestedById], references: [id], onDelete: Cascade)
+  permission     String    // "view" | "edit"
+  status         String    @default("pending") // "pending" | "granted" | "denied"
+  respondedById  String?
+  respondedBy    Admin?    @relation("accessRequestsResponded", fields: [respondedById], references: [id], onDelete: SetNull)
+  respondedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@unique([chartId, requestedById])
+  @@index([chartId])
+  @@index([requestedById])
+  @@index([status])
+}
+
+// In-app notifications for admins (access granted/revoked, requests, etc.)
+model AdminNotification {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  type      String   // "access_granted" | "access_revoked" | "invitation_received" | "request_granted" | "request_denied" | "request_received"
+  title     String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  chartId   String?
+  link      String?  // e.g. /admin/charts/xyz
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([read])
+  @@index([createdAt])
 }
 
 // Which doctor has view or edit access to a chart
@@ -291,6 +330,9 @@ model Admin {
   patientsCreated      Patient[]
   invitationsSent      ChartInvitation[] @relation("invitationsSent")
   invitationsReceived ChartInvitation[] @relation("invitationsReceived")
+  notifications        AdminNotification[]
+  accessRequestsSent   ChartAccessRequest[] @relation("accessRequestsSent")
+  accessRequestsResponded ChartAccessRequest[] @relation("accessRequestsResponded")
 
   @@index([email])
   @@index([role])

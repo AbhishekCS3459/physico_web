@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { notifyAccessRevoked } from '@/lib/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -57,7 +58,7 @@ export async function DELETE(
 
     const chart = await prisma.patientChart.findUnique({
       where: { id },
-      include: { accessList: true },
+      include: { accessList: true, booking: true, patient: true },
     })
 
     if (!chart) {
@@ -72,6 +73,14 @@ export async function DELETE(
     await prisma.patientChartAccess.delete({
       where: { chartId_adminId: { chartId: id, adminId } },
     })
+
+    const chartLabel = chart.booking
+      ? `${chart.booking.firstName} ${chart.booking.lastName}`
+      : chart.patient
+        ? `${chart.patient.firstName} ${chart.patient.lastName ?? ''}`.trim()
+        : 'Patient chart'
+    const revokedByName = (await prisma.admin.findUnique({ where: { id: session.id }, select: { name: true, email: true } }))
+    await notifyAccessRevoked(adminId, id, chartLabel, revokedByName?.name || revokedByName?.email || 'Chart owner')
 
     return NextResponse.json({ success: true })
   } catch (e: any) {
