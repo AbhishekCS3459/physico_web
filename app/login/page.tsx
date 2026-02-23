@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from "lucide-react"
 import { motion } from "motion/react"
 import Link from "next/link"
@@ -89,6 +90,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Theme toggle for login page (no header) */}
+      <div className="fixed top-4 right-4 z-[100] rounded-full p-0.5">
+        <ThemeToggle />
+      </div>
       {/* Animated Background with Blur Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Orbs */}
@@ -200,6 +205,19 @@ export default function LoginPage() {
               <p className="text-muted-foreground text-sm md:text-base">
                 Use your email and password. We’ll take you to the right place.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-3 text-xs"
+                onClick={() => {
+                  setEmail("admin@physiorehab.com")
+                  setPassword("admin")
+                  toast.success("Admin credentials filled")
+                }}
+              >
+                Fill admin demo (admin@physiorehab.com / admin)
+              </Button>
             </motion.div>
 
             {/* Login Form */}
@@ -314,6 +332,19 @@ export default function LoginPage() {
                 Staff sign up
               </Link>
             </p>
+
+            {/* Admin demo credentials hint */}
+            <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border/50">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                Admin login (for reference)
+              </p>
+              <p className="text-sm text-foreground font-mono">
+                Email: <span className="text-primary font-medium">admin@physiorehab.com</span>
+              </p>
+              <p className="text-sm text-foreground font-mono mt-1">
+                Password: <span className="text-primary font-medium">admin</span>
+              </p>
+            </div>
 
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -z-10" />

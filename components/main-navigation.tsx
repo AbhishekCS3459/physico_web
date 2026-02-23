@@ -1,6 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Clock, LogIn, MapPin, Menu, Phone, User } from "lucide-react"
 import Image from "next/image"
@@ -100,6 +101,7 @@ export function MainNavigation() {
                 <span className="hidden xl:inline">Admin</span>
               </Link>
             </Button>
+            <ThemeToggle />
           </nav>
 
           {/* Tablet Navigation - Enhanced responsive behavior */}
@@ -125,14 +127,16 @@ export function MainNavigation() {
             )}
           </div>
 
-          {/* Mobile Navigation */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm" className="p-2 h-9 w-9 sm:h-10 sm:w-10">
-                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
+          {/* Mobile: theme toggle + hamburger side by side to avoid overlap */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-2 h-9 w-9 sm:h-10 sm:w-10">
+                  <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-80">
               <div className="flex flex-col space-y-6 mt-6">
                 <Link href="/" className="flex items-center space-x-2">
@@ -208,6 +212,7 @@ export function MainNavigation() {
               </div>
             </SheetContent>
           </Sheet>
+          </div>
         </div>
       </div>
     </header>
