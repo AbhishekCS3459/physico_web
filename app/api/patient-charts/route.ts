@@ -1,4 +1,5 @@
 import { requireAuth } from '@/lib/auth'
+import { getDefaultChartNotesContentString } from '@/lib/chart-template'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -7,6 +8,7 @@ const createChartSchema = z
   .object({
     bookingId: z.string().min(1).optional(),
     patientId: z.string().min(1).optional(),
+    formTemplateId: z.string().min(1).optional().nullable(),
   })
   .refine((data) => (data.bookingId ? !data.patientId : !!data.patientId), {
     message: 'Provide either bookingId or patientId',
@@ -105,6 +107,7 @@ export async function GET(request: NextRequest) {
         admin: { id: a.admin.id, email: a.admin.email, name: a.admin.name },
       })),
       myPermission: c.createdById === session.id ? 'edit' : c.accessList.find((a) => a.adminId === session.id)?.permission ?? null,
+      isOwner: c.createdById === session.id,
     }))
 
     return NextResponse.json({ success: true, data })
@@ -142,7 +145,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await requireAuth()
     const body = await request.json()
-    const { bookingId, patientId } = createChartSchema.parse(body)
+    const { bookingId, patientId, formTemplateId } = createChartSchema.parse(body)
 
     if (patientId) {
       const patient = await prisma.patient.findUnique({
@@ -160,7 +163,8 @@ export async function POST(request: NextRequest) {
         data: {
           patientId,
           createdById: session.id,
-          content: null,
+          formTemplateId: formTemplateId ?? null,
+          content: body.formTemplateId ? '{}' : getDefaultChartNotesContentString(),
         },
       })
 
@@ -225,7 +229,8 @@ export async function POST(request: NextRequest) {
       data: {
         bookingId,
         createdById: session.id,
-        content: null,
+        formTemplateId: formTemplateId ?? null,
+        content: formTemplateId ? '{}' : getDefaultChartNotesContentString(),
       },
     })
 

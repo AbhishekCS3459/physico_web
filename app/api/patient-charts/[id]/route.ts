@@ -1,4 +1,5 @@
 import { requireAuth } from '@/lib/auth'
+import { getDefaultChartNotesContentString } from '@/lib/chart-template'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -24,6 +25,7 @@ export async function GET(
       include: {
         booking: true,
         patient: true,
+        formTemplate: { select: { id: true, name: true, schema: true } },
         createdBy: { select: { id: true, email: true, name: true } },
         accessList: { include: { admin: { select: { id: true, email: true, name: true } } } },
         invitations: {
@@ -50,6 +52,10 @@ export async function GET(
       id: chart.id,
       bookingId: chart.bookingId,
       patientId: chart.patientId,
+      formTemplateId: chart.formTemplateId,
+      formTemplate: chart.formTemplate
+        ? { id: chart.formTemplate.id, name: chart.formTemplate.name, schema: chart.formTemplate.schema }
+        : null,
       content: chart.content,
       createdAt: chart.createdAt.toISOString(),
       updatedAt: chart.updatedAt.toISOString(),
@@ -98,6 +104,7 @@ export async function GET(
         createdAt: req.createdAt.toISOString(),
       })),
       myPermission: permission,
+      isOwner: chart.createdById === session.id,
     }
 
     return NextResponse.json({ success: true, data })
@@ -110,7 +117,11 @@ export async function GET(
   }
 }
 
-const updateSchema = z.object({ content: z.string().nullable() })
+const updateSchema = z.object({
+  content: z.string().nullable().optional(),
+  formTemplateId: z.string().nullable().optional(),
+  clear: z.literal(true).optional(),
+})
 
 export async function PATCH(
   request: NextRequest,
@@ -120,7 +131,7 @@ export async function PATCH(
     const session = await requireAuth()
     const { id } = await params
     const body = await request.json()
-    const { content } = updateSchema.parse(body)
+    const parsed = updateSchema.parse(body)
 
     const chart = await prisma.patientChart.findUnique({
       where: { id },
@@ -136,13 +147,26 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'Edit access required' }, { status: 403 })
     }
 
+    const content =
+      parsed.clear === true
+        ? chart.formTemplateId
+          ? '{}'
+          : getDefaultChartNotesContentString()
+        : (parsed.content ?? chart.content)
+    const updateData: { content: string | null; formTemplateId?: string | null } = { content }
+    if (parsed.formTemplateId !== undefined) updateData.formTemplateId = parsed.formTemplateId
+
     const updated = await prisma.patientChart.update({
       where: { id },
-      data: { content },
+      data: updateData,
     })
 
     await prisma.patientChartEvent.create({
-      data: { chartId: id, adminId: session.id, action: 'updated' },
+      data: {
+        chartId: id,
+        adminId: session.id,
+        action: parsed.clear === true ? 'cleared' : 'updated',
+      },
     })
 
     return NextResponse.json({
@@ -162,5 +186,41 @@ export async function PATCH(
     }
     console.error('PATCH /api/patient-charts/[id]', e)
     return NextResponse.json({ success: false, error: 'Failed to update chart' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await requireAuth()
+    const { id } = await params
+
+    const chart = await prisma.patientChart.findUnique({
+      where: { id },
+      select: { id: true, createdById: true },
+    })
+
+    if (!chart) {
+      return NextResponse.json({ success: false, error: 'Chart not found' }, { status: 404 })
+    }
+
+    if (chart.createdById !== session.id) {
+      return NextResponse.json(
+        { success: false, error: 'Only the chart owner can delete this chart' },
+        { status: 403 }
+      )
+    }
+
+    await prisma.patientChart.delete({ where: { id } })
+
+    return NextResponse.json({ success: true })
+  } catch (e: any) {
+    if (e.message === 'Unauthorized') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+    console.error('DELETE /api/patient-charts/[id]', e)
+    return NextResponse.json({ success: false, error: 'Failed to delete chart' }, { status: 500 })
   }
 }

@@ -1,6 +1,18 @@
 "use client"
 
 import { ChartEditor } from "@/components/chart-editor"
+import { ChartTemplateForm } from "@/components/chart-template-form"
+import { DynamicFormFiller } from "@/components/dynamic-form-filler"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,27 +39,35 @@ import {
   ArrowLeft,
   Calendar,
   Copy,
+  Eraser,
   Loader2,
   Mail,
   MapPin,
   Phone,
   RefreshCw,
   Share2,
+  Trash2,
   User,
   Users,
   History,
   Home,
+  FileCheck,
+  FileText,
 } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { NotificationsBell } from "@/components/notifications-bell"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { getDefaultChartNotesContentString } from "@/lib/chart-template"
 
 interface ChartData {
   id: string
   bookingId: string | null
   patientId: string | null
+  formTemplateId: string | null
+  formTemplate: { id: string; name: string; schema: string } | null
   content: string | null
   createdAt: string
   updatedAt: string
@@ -92,6 +112,7 @@ interface ChartData {
     createdAt: string
   }[]
   myPermission: "view" | "edit"
+  isOwner?: boolean
 }
 
 interface TimelineEvent {
@@ -126,6 +147,13 @@ export default function ChartDetailPage() {
   const [requestAccessPermission, setRequestAccessPermission] = useState<"view" | "edit">("view")
   const [requestingAccess, setRequestingAccess] = useState(false)
   const [requestAccessSent, setRequestAccessSent] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [clearingChart, setClearingChart] = useState(false)
+  const [deletingChart, setDeletingChart] = useState(false)
+  const [chartViewMode, setChartViewMode] = useState<"form" | "edit">("form")
+  const [formTemplates, setFormTemplates] = useState<{ id: string; name: string }[]>([])
+  const [switchingTemplate, setSwitchingTemplate] = useState(false)
 
   const fetchChart = useCallback(async () => {
     try {
@@ -182,9 +210,18 @@ export default function ChartDetailPage() {
     if (chart) fetchTimeline()
   }, [chart, fetchTimeline])
 
+  useEffect(() => {
+    fetch("/api/form-templates", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setFormTemplates(data.data.map((t: { id: string; name: string }) => ({ id: t.id, name: t.name })))
+      })
+      .catch(() => {})
+  }, [])
+
   const handleSave = useCallback(
-    async (content: string) => {
-      if (!chart || chart.myPermission !== "edit") return
+    async (content: string): Promise<boolean> => {
+      if (!chart || chart.myPermission !== "edit") return false
       setSaving(true)
       try {
         const res = await fetch(`/api/patient-charts/${id}`, {
@@ -200,16 +237,47 @@ export default function ChartDetailPage() {
             prev ? { ...prev, content: data.data.content, updatedAt: data.data.updatedAt } : null
           )
           fetchTimeline()
+          return true
         } else {
           toast.error(data.error || "Failed to save")
+          return false
         }
       } catch {
         toast.error("Failed to save")
+        return false
       } finally {
         setSaving(false)
       }
     },
     [id, chart, fetchTimeline]
+  )
+
+  const switchFormTemplate = useCallback(
+    async (templateId: string | null) => {
+      if (!chart || chart.myPermission !== "edit") return
+      setSwitchingTemplate(true)
+      try {
+        const content = templateId ? "{}" : getDefaultChartNotesContentString()
+        const res = await fetch(`/api/patient-charts/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ formTemplateId: templateId, content }),
+        })
+        const data = await res.json()
+        if (data.success) {
+          toast.success(templateId ? "Switched to form template" : "Switched to default notes")
+          fetchChart()
+        } else {
+          toast.error(data.error || "Failed to switch template")
+        }
+      } catch {
+        toast.error("Failed to switch template")
+      } finally {
+        setSwitchingTemplate(false)
+      }
+    },
+    [id, chart, fetchChart]
   )
 
   const chartLink =
@@ -373,12 +441,72 @@ export default function ChartDetailPage() {
     }
   }
 
+  const handleClearChart = async () => {
+    setClearingChart(true)
+    try {
+      const res = await fetch(`/api/patient-charts/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ clear: true }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setShowClearConfirm(false)
+        toast.success("Chart cleared — reset to default notes")
+        setChart((prev) =>
+          prev
+            ? {
+                ...prev,
+                content: data.data.content,
+                updatedAt: data.data.updatedAt,
+              }
+            : null
+        )
+        fetchTimeline()
+      } else {
+        toast.error(data.error || "Failed to clear chart")
+      }
+    } catch {
+      toast.error("Failed to clear chart")
+    } finally {
+      setClearingChart(false)
+    }
+  }
+
+  const handleDeleteChart = async () => {
+    setDeletingChart(true)
+    try {
+      const res = await fetch(`/api/patient-charts/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      const data = await res.json()
+      if (data.success) {
+        setShowDeleteConfirm(false)
+        toast.success("Chart deleted")
+        router.push("/admin/charts")
+      } else {
+        toast.error(data.error || "Failed to delete chart")
+      }
+    } catch {
+      toast.error("Failed to delete chart")
+    } finally {
+      setDeletingChart(false)
+    }
+  }
+
   if (loading || (!chart && accessError === "none")) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading chart...</p>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5 p-4">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Loading chart...</p>
+          </div>
         </div>
       </div>
     )
@@ -388,12 +516,13 @@ export default function ChartDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-6">
         <div className="container max-w-6xl mx-auto">
-          <div className="mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <Button variant="outline" size="icon" asChild>
               <Link href="/admin/charts">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
+            <ThemeToggle />
           </div>
           <Card className="max-w-md border-2">
             <CardHeader>
@@ -446,72 +575,90 @@ export default function ChartDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-6">
-      <div className="container max-w-6xl mx-auto">
-        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 p-4 md:p-6">
+      <div className="container max-w-[1400px] mx-auto">
+        <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" className="shrink-0 rounded-lg" asChild>
               <Link href="/admin/charts">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground truncate">
                 {chart.booking
                   ? `${chart.booking.firstName} ${chart.booking.lastName}`
                   : chart.patient
                     ? `${chart.patient.firstName} ${chart.patient.lastName ?? ""}`.trim()
                     : "Patient"}
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Patient chart · {chart.myPermission === "edit" ? "You can edit" : "View only"}
               </p>
             </div>
-            <Badge variant={chart.myPermission === "edit" ? "default" : "secondary"}>
+            <Badge variant={chart.myPermission === "edit" ? "default" : "secondary"} className="shrink-0">
               {chart.myPermission === "edit" ? "Edit access" : "View only"}
             </Badge>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center">
+            <ThemeToggle />
             <NotificationsBell />
-            <Button variant="outline" size="sm" onClick={copyLink}>
+            <Button variant="outline" size="sm" className="rounded-lg" onClick={copyLink}>
               <Copy className="h-4 w-4 mr-2" />
               {linkCopied ? "Copied!" : "Copy link"}
             </Button>
             {chart.myPermission === "edit" && (
-              <Button variant="outline" onClick={openShare}>
+              <Button variant="outline" size="sm" className="rounded-lg" onClick={openShare}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
             )}
-            <Button variant="outline" asChild>
+            {chart.myPermission === "edit" && (
+              <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setShowClearConfirm(true)}>
+                <Eraser className="h-4 w-4 mr-2" />
+                Clear chart
+              </Button>
+            )}
+            {chart.isOwner && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete chart
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="rounded-lg" asChild>
               <Link href="/admin">
                 <Home className="h-4 w-4 mr-2" />
                 Home
               </Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="sm" className="rounded-lg" asChild>
               <Link href="/admin/charts">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Back to charts
               </Link>
             </Button>
           </div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Patient info sidebar */}
           <div className="lg:col-span-1 space-y-4">
-            <Card className="border-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <User className="h-4 w-4" />
+            <Card className="rounded-xl border border-border/80 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 bg-muted/30 border-b border-border/60">
+                <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                  <User className="h-4 w-4 text-muted-foreground" />
                   Patient information
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   {chart.booking ? "From booking" : "From patient record"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm">
+              <CardContent className="pt-4 space-y-4 text-sm">
                 {chart.booking ? (
                   <>
                     <div>
@@ -578,15 +725,15 @@ export default function ChartDetailPage() {
             </Card>
 
             {/* Timeline */}
-            <Card className="border-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <History className="h-4 w-4" />
+            <Card className="rounded-xl border border-border/80 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 bg-muted/30 border-b border-border/60">
+                <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                  <History className="h-4 w-4 text-muted-foreground" />
                   Timeline
                 </CardTitle>
-                <CardDescription>Chart activity</CardDescription>
+                <CardDescription className="text-muted-foreground">Chart activity</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                 <ScrollArea className="h-[240px] pr-4">
                   <div className="space-y-3">
                     {timeline.length === 0 ? (
@@ -595,11 +742,11 @@ export default function ChartDetailPage() {
                       timeline.map((event) => (
                         <div
                           key={event.id}
-                          className="flex gap-2 text-sm border-l-2 border-primary/30 pl-3 py-1"
+                          className="flex gap-2 text-sm border-l-2 border-primary/40 pl-3 py-1.5"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium capitalize">{event.action}</p>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="font-medium capitalize text-foreground">{event.action}</p>
+                            <p className="text-muted-foreground text-xs mt-0.5">
                               {event.admin?.name || event.admin?.email || "Unknown"} ·{" "}
                               {format(new Date(event.createdAt), "MMM d, HH:mm")}
                             </p>
@@ -613,25 +760,137 @@ export default function ChartDetailPage() {
             </Card>
           </div>
 
-          {/* Editor */}
-          <div className="lg:col-span-2">
-            <Card className="border-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Chart notes</CardTitle>
-                <CardDescription>
-                  {chart.myPermission === "edit"
-                    ? "Add and edit patient information. Changes are shared with doctors who have access."
-                    : "You have view-only access. Ask the chart owner to grant edit access."}
-                </CardDescription>
+          {/* Editor - wider column for chart notes */}
+          <div className="lg:col-span-3">
+            <Card className="rounded-xl border border-border/80 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 bg-muted/30 border-b border-border/60">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-lg font-semibold tracking-tight">Chart notes</CardTitle>
+                    <CardDescription className="text-muted-foreground mt-1">
+                      {chart.formTemplate
+                        ? `Using form: ${chart.formTemplate.name}. Data is saved automatically.`
+                        : chart.myPermission === "edit"
+                          ? "Select treatment options and add notes below each section. Changes are shared with doctors who have access."
+                          : "You have view-only access. Ask the chart owner to grant edit access."}
+                    </CardDescription>
+                    {chart.myPermission === "edit" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <Select
+                          value={chart.formTemplateId ?? "default"}
+                          onValueChange={(v) => {
+                            if (v === "default") switchFormTemplate(null)
+                            else switchFormTemplate(v)
+                          }}
+                          disabled={switchingTemplate}
+                        >
+                          <SelectTrigger className="w-[220px] h-8 text-sm">
+                            <SelectValue placeholder="Form template" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Default (chart notes)</SelectItem>
+                            {formTemplates.map((t) => (
+                              <SelectItem key={t.id} value={t.id}>
+                                {t.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Link href="/admin/charts/forms" className="text-xs text-muted-foreground hover:underline">
+                          Manage templates
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                  {!chart.formTemplate && (
+                    <div className="flex rounded-lg border border-border/80 bg-background/80 p-1 shadow-inner">
+                      <Button
+                        type="button"
+                        variant={chartViewMode === "form" ? "secondary" : "ghost"}
+                        size="sm"
+                        className="h-8 gap-1.5 rounded-md"
+                        onClick={() => setChartViewMode("form")}
+                      >
+                        <FileCheck className="h-4 w-4" />
+                        Form
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={chartViewMode === "edit" ? "secondary" : "ghost"}
+                        size="sm"
+                        className="h-8 gap-1.5 rounded-md"
+                        onClick={() => setChartViewMode("edit")}
+                      >
+                        <FileText className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
-              <CardContent>
-                <ChartEditor
-                  initialContent={chart.content}
-                  editable={chart.myPermission === "edit"}
-                  onSave={chart.myPermission === "edit" ? handleSave : undefined}
-                />
+              <CardContent className="p-0">
+                {chart.formTemplate ? (
+                  <div className="p-5">
+                    <DynamicFormFiller
+                      key={`${chart.id}-${chart.updatedAt}`}
+                      schemaJson={chart.formTemplate.schema}
+                      initialContent={chart.content}
+                      editable={chart.myPermission === "edit"}
+                      onSave={chart.myPermission === "edit" ? handleSave : undefined}
+                      saving={saving}
+                      onAfterDraftSave={
+                        chart.myPermission === "edit"
+                          ? () => {
+                              toast.success("Draft saved. You can continue editing from the charts list.")
+                              router.push("/admin/charts")
+                            }
+                          : undefined
+                      }
+                    />
+                  </div>
+                ) : chartViewMode === "form" ? (
+                  <ChartTemplateForm
+                    key={`${chart.id}-${chart.updatedAt}`}
+                    initialContent={
+                      chart.content && chart.content.trim() !== ""
+                        ? chart.content
+                        : getDefaultChartNotesContentString()
+                    }
+                    editable={chart.myPermission === "edit"}
+                    onSave={chart.myPermission === "edit" ? handleSave : undefined}
+                    saving={saving}
+                    onAfterDraftSave={
+                      chart.myPermission === "edit"
+                        ? () => {
+                            toast.success("Draft saved. You can continue editing from the charts list.")
+                            router.push("/admin/charts")
+                          }
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <ChartEditor
+                    key={`${chart.id}-${chart.updatedAt}`}
+                    initialContent={
+                      chart.content && chart.content.trim() !== ""
+                        ? chart.content
+                        : getDefaultChartNotesContentString()
+                    }
+                    editable={chart.myPermission === "edit"}
+                    onSave={chart.myPermission === "edit" ? handleSave : undefined}
+                    saving={saving}
+                    onAfterDraftSave={
+                      chart.myPermission === "edit"
+                        ? () => {
+                            toast.success("Draft saved. You can continue editing from the charts list.")
+                            router.push("/admin/charts")
+                          }
+                        : undefined
+                    }
+                  />
+                )}
                 {saving && (
-                  <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground px-5 py-2 flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Saving...
                   </p>
@@ -640,15 +899,15 @@ export default function ChartDetailPage() {
             </Card>
 
             {/* Who has access */}
-            <Card className="border-2 mt-4">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+            <Card className="rounded-xl border border-border/80 shadow-sm mt-6 overflow-hidden">
+              <CardHeader className="pb-3 bg-muted/30 border-b border-border/60">
+                <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   Access
                 </CardTitle>
-                <CardDescription>Doctors with access to this chart</CardDescription>
+                <CardDescription className="text-muted-foreground">Doctors with access to this chart</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                 <ul className="space-y-2 text-sm">
                   {chart.createdBy && (
                     <li className="flex items-center justify-between">
@@ -890,6 +1149,68 @@ export default function ChartDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear chart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will reset all chart notes to the default template. The change is saved immediately and shared with everyone who has access. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={clearingChart}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleClearChart()
+              }}
+              disabled={clearingChart}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {clearingChart ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Clearing...
+                </>
+              ) : (
+                "Clear chart"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this chart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the chart and all its notes. Everyone who had access will no longer see it. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingChart}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDeleteChart()
+              }}
+              disabled={deletingChart}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingChart ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete chart"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

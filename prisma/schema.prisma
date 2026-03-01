@@ -202,19 +202,38 @@ model Patient {
   @@index([createdById])
 }
 
-// Patient chart: shared clinical notes per patient/booking (doctors only)
-model PatientChart {
+// Custom form template (Google-Forms-style): schema defines fields, used to render and persist chart data
+model FormTemplate {
   id          String   @id @default(cuid())
-  bookingId   String?  @unique
-  booking     TherapyBooking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  patientId   String?  @unique
-  patient     Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  // Rich text content (JSON from Tiptap/ProseMirror)
-  content     String?  @db.Text
+  name        String
+  description String?  @db.Text
+  // JSON: { version: 1, fields: FormField[] } — section, short_text, long_text, checkbox, radio, dropdown
+  schema      String   @db.Text
   createdById String?
   createdBy   Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  patientCharts PatientChart[]
+
+  @@index([createdById])
+}
+
+// Patient chart: shared clinical notes per patient/booking (doctors only)
+model PatientChart {
+  id             String   @id @default(cuid())
+  bookingId      String?  @unique
+  booking        TherapyBooking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  patientId      String?  @unique
+  patient        Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  formTemplateId String?
+  formTemplate   FormTemplate? @relation(fields: [formTemplateId], references: [id], onDelete: SetNull)
+  // Rich text content: TipTap JSON (when formTemplateId is null) OR response JSON (when formTemplateId set)
+  content        String?  @db.Text
+  createdById    String?
+  createdBy      Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   accessList  PatientChartAccess[]
   events      PatientChartEvent[]
@@ -223,6 +242,7 @@ model PatientChart {
 
   @@index([bookingId])
   @@index([patientId])
+  @@index([formTemplateId])
   @@index([createdById])
 }
 
@@ -324,6 +344,7 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  formTemplatesCreated FormTemplate[]
   patientChartAccess   PatientChartAccess[]
   patientChartEvents   PatientChartEvent[]
   patientChartsCreated PatientChart[]

@@ -56,6 +56,7 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { InitialAssessmentForm } from "@/components/assessment-forms/initial-assessment-form"
 import { FollowupAssessmentForm } from "@/components/assessment-forms/followup-assessment-form"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface TherapyBooking {
   id: string
@@ -435,6 +436,7 @@ export default function AdminDashboard() {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <ThemeToggle />
             <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/admin/charts">
                 <ClipboardList className="h-4 w-4 mr-2" />
@@ -858,167 +860,227 @@ export default function AdminDashboard() {
                 )}
 
                 {/* Assessments Section */}
-                <div className="pt-4 border-t">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5" />
-                      Assessments ({assessments.length})
-                    </h3>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setAssessmentType("initial")
-                          setEditingAssessment(null)
-                          setShowAssessmentDialog(true)
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Initial Assessment
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setAssessmentType("followup")
-                          setEditingAssessment(null)
-                          setShowAssessmentDialog(true)
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Follow-up Assessment
-                      </Button>
-                    </div>
-                  </div>
-                  {assessments.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No assessments yet. Create an initial or follow-up assessment.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {assessments.map((assessment) => (
-                        <Card key={assessment.id} className="border-2">
-                          <CardContent className="pt-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge variant="outline">
-                                    {assessment.assessmentType === "initial"
-                                      ? "Initial"
-                                      : "Follow-up"}
-                                  </Badge>
-                                  <span className="text-sm text-muted-foreground">
-                                    {format(
-                                      new Date(assessment.createdAt),
-                                      "MMM dd, yyyy"
-                                    )}
-                                  </span>
-                                </div>
-                                {assessment.clinicalImpression && (
-                                  <p className="text-sm line-clamp-2">
-                                    {assessment.clinicalImpression.substring(0, 100)}
-                                    {assessment.clinicalImpression.length > 100
-                                      ? "..."
-                                      : ""}
-                                  </p>
-                                )}
-                                {assessment.plan && !assessment.clinicalImpression && (
-                                  <p className="text-sm line-clamp-2">
-                                    {assessment.plan.substring(0, 100)}
-                                    {assessment.plan.length > 100 ? "..." : ""}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setViewingAssessment(assessment)
-                                  }}
-                                >
-                                  <FileText className="h-4 w-4 mr-2" />
-                                  View
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingAssessment(assessment)
-                                    setAssessmentType(
-                                      assessment.assessmentType as "initial" | "followup"
-                                    )
-                                    setShowAssessmentDialog(true)
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Patient chart */}
-                <div className="pt-4 border-t">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5" />
-                      Patient chart
-                    </h3>
-                    <div className="flex gap-2">
-                      {chartForBooking === "loading" ? (
-                        <span className="text-sm text-muted-foreground">Checking...</span>
-                      ) : chartForBooking ? (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/admin/charts/${chartForBooking.id}`}>
-                            <FileText className="h-4 w-4 mr-2" />
-                            Open chart
-                          </Link>
-                        </Button>
-                      ) : (
+                <div className="pt-6 border-t">
+                  <div className="rounded-xl border-2 border-border/60 bg-muted/20 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <ClipboardList className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            Assessments
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {assessments.length} assessment{assessments.length !== 1 ? "s" : ""} on file
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={creatingChart}
-                          onClick={async () => {
-                            if (!selectedBooking) return
-                            setCreatingChart(true)
-                            try {
-                              const res = await fetch("/api/patient-charts", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                credentials: "include",
-                                body: JSON.stringify({ bookingId: selectedBooking.id }),
-                              })
-                              const data = await res.json()
-                              if (data.success) {
-                                toast.success("Chart created")
-                                setChartForBooking({ id: data.data.id })
-                                router.push(`/admin/charts/${data.data.id}`)
-                              } else {
-                                toast.error(data.error || "Failed to create chart")
-                              }
-                            } catch {
-                              toast.error("Failed to create chart")
-                            } finally {
-                              setCreatingChart(false)
-                            }
+                          className="rounded-lg border-border"
+                          onClick={() => {
+                            setAssessmentType("initial")
+                            setEditingAssessment(null)
+                            setShowAssessmentDialog(true)
                           }}
                         >
-                          {creatingChart ? "Creating..." : "Create chart"}
+                          <Plus className="h-4 w-4 mr-2" />
+                          Initial Assessment
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-lg border-border"
+                          onClick={() => {
+                            setAssessmentType("followup")
+                            setEditingAssessment(null)
+                            setShowAssessmentDialog(true)
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Follow-up Assessment
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      {assessments.length === 0 ? (
+                        <div className="rounded-lg border border-dashed border-border bg-background/50 py-10 px-6 text-center">
+                          <ClipboardList className="h-10 w-10 mx-auto text-muted-foreground/60 mb-3" />
+                          <p className="text-sm font-medium text-foreground">No assessments yet</p>
+                          <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                            Create an initial or follow-up assessment to document this patient&apos;s care.
+                          </p>
+                          <div className="flex flex-wrap justify-center gap-2 mt-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-lg"
+                              onClick={() => {
+                                setAssessmentType("initial")
+                                setEditingAssessment(null)
+                                setShowAssessmentDialog(true)
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Initial Assessment
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-lg"
+                              onClick={() => {
+                                setAssessmentType("followup")
+                                setEditingAssessment(null)
+                                setShowAssessmentDialog(true)
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Follow-up
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {assessments.map((assessment) => (
+                            <Card
+                              key={assessment.id}
+                              className="border-2 border-border/60 hover:border-primary/30 hover:shadow-sm transition-all overflow-hidden"
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                      <Badge
+                                        variant={assessment.assessmentType === "initial" ? "default" : "secondary"}
+                                        className="shrink-0 font-medium"
+                                      >
+                                        {assessment.assessmentType === "initial"
+                                          ? "Initial"
+                                          : "Follow-up"}
+                                      </Badge>
+                                      <span className="text-sm text-muted-foreground">
+                                        {format(
+                                          new Date(assessment.createdAt),
+                                          "MMM dd, yyyy"
+                                        )}
+                                      </span>
+                                    </div>
+                                    {assessment.clinicalImpression && (
+                                      <p className="text-sm text-foreground/90 line-clamp-2">
+                                        {assessment.clinicalImpression.substring(0, 120)}
+                                        {assessment.clinicalImpression.length > 120 ? "..." : ""}
+                                      </p>
+                                    )}
+                                    {assessment.plan && !assessment.clinicalImpression && (
+                                      <p className="text-sm text-foreground/90 line-clamp-2">
+                                        {assessment.plan.substring(0, 120)}
+                                        {assessment.plan.length > 120 ? "..." : ""}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2 shrink-0">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="rounded-lg"
+                                      onClick={() => setViewingAssessment(assessment)}
+                                    >
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      View
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="rounded-lg"
+                                      onClick={() => {
+                                        setEditingAssessment(assessment)
+                                        setAssessmentType(
+                                          assessment.assessmentType as "initial" | "followup"
+                                        )
+                                        setShowAssessmentDialog(true)
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Shared chart for this patient. Doctors with access can view or edit notes.
-                  </p>
+                </div>
+
+                {/* Patient chart */}
+                <div className="pt-6 border-t">
+                  <div className="rounded-xl border-2 border-border/60 bg-muted/20 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            Patient chart
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Shared chart for this patient. Doctors with access can view or edit notes.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        {chartForBooking === "loading" ? (
+                          <span className="text-sm text-muted-foreground">Checking...</span>
+                        ) : chartForBooking ? (
+                          <Button variant="outline" size="sm" className="rounded-lg" asChild>
+                            <Link href={`/admin/charts/${chartForBooking.id}`}>
+                              <FileText className="h-4 w-4 mr-2" />
+                              Open chart
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg"
+                            disabled={creatingChart}
+                            onClick={async () => {
+                              if (!selectedBooking) return
+                              setCreatingChart(true)
+                              try {
+                                const res = await fetch("/api/patient-charts", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  credentials: "include",
+                                  body: JSON.stringify({ bookingId: selectedBooking.id }),
+                                })
+                                const data = await res.json()
+                                if (data.success) {
+                                  toast.success("Chart created")
+                                  setChartForBooking({ id: data.data.id })
+                                  router.push(`/admin/charts/${data.data.id}`)
+                                } else {
+                                  toast.error(data.error || "Failed to create chart")
+                                }
+                              } catch {
+                                toast.error("Failed to create chart")
+                              } finally {
+                                setCreatingChart(false)
+                              }
+                            }}
+                          >
+                            {creatingChart ? "Creating..." : "Create chart"}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Timestamps */}
@@ -1129,137 +1191,181 @@ export default function AdminDashboard() {
                     : "Follow-up Assessment"}
                 </DialogTitle>
                 <DialogDescription>
-                  Created: {format(new Date(viewingAssessment.createdAt), "MMM dd, yyyy HH:mm:ss")}
+                  Created {format(new Date(viewingAssessment.createdAt), "MMM dd, yyyy 'at' HH:mm")}
                 </DialogDescription>
               </DialogHeader>
-              <div className="mt-4 space-y-4">
+              <div className="mt-4 space-y-5 pr-1">
                 {viewingAssessment.assessmentType === "initial" ? (
-                  <div className="space-y-4">
-                    {viewingAssessment.reasonForReferral && (
-                      <div>
-                        <Label className="font-semibold">Reason for Referral</Label>
-                        <p className="mt-1">{viewingAssessment.reasonForReferral}</p>
-                      </div>
+                  <div className="space-y-5">
+                    {(viewingAssessment.reasonForReferral || viewingAssessment.hpi) && (
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Referral & history</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+                          {viewingAssessment.reasonForReferral && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reason for Referral</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.reasonForReferral}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.hpi && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">HPI</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.hpi}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
-                    {viewingAssessment.hpi && (
-                      <div>
-                        <Label className="font-semibold">HPI</Label>
-                        <p className="mt-1">{viewingAssessment.hpi}</p>
-                      </div>
+                    {(viewingAssessment.painDescription || viewingAssessment.painLevel || viewingAssessment.painType || viewingAssessment.whatMakesWorse || viewingAssessment.whatHelps) && (
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Pain</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+                          {viewingAssessment.painDescription && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pain description</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.painDescription}</p>
+                            </div>
+                          )}
+                          {(viewingAssessment.painLevel || viewingAssessment.painType) && (
+                            <div className="grid grid-cols-2 gap-4">
+                              {viewingAssessment.painLevel && (
+                                <div>
+                                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pain /10</Label>
+                                  <p className="mt-1 text-sm">{viewingAssessment.painLevel}</p>
+                                </div>
+                              )}
+                              {viewingAssessment.painType && (
+                                <div>
+                                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Intermittent / Constant</Label>
+                                  <p className="mt-1 text-sm">{viewingAssessment.painType}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {viewingAssessment.whatMakesWorse && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">What makes pain worse</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.whatMakesWorse}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.whatHelps && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">What helps</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.whatHelps}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
-                    {viewingAssessment.painDescription && (
-                      <div>
-                        <Label className="font-semibold">Pain description</Label>
-                        <p className="mt-1">{viewingAssessment.painDescription}</p>
-                      </div>
+                    {(viewingAssessment.pmhx || viewingAssessment.associatedImaging || viewingAssessment.baselineActivity) && (
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Medical history & imaging</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+                          {viewingAssessment.pmhx && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">PMHx</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.pmhx}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.associatedImaging && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Associated / Relevant Imaging</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.associatedImaging}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.baselineActivity && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Baseline activity</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.baselineActivity}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
-                    {(viewingAssessment.painLevel || viewingAssessment.painType) && (
-                      <div className="grid grid-cols-2 gap-4">
-                        {viewingAssessment.painLevel && (
-                          <div>
-                            <Label className="font-semibold">Pain /10</Label>
-                            <p className="mt-1">{viewingAssessment.painLevel}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.painType && (
-                          <div>
-                            <Label className="font-semibold">Intermittent / Constant</Label>
-                            <p className="mt-1">{viewingAssessment.painType}</p>
-                          </div>
-                        )}
-                      </div>
+                    {(viewingAssessment.observation || viewingAssessment.swellingCirculation || viewingAssessment.romInitial || viewingAssessment.strengthInitial || viewingAssessment.neuro || viewingAssessment.palpation || viewingAssessment.specialTests) && (
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Objective</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+                          {viewingAssessment.observation && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Observation</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.observation}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.swellingCirculation && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Swelling / circulation</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.swellingCirculation}</p>
+                            </div>
+                          )}
+                          {(viewingAssessment.romInitial || viewingAssessment.strengthInitial) && (
+                            <div className="grid grid-cols-2 gap-4">
+                              {viewingAssessment.romInitial && (
+                                <div>
+                                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">ROM</Label>
+                                  <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.romInitial}</p>
+                                </div>
+                              )}
+                              {viewingAssessment.strengthInitial && (
+                                <div>
+                                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">RIM / Strength</Label>
+                                  <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.strengthInitial}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {viewingAssessment.neuro && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Neuro</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.neuro}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.palpation && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Palpation</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.palpation}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.specialTests && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Special tests / Outcome measures</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.specialTests}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
-                    {viewingAssessment.whatMakesWorse && (
-                      <div>
-                        <Label className="font-semibold">What make the pain worse</Label>
-                        <p className="mt-1">{viewingAssessment.whatMakesWorse}</p>
-                      </div>
+                    {(viewingAssessment.clinicalImpression || viewingAssessment.goals) && (
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Clinical impression & goals</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+                          {viewingAssessment.clinicalImpression && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Clinical impression</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.clinicalImpression}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.goals && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Goals</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.goals}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
-                    {viewingAssessment.whatHelps && (
-                      <div>
-                        <Label className="font-semibold">What helps</Label>
-                        <p className="mt-1">{viewingAssessment.whatHelps}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.pmhx && (
-                      <div>
-                        <Label className="font-semibold">PMHx</Label>
-                        <p className="mt-1">{viewingAssessment.pmhx}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.associatedImaging && (
-                      <div>
-                        <Label className="font-semibold">Associated/Relevant Imaging</Label>
-                        <p className="mt-1">{viewingAssessment.associatedImaging}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.baselineActivity && (
-                      <div>
-                        <Label className="font-semibold">Baseline Physical Activity/occupation/leisure activities</Label>
-                        <p className="mt-1">{viewingAssessment.baselineActivity}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.observation && (
-                      <div>
-                        <Label className="font-semibold">Observation</Label>
-                        <p className="mt-1">{viewingAssessment.observation}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.swellingCirculation && (
-                      <div>
-                        <Label className="font-semibold">Swelling/circulation</Label>
-                        <p className="mt-1">{viewingAssessment.swellingCirculation}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.romInitial && (
-                      <div>
-                        <Label className="font-semibold">ROM</Label>
-                        <p className="mt-1">{viewingAssessment.romInitial}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.strengthInitial && (
-                      <div>
-                        <Label className="font-semibold">RIM/Strength</Label>
-                        <p className="mt-1">{viewingAssessment.strengthInitial}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.neuro && (
-                      <div>
-                        <Label className="font-semibold">Neuro (screening, reflexes, tension tests)</Label>
-                        <p className="mt-1">{viewingAssessment.neuro}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.palpation && (
-                      <div>
-                        <Label className="font-semibold">Palpation</Label>
-                        <p className="mt-1">{viewingAssessment.palpation}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.specialTests && (
-                      <div>
-                        <Label className="font-semibold">Special Tests/Outcome measures</Label>
-                        <p className="mt-1">{viewingAssessment.specialTests}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.clinicalImpression && (
-                      <div>
-                        <Label className="font-semibold">Clinical Impression/Analysis</Label>
-                        <p className="mt-1">{viewingAssessment.clinicalImpression}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.goals && (
-                      <div>
-                        <Label className="font-semibold">Goal</Label>
-                        <p className="mt-1">{viewingAssessment.goals}</p>
-                      </div>
-                    )}
-                    {viewingAssessment.treatment && (
-                      <div>
-                        <Label className="font-semibold">Treatment</Label>
-                        <p className="mt-1">{viewingAssessment.treatment}</p>
-                      </div>
-                    )}
-                    {(viewingAssessment.treatmentModality ||
+                    {(viewingAssessment.treatment ||
+                      viewingAssessment.treatmentModality ||
                       viewingAssessment.treatmentROM ||
                       viewingAssessment.treatmentStrengthening ||
                       viewingAssessment.treatmentStretching ||
@@ -1267,63 +1373,79 @@ export default function AdminDashboard() {
                       viewingAssessment.treatmentEducation ||
                       viewingAssessment.treatmentRestrictions ||
                       viewingAssessment.treatmentHandouts) && (
-                      <div className="border-t pt-4">
-                        <Label className="font-semibold text-base">Treatment</Label>
-                        {viewingAssessment.treatmentModality && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">Modality</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentModality}</p>
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Treatment</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+                          {viewingAssessment.treatment && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Summary</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.treatment}</p>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {viewingAssessment.treatmentModality && (
+                              <div>
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Modality</Label>
+                                <p className="mt-1 text-sm">{viewingAssessment.treatmentModality}</p>
+                              </div>
+                            )}
+                            {viewingAssessment.treatmentROM && (
+                              <div>
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">ROM</Label>
+                                <p className="mt-1 text-sm">{viewingAssessment.treatmentROM}</p>
+                              </div>
+                            )}
+                            {viewingAssessment.treatmentStrengthening && (
+                              <div>
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strengthening</Label>
+                                <p className="mt-1 text-sm">{viewingAssessment.treatmentStrengthening}</p>
+                              </div>
+                            )}
+                            {viewingAssessment.treatmentStretching && (
+                              <div>
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Stretching</Label>
+                                <p className="mt-1 text-sm">{viewingAssessment.treatmentStretching}</p>
+                              </div>
+                            )}
+                            {viewingAssessment.treatmentRestrictions && (
+                              <div>
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Restrictions</Label>
+                                <p className="mt-1 text-sm">{viewingAssessment.treatmentRestrictions}</p>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {viewingAssessment.treatmentROM && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">ROM</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentROM}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.treatmentStrengthening && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">Strengthening</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentStrengthening}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.treatmentStretching && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">Stretching</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentStretching}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.treatmentHEP && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">HEP</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentHEP}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.treatmentEducation && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">Education</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentEducation}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.treatmentRestrictions && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">Restrictions</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentRestrictions}</p>
-                          </div>
-                        )}
-                        {viewingAssessment.treatmentHandouts && (
-                          <div className="mt-2">
-                            <Label className="font-semibold text-sm">Print outs given to the patient</Label>
-                            <p className="mt-1">{viewingAssessment.treatmentHandouts}</p>
-                          </div>
-                        )}
-                      </div>
+                          {viewingAssessment.treatmentHEP && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">HEP</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.treatmentHEP}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.treatmentEducation && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Education</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.treatmentEducation}</p>
+                            </div>
+                          )}
+                          {viewingAssessment.treatmentHandouts && (
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Print outs given</Label>
+                              <p className="mt-1 text-sm whitespace-pre-wrap">{viewingAssessment.treatmentHandouts}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
                     {viewingAssessment.plan && (
-                      <div>
-                        <Label className="font-semibold">Plan</Label>
-                        <p className="mt-1">{viewingAssessment.plan}</p>
-                      </div>
+                      <Card className="border-2 border-border/60 overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b">
+                          <CardTitle className="text-sm font-semibold">Plan</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 px-4 pb-4">
+                          <p className="text-sm whitespace-pre-wrap">{viewingAssessment.plan}</p>
+                        </CardContent>
+                      </Card>
                     )}
                   </div>
                 ) : (

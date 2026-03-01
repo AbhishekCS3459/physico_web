@@ -69,11 +69,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+    // Patient exists but has no chart — return them so the client can create a chart
     if (existing) {
-      return NextResponse.json(
-        { success: false, error: 'Patient with this email already exists (no chart yet)' },
-        { status: 400 }
-      )
+      const data = {
+        id: existing.id,
+        email: existing.email,
+        firstName: existing.firstName,
+        lastName: existing.lastName ?? null,
+        phoneNumber: existing.phoneNumber ?? null,
+        createdAt: existing.createdAt.toISOString(),
+      }
+      return NextResponse.json({ success: true, data }, { status: 200 })
     }
 
     const patient = await prisma.patient.create({

@@ -1,5 +1,15 @@
 "use client"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -27,12 +37,14 @@ import {
   Calendar,
   ChevronRight,
   FileText,
+  Loader2,
   LogOut,
   Mail,
   Plus,
   RefreshCw,
   Search,
   Stethoscope,
+  Trash2,
   User,
   UserPlus,
 } from "lucide-react"
@@ -40,6 +52,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { NotificationsBell } from "@/components/notifications-bell"
+import { ThemeToggle } from "@/components/theme-toggle"
 import toast from "react-hot-toast"
 
 interface ChartItem {
@@ -67,6 +80,7 @@ interface ChartItem {
   } | null
   accessList: { adminId: string; permission: string; admin: { id: string; email: string; name: string | null } }[]
   myPermission: string | null
+  isOwner?: boolean
 }
 
 interface BookingOption {
@@ -112,6 +126,8 @@ export default function AdminChartsPage() {
   const [patients, setPatients] = useState<PatientOption[]>([])
   const [bookingsLoading, setBookingsLoading] = useState(false)
   const [selectedBookingId, setSelectedBookingId] = useState("")
+  const [chartToDelete, setChartToDelete] = useState<string | null>(null)
+  const [deletingChartId, setDeletingChartId] = useState<string | null>(null)
   const [selectedPatientId, setSelectedPatientId] = useState("")
   const [creating, setCreating] = useState(false)
   const [newPatientMode, setNewPatientMode] = useState(false)
@@ -235,7 +251,16 @@ export default function AdminChartsPage() {
       .finally(() => setBookingsLoading(false))
   }
 
-  const createChart = async () => {
+  const createChart = async (asDraft = false) => {
+    const onChartCreated = (chartId: string) => {
+      setShowNewChart(false)
+      if (asDraft) {
+        fetchCharts()
+        toast.success("Chart saved as draft. Open it from the list to edit later.")
+      } else {
+        router.push(`/admin/charts/${chartId}`)
+      }
+    }
     if (newPatientMode) {
       if (!newPatientEmail.trim() || !newPatientFirstName.trim()) {
         toast.error("Email and name are required")
@@ -268,9 +293,11 @@ export default function AdminChartsPage() {
         })
         const chartData = await chartRes.json()
         if (chartData.success) {
-          toast.success("Patient and chart created")
-          setShowNewChart(false)
-          router.push(`/admin/charts/${chartData.data.id}`)
+          if (!asDraft) {
+            const isNewPatient = createPatientRes.status === 201
+            toast.success(isNewPatient ? "Patient and chart created" : "Chart created for existing patient")
+          }
+          onChartCreated(chartData.data.id)
         } else {
           toast.error(chartData.error || "Failed to create chart")
         }
@@ -292,9 +319,8 @@ export default function AdminChartsPage() {
         })
         const data = await res.json()
         if (data.success) {
-          toast.success("Chart created")
-          setShowNewChart(false)
-          router.push(`/admin/charts/${data.data.id}`)
+          if (!asDraft) toast.success("Chart created")
+          onChartCreated(data.data.id)
         } else {
           toast.error(data.error || "Failed to create chart")
         }
@@ -319,9 +345,8 @@ export default function AdminChartsPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success("Chart created")
-        setShowNewChart(false)
-        router.push(`/admin/charts/${data.data.id}`)
+        if (!asDraft) toast.success("Chart created")
+        onChartCreated(data.data.id)
       } else {
         toast.error(data.error || "Failed to create chart")
       }
@@ -343,6 +368,28 @@ export default function AdminChartsPage() {
       }
     } catch {
       toast.error("Failed to logout")
+    }
+  }
+
+  const deleteChartFromList = async (chartId: string) => {
+    setDeletingChartId(chartId)
+    try {
+      const res = await fetch(`/api/patient-charts/${chartId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      const data = await res.json()
+      if (data.success) {
+        setChartToDelete(null)
+        toast.success("Chart deleted")
+        fetchCharts()
+      } else {
+        toast.error(data.error || "Failed to delete chart")
+      }
+    } catch {
+      toast.error("Failed to delete chart")
+    } finally {
+      setDeletingChartId(null)
     }
   }
 
@@ -402,6 +449,7 @@ export default function AdminChartsPage() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap items-center shrink-0">
+              <ThemeToggle />
               <NotificationsBell />
               {adminInfo?.role === "super_admin" && (
                 <Button variant="outline" asChild className="border-border">
@@ -411,6 +459,12 @@ export default function AdminChartsPage() {
                   </Link>
                 </Button>
               )}
+              <Button variant="outline" asChild className="border-border">
+                <Link href="/admin/charts/forms">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Form templates
+                </Link>
+              </Button>
               <Button onClick={openNewChart} className="bg-primary hover:bg-primary/90 shadow-sm">
                 <Plus className="h-4 w-4 mr-2" />
                 New chart
@@ -614,6 +668,20 @@ export default function AdminChartsPage() {
                             <ChevronRight className="h-4 w-4" />
                           </Link>
                         </Button>
+                        {chart.isOwner && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setChartToDelete(chart.id)
+                            }}
+                            title="Delete chart"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -755,12 +823,22 @@ export default function AdminChartsPage() {
                 </div>
               )}
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewChart(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setShowNewChart(false)} className="sm:mr-auto">
                 Cancel
               </Button>
               <Button
-                onClick={createChart}
+                variant="secondary"
+                onClick={() => createChart(true)}
+                disabled={
+                  creating ||
+                  (newPatientMode ? !newPatientEmail.trim() || !newPatientFirstName.trim() : !selectedBookingId && !selectedPatientId)
+                }
+              >
+                {creating ? "Saving..." : "Save as draft"}
+              </Button>
+              <Button
+                onClick={() => createChart(false)}
                 disabled={
                   creating ||
                   (newPatientMode ? !newPatientEmail.trim() || !newPatientFirstName.trim() : !selectedBookingId && !selectedPatientId)
@@ -771,6 +849,37 @@ export default function AdminChartsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!chartToDelete} onOpenChange={(open) => !open && setChartToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this chart?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the chart and all its notes. Everyone who had access will no longer see it. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={!!deletingChartId}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (chartToDelete) deleteChartFromList(chartToDelete)
+                }}
+                disabled={!!deletingChartId}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deletingChartId ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete chart"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )
