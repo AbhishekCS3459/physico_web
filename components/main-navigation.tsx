@@ -38,20 +38,16 @@ export function MainNavigation() {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 min-w-0">
-            <div className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-lg shrink-0 relative">
+          <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
+            <div className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
               <Image
-                width={96}
-                height={96}
-                src="/logo-removebg-preview.png"
-                alt="Physio Rehab at Home"
+                src="/logo-nav.jpeg"
+                alt=""
+                fill
                 className="object-contain"
+                sizes="(max-width: 640px) 40px, (max-width: 1024px) 44px, 48px"
               />
             </div>
-            <span className="font-serif font-bold text-lg sm:text-xl lg:text-2xl text-foreground truncate">
-              <span className="hidden xs:inline">Physio Rehab at Home</span>
-              <span className="xs:hidden">Physio Rehab</span>
-            </span>
           </Link>
 
           {/* Desktop Navigation - Enhanced for larger screens */}
@@ -139,16 +135,15 @@ export function MainNavigation() {
               </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-80">
               <div className="flex flex-col space-y-6 mt-6">
-                <Link href="/" className="flex items-center space-x-2">
-                  <div className="h-20 w-20 rounded-lg relative">
+                <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
+                  <div className="h-14 w-14 rounded-xl overflow-hidden border border-border/50 bg-card relative">
                     <Image
-                      src="/logo-removebg-preview.png"
-                      alt="Physio Rehab at Home"
+                      src="/logo-nav.jpeg"
+                      alt=""
                       fill
                       className="object-contain"
                     />
                   </div>
-                  <span className="font-serif font-bold text-xl">Physio Rehab</span>
                 </Link>
 
                 <nav className="flex flex-col space-y-1">

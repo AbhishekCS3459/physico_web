@@ -17,22 +17,16 @@ export default function BookingPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {
-    // Check authentication
+    // Allow both guest and logged-in booking
     fetch("/api/auth/user/me")
       .then((res) => res.json())
       .then((data) => {
-        if (!data.authenticated) {
-          toast.error("Please login to book an appointment")
-          router.push("/user-login")
-        } else {
-          setIsCheckingAuth(false)
-        }
+        setIsCheckingAuth(false)
       })
       .catch(() => {
-        toast.error("Please login to book an appointment")
-        router.push("/user-login")
+        setIsCheckingAuth(false)
       })
-  }, [router])
+  }, [])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

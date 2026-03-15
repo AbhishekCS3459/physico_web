@@ -33,8 +33,8 @@ const trustIndicators = [
 
 export function ProofStrip() {
   return (
-    <section className="py-12 bg-muted/30 border-y">
-      <div className="container px-4">
+    <section className="py-10 sm:py-12 bg-muted/30 border-y border-border/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <Badge variant="outline" className="mb-4">
             Trusted Healthcare Provider

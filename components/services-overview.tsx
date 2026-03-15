@@ -1,13 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Activity, Brain, Package as Massage, Users, Stethoscope, Zap } from "lucide-react"
+import { Activity, Brain, Package as Massage, Users, Stethoscope } from "lucide-react"
 
 const services = [
   {
     icon: Activity,
     title: "Physiotherapy",
     description: "Manual therapy, exercise prescription, and movement rehabilitation",
-    features: ["Manual Therapy", "Dry Needling", "Exercise Programs", "Pain Management"],
+    features: ["Manual Therapy", "Exercise Programs", "Pain Management"],
   },
   {
     icon: Brain,

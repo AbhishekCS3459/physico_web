@@ -219,7 +219,6 @@ export function PremiumHero() {
                         "Physiotherapy & Rehabilitation",
                         "Occupational Therapy",
                         "Registered Massage Therapy",
-                        "Acupuncture & Dry Needling",
                       ].map((service, index) => (
                         <motion.div
                           key={index}

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Calendar, LogIn, Menu, Phone } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -19,14 +20,10 @@ export function Navigation() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 lg:h-18 items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm lg:text-base">PR</span>
+        <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
+          <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-lg overflow-hidden relative">
+            <Image src="/logo-nav.jpeg" alt="" fill className="object-contain" />
           </div>
-          <span className="font-bold text-base sm:text-lg lg:text-xl">
-            <span className="hidden sm:inline">Physio Rehab at Home</span>
-            <span className="sm:hidden">Physio Rehab</span>
-          </span>
         </Link>
 
         {/* Desktop Navigation */}

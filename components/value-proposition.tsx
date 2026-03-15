@@ -40,8 +40,8 @@ const valueProps = [
 
 export function ValueProposition() {
   return (
-    <section className="py-16 md:py-24 flex flex-col items-center justify-center">
-      <div className="container px-4">
+    <section className="py-16 md:py-24 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Badge variant="secondary" className="mb-4">
             Why Choose Mobile Therapy

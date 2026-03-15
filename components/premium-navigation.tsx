@@ -10,15 +10,14 @@ import {
   ChevronDown,
   Clock,
   DollarSign,
-  Heart,
   LogIn,
   PackageIcon as MassageIcon,
   Menu,
   Phone,
   Shield,
   Users,
-  Zap
 } from "lucide-react"
+import Image from "next/image"
 import { AnimatePresence, motion } from "motion/react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -31,7 +30,6 @@ const navigationItems = [
       { name: "Physiotherapy", href: "/services/physiotherapy", icon: Activity },
       { name: "Occupational Therapy", href: "/services/occupational", icon: Brain },
       { name: "Massage Therapy", href: "/services/massage", icon: MassageIcon },
-      { name: "Acupuncture & Dry Needling", href: "/services/acupuncture", icon: Zap },
     ],
   },
   { name: "Pricing", href: "/pricing", icon: DollarSign },
@@ -65,23 +63,16 @@ export function PremiumNavigation() {
         transition={{ duration: 0.6 }}
       >
         <div className="container flex h-16 lg:h-20 items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center space-x-3 group">
+          <Link href="/" className="flex items-center group" aria-label="Physio Rehab at Home">
             <motion.div
-              className={`h-10 w-10 lg:h-12 lg:w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg transition-all duration-300 ${
+              className={`h-10 w-10 lg:h-12 lg:w-12 rounded-xl overflow-hidden flex items-center justify-center shadow-lg transition-all duration-300 ${
                 isScrolled ? "shadow-primary/20" : "shadow-primary/10"
               } group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-primary/30`}
               whileHover={{ rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Heart className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+              <Image src="/logo-nav.jpeg" alt="" width={48} height={48} className="h-full w-full object-contain" />
             </motion.div>
-            <div className="flex flex-col">
-              <span className="font-bold text-lg lg:text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                <span className="hidden sm:inline">Physio Rehab at Home</span>
-                <span className="sm:hidden">Physio Rehab</span>
-              </span>
-              <span className="text-xs text-muted-foreground hidden lg:block">Mobile Healthcare Excellence</span>
-            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
@@ -189,12 +180,8 @@ export function PremiumNavigation() {
               <div className="flex flex-col space-y-6 mt-8">
                 {/* Mobile logo */}
                 <div className="flex items-center gap-3 pb-6 border-b border-primary/10">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Heart className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg">Physio Rehab at Home</div>
-                    <div className="text-sm text-muted-foreground">Mobile Healthcare</div>
+                  <div className="h-12 w-12 rounded-xl overflow-hidden relative flex-shrink-0">
+                    <Image src="/logo-nav.jpeg" alt="" fill className="object-contain" />
                   </div>
                 </div>
 

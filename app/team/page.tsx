@@ -68,6 +68,51 @@ export default function TeamPage() {
             </p>
           </div>
 
+          {/* Team Introduction */}
+          <div className="mb-16">
+            <h2 className="text-2xl font-bold mb-8 text-center sm:text-left">Team Introduction</h2>
+            <div className="space-y-8">
+              <Card className="border-2 hover:border-primary/20 transition-all duration-300 overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-xl md:text-2xl">Binod Baranwal</CardTitle>
+                      <CardDescription className="mt-1 text-primary font-medium">
+                        Occupational Therapist, Diploma in Rehabilitation
+                      </CardDescription>
+                    </div>
+                    <Badge variant="secondary" className="w-fit">OT</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Binod is a dedicated and experienced occupational therapist with over 2 decades of experience
+                    enabling individuals to achieve their occupational goals and regain independence in performing
+                    leisure activities, work and ADL related concerns.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    With a strong background in physical and cognitive health and passion for holistic well-being,
+                    Binod believes in empowering clients through an individual-oriented strength based approach. He is
+                    committed to helping you return to performing the daily activities and your meaningful occupation
+                    that enhances your quality of life. He ensures that your treatment plan is not only evidence-based
+                    but also tailored to your unique goals and passions.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    His skills in Seating Assessment, Cognitive assessment and his creativity enable him to utilize a
+                    holistic approach to help clients regain, adapt, or maintain skills for daily living, promoting
+                    independence and safety within their own homes.
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <Badge variant="outline" className="text-xs">Seating Assessment</Badge>
+                    <Badge variant="outline" className="text-xs">Cognitive Assessment</Badge>
+                    <Badge variant="outline" className="text-xs">ADL Training</Badge>
+                    <Badge variant="outline" className="text-xs">Holistic Approach</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
           {/* What Sets Us Apart */}
           <Card className="mb-16 border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>

@@ -26,7 +26,7 @@ export default function ResponsiveCarouselTestimonials() {
       button: "Read Full Story",
       src: "/hispanic-elderly-woman.jpg",
       content:
-        "Chronic back pain kept me from enjoying time with my grandchildren. The massage therapy and acupuncture treatments have given me my life back.",
+        "Chronic back pain kept me from enjoying time with my grandchildren. The massage therapy and physiotherapy have given me my life back.",
       author: "Maria Rodriguez, 65",
       location: "Okotoks, AB",
     },
@@ -42,13 +42,13 @@ export default function ResponsiveCarouselTestimonials() {
   ]
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 bg-gradient-to-br from-blue-50 to-teal-50 dark:from-neutral-900 dark:to-neutral-800">
+    <section className="py-16 sm:py-20 lg:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mb-10 sm:mb-12">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3">
             Patient Success Stories
           </h2>
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Real experiences from our patients across Calgary and surrounding areas
           </p>
         </div>
@@ -57,23 +57,23 @@ export default function ResponsiveCarouselTestimonials() {
           <Carousel slides={testimonialData} />
         </div>
 
-        <div className="mt-12 sm:mt-16 text-center">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 max-w-4xl mx-auto">
+        <div className="mt-10 sm:mt-12 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">500+</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Happy Patients</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary">500+</div>
+              <div className="text-sm text-muted-foreground">Happy Patients</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-teal-600 dark:text-teal-400">98%</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Satisfaction Rate</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary">98%</div>
+              <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">24/7</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Availability</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary">24/7</div>
+              <div className="text-sm text-muted-foreground">Availability</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-teal-600 dark:text-teal-400">5</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Service Areas</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary">5</div>
+              <div className="text-sm text-muted-foreground">Service Areas</div>
             </div>
           </div>
         </div>

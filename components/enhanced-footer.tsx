@@ -67,7 +67,7 @@ export function EnhancedFooter() {
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="container px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10 w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 mb-8 sm:mb-12 lg:mb-16">
           <motion.div
             className="space-y-6"
@@ -151,16 +151,6 @@ export function EnhancedFooter() {
                 <div>
                   <div className="font-semibold">info@physiorehabhome.ca</div>
                   <div className="text-sm text-muted-foreground">Email Us</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50 hover:bg-primary/5 transition-colors">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <div className="font-semibold">370 Evanston Drive</div>
-                  <div className="text-sm text-muted-foreground">Calgary, AB T3P0E2</div>
                 </div>
               </div>
 

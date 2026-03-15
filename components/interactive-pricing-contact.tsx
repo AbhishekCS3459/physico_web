@@ -22,8 +22,7 @@ import {
   PackageIcon as MassageIcon,
   Phone,
   Shield,
-  Users,
-  Zap
+  Users
 } from "lucide-react"
 import { motion } from "motion/react"
 import { useState } from "react"
@@ -35,35 +34,21 @@ const pricingData = {
     color: "from-emerald-500 to-teal-600",
     services: [
       { name: "Initial Assessment", duration: "60 mins", price: 140 },
-      { name: "Follow-Up Session", duration: "45 mins", price: 130 },
-      { name: "Extended Session", duration: "60 mins", price: 140 },
+      { name: "Follow-Up Session", duration: "45 mins", price: 140 },
     ],
   },
   occupationalTherapy: {
     icon: Brain,
     title: "Occupational Therapy",
     color: "from-blue-500 to-indigo-600",
-    services: [
-      { name: "Initial Assessment", duration: "60 mins", price: 130 },
-      { name: "Follow-Up Session", duration: "45 mins", price: 100 },
-      { name: "Home Safety Assessment", duration: "60 mins", price: 150 },
-    ],
+    services: [], // Contact for pricing
   },
   massageTherapy: {
     icon: MassageIcon,
     title: "Massage Therapy",
+    subtitle: "Coming Soon",
     color: "from-purple-500 to-pink-600",
-    services: [
-      { name: "45 Minute Session", duration: "45 mins", price: 85 },
-      { name: "60 Minute Session", duration: "60 mins", price: 105 },
-      { name: "90 Minute Session", duration: "90 mins", price: 140 },
-    ],
-  },
-  acupuncture: {
-    icon: Zap,
-    title: "Acupuncture & Dry Needling",
-    color: "from-orange-500 to-red-600",
-    services: [{ name: "Included with Physio Session", duration: "Part of session", price: 0 }],
+    services: [], // Coming soon – booking disabled
   },
 }
 
@@ -98,16 +83,16 @@ export function InteractivePricingContact() {
   }
 
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-background via-muted/10 to-primary/5 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden">
+    <section className="py-16 md:py-24 lg:py-28 bg-gradient-to-br from-background via-muted/10 to-primary/5 relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="container px-4 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Pricing Section */}
         <motion.div
-          className="mb-20"
+          className="mb-14 md:mb-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -130,7 +115,7 @@ export function InteractivePricingContact() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-start">
             {/* Interactive Pricing Calculator */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -171,90 +156,95 @@ export function InteractivePricingContact() {
                     </div>
                   </div>
 
-                  {/* Session Type Selection */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-semibold">Session Type</Label>
-                    <Select
-                      value={selectedSession.toString()}
-                      onValueChange={(value) => setSelectedSession(Number.parseInt(value))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pricingData[selectedService as keyof typeof pricingData].services.map((session, index) => (
-                          <SelectItem key={index} value={index.toString()}>
-                            {session.name} - {session.duration} - ${session.price}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Session Count */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-semibold">Number of Sessions</Label>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setSessionCount(Math.max(1, sessionCount - 1))}
-                        disabled={sessionCount <= 1}
-                      >
-                        -
-                      </Button>
-                      <Input
-                        type="number"
-                        value={sessionCount}
-                        onChange={(e) => setSessionCount(Math.max(1, Number.parseInt(e.target.value) || 1))}
-                        className="text-center w-20"
-                        min="1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setSessionCount(sessionCount + 1)}
-                        disabled={sessionCount >= 20}
-                      >
-                        +
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Total Calculation */}
-                  <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-6 border border-primary/10">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-lg font-semibold">Estimated Total:</span>
-                      <span className="text-3xl font-bold text-primary">${calculateTotal()}</span>
-                    </div>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex justify-between">
-                        <span>Per Session:</span>
-                        <span>
-                          $
-                          {pricingData[selectedService as keyof typeof pricingData].services[selectedSession]?.price ||
-                            0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Sessions:</span>
-                        <span>{sessionCount}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button className="flex-1 bg-gradient-to-r from-primary to-accent" asChild>
-                      <Link href="/book">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Book Now
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="bg-transparent">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Check Insurance
-                    </Button>
-                  </div>
+                  {(() => {
+                    const current = pricingData[selectedService as keyof typeof pricingData]
+                    const hasRates = current.services && current.services.length > 0
+                    const subtitle = "subtitle" in current ? (current as { subtitle?: string }).subtitle : null
+                    if (!hasRates) {
+                      return (
+                        <>
+                          <div className="rounded-xl border border-border bg-muted/30 p-4 text-center">
+                            <p className="text-muted-foreground">
+                              {subtitle === "Coming Soon"
+                                ? "Massage therapy booking will be available soon."
+                                : "Contact us for pricing and availability."}
+                            </p>
+                            <Button variant="outline" className="mt-4" asChild>
+                              <Link href="/contact">Contact Us</Link>
+                            </Button>
+                          </div>
+                          <div className="flex gap-3">
+                            {subtitle === "Coming Soon" ? (
+                              <Button className="flex-1" variant="secondary" disabled>
+                                <Calendar className="h-4 w-4 mr-2" />Coming Soon
+                              </Button>
+                            ) : (
+                              <Button className="flex-1 bg-gradient-to-r from-primary to-accent" asChild>
+                                <Link href="/book"><Calendar className="h-4 w-4 mr-2" />Book Now</Link>
+                              </Button>
+                            )}
+                            <Button variant="outline" className="bg-transparent" asChild>
+                              <Link href="/contact"><Shield className="h-4 w-4 mr-2" />Contact for Info</Link>
+                            </Button>
+                          </div>
+                        </>
+                      )
+                    }
+                    return (
+                      <>
+                        <div className="space-y-3">
+                          <Label className="text-base font-semibold">Session Type</Label>
+                          <Select
+                            value={selectedSession.toString()}
+                            onValueChange={(value) => setSelectedSession(Number.parseInt(value))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {current.services.map((session, index) => (
+                                <SelectItem key={index} value={index.toString()}>
+                                  {session.name} - {session.duration} - ${session.price}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-base font-semibold">Number of Sessions</Label>
+                          <div className="flex items-center gap-3">
+                            <Button variant="outline" size="icon" onClick={() => setSessionCount(Math.max(1, sessionCount - 1))} disabled={sessionCount <= 1}>-</Button>
+                            <Input type="number" value={sessionCount} onChange={(e) => setSessionCount(Math.max(1, Number.parseInt(e.target.value) || 1))} className="text-center w-20" min="1" />
+                            <Button variant="outline" size="icon" onClick={() => setSessionCount(sessionCount + 1)} disabled={sessionCount >= 20}>+</Button>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-6 border border-primary/10">
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-lg font-semibold">Estimated Total:</span>
+                            <span className="text-3xl font-bold text-primary">${calculateTotal()}</span>
+                          </div>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <div className="flex justify-between">
+                              <span>Per Session:</span>
+                              <span>${current.services[selectedSession]?.price ?? 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Sessions:</span>
+                              <span>{sessionCount}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button className="flex-1 bg-gradient-to-r from-primary to-accent" asChild>
+                            <Link href="/book"><Calendar className="h-4 w-4 mr-2" />Book Now</Link>
+                          </Button>
+                          <Button variant="outline" className="bg-transparent">
+                            <Shield className="h-4 w-4 mr-2" />Check Insurance
+                          </Button>
+                        </div>
+                      </>
+                    )
+                  })()}
                 </CardContent>
               </Card>
             </motion.div>
@@ -337,97 +327,134 @@ export function InteractivePricingContact() {
           </div>
         </motion.div>
 
-        {/* Contact Section */}
+        {/* Contact Section - balanced two-column layout */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className="max-w-7xl mx-auto"
         >
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 md:mb-14">
             <Badge variant="secondary" className="mb-4 bg-accent/80 text-white border-accent">
               <Users className="h-4 w-4 mr-1" />
               Get In Touch
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
               Ready to Start Your <span className="text-primary">Recovery Journey?</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
               Contact us today to schedule your assessment or ask any questions about our services.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {/* Contact Information */}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+            {/* Left: Contact Information */}
             <motion.div
-              className="space-y-8"
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: -24 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
+              className="min-h-0"
             >
-              <Card className="p-8 bg-gradient-to-br from-card via-background to-accent/5 border-2 border-accent/10">
-                <CardHeader className="pb-6">
-                  <CardTitle className="text-2xl">Contact Information</CardTitle>
+              <Card className="h-full p-6 md:p-8 bg-card border-2 border-border shadow-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl md:text-2xl">Contact Information</CardTitle>
                   <CardDescription>Multiple ways to reach our team</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <Phone className="h-6 w-6 text-primary" />
+                <CardContent className="space-y-5">
+                  <div className="space-y-3">
+                    <a href="tel:5875865566" className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Phone className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <div className="font-semibold">Phone</div>
+                        <div className="font-semibold text-sm">Phone</div>
                         <div className="text-muted-foreground">(587) 586-5566</div>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                      <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                        <Mail className="h-6 w-6 text-accent" />
+                    </a>
+                    <a href="mailto:info@physiorehabhome.ca" className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                        <Mail className="h-5 w-5 text-accent" />
                       </div>
                       <div>
-                        <div className="font-semibold">Email</div>
+                        <div className="font-semibold text-sm">Email</div>
                         <div className="text-muted-foreground">info@physiorehabhome.ca</div>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <MapPin className="h-6 w-6 text-primary" />
+                    </a>
+                    <div className="flex items-center gap-4 p-4 rounded-xl bg-muted/50">
+                      <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                        <Clock className="h-5 w-5 text-accent" />
                       </div>
                       <div>
-                        <div className="font-semibold">Address</div>
-                        <div className="text-muted-foreground">370 Evanston Drive, Calgary, AB T3P0E2</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                      <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                        <Clock className="h-6 w-6 text-accent" />
-                      </div>
-                      <div>
-                        <div className="font-semibold">Hours</div>
-                        <div className="text-muted-foreground">Monday - Sunday: 8:00 AM - 7:00 PM</div>
+                        <div className="font-semibold text-sm">Hours</div>
+                        <div className="text-muted-foreground">Monday – Sunday: 8:00 AM – 7:00 PM</div>
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex gap-3">
-                    <Button className="flex-1 bg-gradient-to-r from-primary to-accent">
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call Now
+                  <div className="flex gap-3 pt-2">
+                    <Button className="flex-1" asChild>
+                      <a href="tel:5875865566">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call Now
+                      </a>
                     </Button>
-                    <Button variant="outline" className="flex-1 bg-transparent">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Book Online
+                    <Button variant="outline" className="flex-1 bg-transparent" asChild>
+                      <Link href="/book">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Book Online
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
 
+            {/* Right: Book Your Visit CTA */}
+            <motion.div
+              initial={{ opacity: 0, x: 24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="min-h-0"
+            >
+              <Card className="h-full p-6 md:p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 border-2 border-primary/20 shadow-sm overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="relative z-10 flex flex-col justify-center h-full min-h-[280px]">
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+                    Book Your Home Visit
+                  </h3>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                    Schedule an initial assessment or follow-up. We come to you with everything needed for your session. Direct billing available.
+                  </p>
+                  <ul className="space-y-2 mb-8 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                      Same-day booking when available
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                      No travel — we visit you at home
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                      Guest or login — book either way
+                    </li>
+                  </ul>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md" asChild>
+                      <Link href="/book">
+                        <Calendar className="h-5 w-5 mr-2" />
+                        Book Appointment
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" className="border-primary/30 bg-background/50" asChild>
+                      <Link href="/contact">Contact Us</Link>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
           </div>
         </motion.div>
       </div>

@@ -43,22 +43,6 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center flex-shrink-0 hover:from-primary/20 hover:to-accent/20 transition-all duration-300">
-                      <MapPin className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Address</h4>
-                      <p className="text-muted-foreground">
-                        370 Evanston Drive
-                        <br />
-                        Calgary, Alberta, Canada
-                        <br />
-                        T3P 0E2
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                       <Phone className="h-6 w-6 text-primary" />
                     </div>

@@ -43,17 +43,7 @@ export default function PricingPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Follow-Up Session (45 mins)</span>
-                    <span className="font-semibold">$130</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Extended Session (60 mins)</span>
                     <span className="font-semibold">$140</span>
-                  </div>
-                </div>
-                <div className="pt-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    Acupuncture/Dry Needling Included
                   </div>
                 </div>
               </CardContent>
@@ -66,44 +56,20 @@ export default function PricingPage() {
                 <CardDescription>Daily living & independence</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span>Initial Assessment (60 mins)</span>
-                    <span className="font-semibold">$130</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Follow-Up Session (45 mins)</span>
-                    <span className="font-semibold">$100</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Home Safety Assessment</span>
-                    <span className="font-semibold">$150</span>
-                  </div>
-                </div>
+                <p className="text-muted-foreground text-sm">Contact us for pricing and availability.</p>
               </CardContent>
             </Card>
 
             {/* Massage Therapy */}
-            <Card className="relative border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group">
+            <Card className="relative border-2 border-dashed border-muted-foreground/40 hover:border-primary/20 transition-all duration-300 group">
               <CardHeader>
                 <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Massage Therapy</CardTitle>
-                <CardDescription>Registered Massage Therapist</CardDescription>
+                <CardDescription className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Coming Soon</span>
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span>45 minutes</span>
-                    <span className="font-semibold">$85</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>60 minutes</span>
-                    <span className="font-semibold">$105</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>90 minutes</span>
-                    <span className="font-semibold">$140</span>
-                  </div>
-                </div>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">Therapeutic massage by RMT — booking available soon.</p>
               </CardContent>
             </Card>
           </div>
@@ -128,12 +94,8 @@ export default function PricingPage() {
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Check className="h-4 w-4 text-primary" />
-                    Acupuncture/Dry Needling included in physio sessions
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 text-primary" />
-                    No travel fee within Calgary, Airdrie, Okotoks, Cochrane, Crossfield
+                    No travel fee within Calgary area. A travel fee applies for services outside the Calgary area.
                   </div>
                 </div>
               </div>

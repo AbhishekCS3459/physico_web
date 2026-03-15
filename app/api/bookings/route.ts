@@ -1,4 +1,4 @@
-import { getSession, getUserSession, requireUserAuth } from '@/lib/auth'
+import { getSession, getUserSession } from '@/lib/auth'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
@@ -35,8 +35,8 @@ const bookingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Require user authentication
-    const userSession = await requireUserAuth()
+    // Support both guest and registered user booking
+    const userSession = await getUserSession()
 
     const body = await request.json()
     const validatedData = bookingSchema.parse(body)
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         groupNumber: validatedData.groupNumber,
         emergencyContact: validatedData.emergencyContact,
         specialInstructions: validatedData.specialInstructions,
-        userId: userSession.id, // Associate booking with logged-in user
+        userId: userSession?.id ?? null,
       } as any,
     })
 

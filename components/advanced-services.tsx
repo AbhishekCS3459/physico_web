@@ -9,7 +9,6 @@ import {
   PackageIcon as MassageIcon,
   Users,
   Stethoscope,
-  Zap,
   Clock,
   DollarSign,
   CheckCircle,
@@ -28,16 +27,14 @@ const services = [
       "Comprehensive physical rehabilitation with manual therapy, exercise prescription, and movement analysis",
     features: [
       "Manual Therapy & Joint Mobilization",
-      "Dry Needling & Acupuncture",
       "Customized Exercise Programs",
       "Pain Management Strategies",
     ],
     pricing: {
       initial: 140,
-      followUp: 130,
-      extended: 140,
+      followUp: 140,
     },
-    duration: "45-60 mins",
+    duration: "60 mins initial / 45 mins follow-up",
     popular: true,
     color: "from-emerald-500 to-teal-600",
   },
@@ -52,50 +49,21 @@ const services = [
       "Cognitive Rehabilitation",
       "Activities of Daily Living",
     ],
-    pricing: {
-      initial: 130,
-      followUp: 100,
-      assessment: 150,
-    },
-    duration: "45-60 mins",
+    pricing: {}, // Contact for pricing
+    duration: "—",
     popular: false,
     color: "from-blue-500 to-indigo-600",
   },
   {
     icon: MassageIcon,
     title: "Massage Therapy",
-    description: "Therapeutic massage by registered massage therapists for pain relief, recovery, and wellness",
-    features: [
-      "Deep Tissue & Therapeutic Massage",
-      "Sports Massage & Recovery",
-      "Relaxation & Stress Relief",
-      "Myofascial Release Techniques",
-    ],
-    pricing: {
-      "45min": 85,
-      "60min": 105,
-      "90min": 140,
-    },
-    duration: "45-90 mins",
+    comingSoon: true,
+    description: "Therapeutic massage by registered massage therapists for pain relief, recovery, and wellness. Booking available soon.",
+    features: [],
+    pricing: {},
+    duration: "—",
     popular: false,
     color: "from-purple-500 to-pink-600",
-  },
-  {
-    icon: Zap,
-    title: "Acupuncture & Dry Needling",
-    description: "Traditional acupuncture and modern dry needling techniques for pain management and healing",
-    features: [
-      "Traditional Acupuncture",
-      "Dry Needling for Trigger Points",
-      "Pain & Inflammation Relief",
-      "Neurological Condition Support",
-    ],
-    pricing: {
-      included: "Included with Physio",
-    },
-    duration: "Part of session",
-    popular: false,
-    color: "from-orange-500 to-red-600",
   },
   {
     icon: Users,
@@ -187,6 +155,11 @@ export function AdvancedServices() {
                     </Badge>
                   </div>
                 )}
+                {"comingSoon" in service && (service as { comingSoon?: boolean }).comingSoon && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <Badge variant="secondary" className="border-0">Coming Soon</Badge>
+                  </div>
+                )}
 
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
@@ -210,6 +183,9 @@ export function AdvancedServices() {
 
                 <CardContent className="relative z-10 space-y-6">
                   <div className="space-y-3">
+                    {service.features.length === 0 && "comingSoon" in service && (
+                      <p className="text-sm text-muted-foreground">Booking available soon.</p>
+                    )}
                     {service.features.map((feature, idx) => (
                       <motion.div
                         key={idx}
@@ -231,10 +207,12 @@ export function AdvancedServices() {
                         <Clock className="h-4 w-4" />
                         {service.duration}
                       </div>
+                      {"comingSoon" in service && (service as { comingSoon?: boolean }).comingSoon ? null : (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Shield className="h-4 w-4" />
                         Direct Billing
                       </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -260,6 +238,11 @@ export function AdvancedServices() {
                     </div>
                   </div>
 
+                  {"comingSoon" in service && (service as { comingSoon?: boolean }).comingSoon ? (
+                    <Button className="w-full" variant="secondary" size="lg" disabled>
+                      Coming Soon
+                    </Button>
+                  ) : (
                   <Button
                     className={`w-full bg-gradient-to-r ${service.color} hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-white border-0`}
                     size="lg"
@@ -267,6 +250,7 @@ export function AdvancedServices() {
                     Book {service.title}
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>

@@ -76,29 +76,21 @@ export function BookingForm() {
       description: "Rehabilitation and movement therapy",
       prices: {
         initial: "$140 (60 min)",
-        followup: "$130 (45 min)",
-        extended: "$140 (60 min)",
+        followup: "$140 (45 min)",
       },
     },
     {
       id: "occupational-therapy",
       name: "Occupational Therapy",
-      description: "Daily living and independence support",
-      prices: {
-        initial: "$130 (60 min)",
-        followup: "$100 (45 min)",
-        assessment: "$150 (Home Safety)",
-      },
+      description: "Daily living and independence support — contact for pricing",
+      prices: {},
     },
     {
       id: "massage-therapy",
       name: "Massage Therapy",
       description: "Therapeutic massage by RMT",
-      prices: {
-        "45min": "$85 (45 min)",
-        "60min": "$105 (60 min)",
-        "90min": "$140 (90 min)",
-      },
+      comingSoon: true,
+      prices: {},
     },
   ]
 
@@ -349,7 +341,9 @@ export function BookingForm() {
                   onValueChange={(value) => setFormData({ ...formData, serviceType: value })}
                   className="space-y-4 sm:space-y-6"
                 >
-                  {services.map((service, index) => (
+                  {services.map((service, index) => {
+                    const isComingSoon = "comingSoon" in service && (service as { comingSoon?: boolean }).comingSoon
+                    return (
                     <motion.div
                       key={service.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -358,45 +352,54 @@ export function BookingForm() {
                       className="group"
                     >
                       <div 
-                        className={`flex items-start space-x-3 sm:space-x-4 p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
-                          formData.serviceType === service.id
-                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
-                            : "border-border hover:border-primary/50 bg-gradient-to-br from-background to-card/50 hover:shadow-lg hover:shadow-primary/10"
+                        className={`flex items-start space-x-3 sm:space-x-4 p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 ${
+                          isComingSoon
+                            ? "border-dashed border-muted-foreground/40 bg-muted/30 cursor-not-allowed opacity-80"
+                            : formData.serviceType === service.id
+                              ? "border-primary bg-primary/10 shadow-lg shadow-primary/10 cursor-pointer"
+                              : "border-border hover:border-primary/50 bg-gradient-to-br from-background to-card/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
                         }`}
-                        onClick={() => setFormData({ ...formData, serviceType: service.id })}
+                        onClick={() => !isComingSoon && setFormData({ ...formData, serviceType: service.id })}
                       >
                         <RadioGroupItem 
                           value={service.id} 
                           id={service.id} 
-                          className="mt-1 w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" 
+                          className="mt-1 w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
+                          disabled={isComingSoon}
                         />
                         <div className="flex-1">
                           <Label
                             htmlFor={service.id}
-                            className="text-base sm:text-lg font-semibold cursor-pointer leading-relaxed flex items-center gap-2 group-hover:text-primary transition-colors"
-                            onClick={(e) => e.stopPropagation()}
+                            className="text-base sm:text-lg font-semibold leading-relaxed flex items-center gap-2 group-hover:text-primary transition-colors cursor-pointer"
+                            onClick={(e) => { e.stopPropagation(); if (!isComingSoon) setFormData({ ...formData, serviceType: service.id }) }}
                           >
                             {service.name}
-                            <Sparkles className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                            {isComingSoon ? (
+                              <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                            ) : (
+                              <Sparkles className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                            )}
                           </Label>
                           <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 leading-relaxed mt-1">
                             {service.description}
                           </p>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(service.prices).map(([type, price]) => (
-                              <Badge 
-                                key={type} 
-                                variant="outline" 
-                                className="text-xs sm:text-sm bg-primary/5 border-primary/20 text-primary font-medium hover:bg-primary/10 transition-colors"
-                              >
-                                {price}
-                              </Badge>
-                            ))}
-                          </div>
+                          {Object.keys(service.prices).length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(service.prices).map(([type, price]) => (
+                                <Badge 
+                                  key={type} 
+                                  variant="outline" 
+                                  className="text-xs sm:text-sm bg-primary/5 border-primary/20 text-primary font-medium hover:bg-primary/10 transition-colors"
+                                >
+                                  {price}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                  )})}
                 </RadioGroup>
               </div>
 
