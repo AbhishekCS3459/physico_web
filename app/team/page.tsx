@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Award, BookOpen, Heart, Shield, Star, Users } from "lucide-react"
+import Link from "next/link"
 
 export default function TeamPage() {
   const teamQualities = [
@@ -49,12 +50,12 @@ export default function TeamPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-muted/10 via-background to-background">
       <MainNavigation />
-      <main className="py-16 flex-1">
-        <div className="container px-4">
+      <main className="flex-1 w-full py-12 sm:py-16">
+        <div className="container px-4 sm:px-6">
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className="text-center sm:text-left mb-12 sm:mb-16">
             <Badge variant="secondary" className="mb-4">
               <Users className="h-4 w-4 mr-1" />
               Meet Our Team
@@ -66,16 +67,34 @@ export default function TeamPage() {
               Our team is made up of experienced, licensed, and compassionate healthcare professionals dedicated to
               delivering high-quality care wherever you are.
             </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:items-start">
+              <Button asChild size="lg" className="text-lg px-8 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                <Link href="/book">
+                  <Users className="h-5 w-5 mr-2" />
+                  Book Your Assessment
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="text-lg px-8 bg-transparent border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300">
+                <Link href="/contact">Contact Us</Link>
+              </Button>
+            </div>
           </div>
 
-          {/* Team Introduction */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold mb-8 text-center sm:text-left">Team Introduction</h2>
-            <div className="space-y-8">
+          <div className="space-y-12">
+            {/* Team Introduction */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-center sm:text-left">Clinician Spotlight</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto sm:mx-0 text-center sm:text-left">
+                A closer look at the therapists who bring evidence-based care to your home—centered on safety, comfort, and functional recovery.
+              </p>
+              <div className="space-y-8 pt-6">
               <Card className="border-2 hover:border-primary/20 transition-all duration-300 overflow-hidden">
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-primary" />
+                    </div>
                       <CardTitle className="text-xl md:text-2xl">Binod Baranwal</CardTitle>
                       <CardDescription className="mt-1 text-primary font-medium">
                         Occupational Therapist, Diploma in Rehabilitation
@@ -114,7 +133,7 @@ export default function TeamPage() {
           </div>
 
           {/* What Sets Us Apart */}
-          <Card className="mb-16 border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
+          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 <Star className="h-6 w-6 text-primary" />
@@ -124,8 +143,8 @@ export default function TeamPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {teamQualities.map((quality, index) => (
-                  <div key={index} className="flex items-start gap-3 p-4 bg-gradient-to-br from-muted/50 to-background rounded-lg border border-primary/10 hover:border-primary/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] group">
+                {teamQualities.map((quality) => (
+                  <div key={quality} className="flex items-start gap-3 p-4 bg-gradient-to-br from-muted/50 to-background rounded-lg border border-primary/10 hover:border-primary/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] group">
                     <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
                     <span className="text-sm font-medium">{quality}</span>
                   </div>
@@ -135,9 +154,13 @@ export default function TeamPage() {
           </Card>
 
           {/* Physiotherapists */}
-          <Card className="mb-16">
+          <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl">Our Physiotherapists</CardTitle>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Award className="h-5 w-5 text-primary" />
+                Our Physiotherapists
+              </CardTitle>
               <CardDescription>
                 Each member of our team is fully qualified and registered, with expertise in a wide range of areas
                 including orthopedic rehab, post-surgical recovery, neurological conditions, chronic pain management,
@@ -175,8 +198,8 @@ export default function TeamPage() {
                 <div>
                   <h4 className="font-semibold mb-3">Treatment Techniques</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-                    {physiotherapyServices.map((service, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                    {physiotherapyServices.map((service) => (
+                      <Badge key={service} variant="outline" className="text-xs">
                         {service}
                       </Badge>
                     ))}
@@ -186,10 +209,57 @@ export default function TeamPage() {
             </CardContent>
           </Card>
 
-          {/* Occupational Therapist */}
-          <Card className="mb-16">
+          {/* Physiotherapist: Bharat */}
+          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl">Our Occupational Therapist</CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <BookOpen className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">Bharat</CardTitle>
+                  <CardDescription className="mt-1 text-primary font-medium">
+                    Physiotherapist
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="w-fit">PT</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Bharat is a highly experienced physiotherapist with over 25 years of clinical practice. He
+                completed his Master’s degree in Applied Musculoskeletal Physiotherapy in England and has worked
+                in a wide range of clinical environments, including hospitals and private clinics in both the UK and
+                Canada.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Over the years, Bharat has completed numerous advanced courses and certifications, gaining
+                extensive expertise in manipulative therapy, sports injury management, and acupuncture. He
+                specializes in the assessment and treatment of musculoskeletal conditions, sports injuries,
+                post-surgical rehabilitation, and chronic pain management.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                His treatment approach combines manual therapy, therapeutic exercise, movement correction, and
+                patient education to support safe, effective, and long-term recovery. Bharat is trained in
+                myofascial release, acupuncture, joint manipulation, specific soft tissue mobilization, muscle energy
+                techniques, vestibular rehabilitation, functional exercise, and Kinesio taping.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Committed to evidence-based practice, Bharat regularly participates in professional development
+                courses to stay current with modern physiotherapy techniques. He believes strongly in educating and
+                empowering patients so they can better understand their condition and take an active role in their
+                recovery and long-term health.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Occupational Therapist */}
+          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Our Occupational Therapist
+              </CardTitle>
               <CardDescription>
                 We're proud to have a skilled Occupational Therapist (OT) on our team to provide comprehensive, holistic
                 care tailored to each individual's daily life needs.
@@ -207,8 +277,8 @@ export default function TeamPage() {
                 <div>
                   <h4 className="font-semibold mb-3">Services Include</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    {otServices.map((service, index) => (
-                      <div key={index} className="flex items-start gap-2">
+                    {otServices.map((service) => (
+                      <div key={service} className="flex items-start gap-2">
                         <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                         <span className="text-sm">{service}</span>
                       </div>
@@ -228,9 +298,12 @@ export default function TeamPage() {
           </Card>
 
           {/* Massage Therapist */}
-          <Card className="mb-16">
+          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl">Our Massage Therapist</CardTitle>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Heart className="h-5 w-5 text-primary" />
+                Our Massage Therapist
+              </CardTitle>
               <CardDescription>
                 We understand that healing isn't just about exercise and mobility — it's also about relaxation,
                 recovery, and relieving tension.
@@ -247,8 +320,8 @@ export default function TeamPage() {
                 <div>
                   <h4 className="font-semibold mb-3">Services Offered</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    {massageServices.map((service, index) => (
-                      <div key={index} className="flex items-start gap-2">
+                    {massageServices.map((service) => (
+                      <div key={service} className="flex items-start gap-2">
                         <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                         <span className="text-sm">{service}</span>
                       </div>
@@ -281,6 +354,8 @@ export default function TeamPage() {
             </CardContent>
           </Card>
 
+          </div>
+
           {/* CTA Section */}
           <div className="text-center">
             <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
@@ -290,12 +365,15 @@ export default function TeamPage() {
                   Whether you're looking to regain strength after surgery, manage a chronic condition, or simply move
                   with more ease, our team is here to support you every step of the way.
                 </p>
-                <Button size="lg" className="text-lg px-8">
-                  <Users className="h-5 w-5 mr-2" />
-                  Book Your Assessment
+                <Button asChild size="lg" className="text-lg px-8 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Link href="/book">
+                    <Users className="h-5 w-5 mr-2" />
+                    Book Your Assessment
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
+          </div>
           </div>
         </div>
       </main>

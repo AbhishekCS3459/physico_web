@@ -83,6 +83,9 @@ export function DynamicFormFiller({
         toStore[otherKey] = responses[otherKey] as string
       }
     }
+    // Persist consent checkbox even if the current template schema doesn't include it.
+    const consentAsked = responses["consent_asked"]
+    if (consentAsked !== undefined) toStore["consent_asked"] = consentAsked
     return JSON.stringify(toStore)
   }, [schema, responses])
 
@@ -114,6 +117,15 @@ export function DynamicFormFiller({
       </div>
     )
   }
+
+  const CONSENT_SECTION_TITLE = "Consent:"
+  const consentAskedOption = "Consent was discussed and the patient was asked to proceed (questions answered)"
+  const hasConsentSection = schema.fields.some((f) => f.type === "section" && (f as any).title?.trim() === CONSENT_SECTION_TITLE)
+  const hasConsentAskedField = schema.fields.some((f) => f.id === "consent_asked")
+  const consentAskedValues = responses["consent_asked"]
+  const consentAskedChecked =
+    Array.isArray(consentAskedValues) &&
+    consentAskedValues.map((s) => String(s).toLowerCase()).includes(consentAskedOption.toLowerCase())
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -173,6 +185,54 @@ export function DynamicFormFiller({
           onOtherChange={(v) => setOtherText(field.id, v)}
         />
       ))}
+
+      {/* Consent injection for existing templates missing Consent checkbox field. */}
+      {!hasConsentAskedField && (
+        <div className="pt-4 border-t">
+          <h3 className="text-lg font-semibold text-foreground">{CONSENT_SECTION_TITLE}</h3>
+          <div className="space-y-3 pt-3">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                checked={consentAskedChecked}
+                onCheckedChange={(c) => {
+                  const checked = c === true
+                  setResponse("consent_asked", checked ? [consentAskedOption] : [])
+                }}
+                disabled={!editable}
+                className="shrink-0 mt-1"
+              />
+              <div className="flex-1">
+                <Label className="text-sm font-medium cursor-pointer select-none">{consentAskedOption}</Label>
+              </div>
+            </div>
+
+            {!hasConsentSection && (
+              <div className="space-y-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                <p>
+                  D Patt was provided with information about who will perform the treatment/procedure(s) Bharat
+                  Vishembera, PT and who may provide assistance in her care.
+                </p>
+                <p>
+                  The scope of the treatment/procedure(s) plans/interventions and/or list of agreed upon
+                  treatment/procedure(s), that are clinically indicated and approved for the condition were explained.
+                </p>
+                <p>
+                  The potential benefits, limitations, and possible risks of the assessment/treatment/intervention were
+                  discussed.
+                </p>
+                <p>D Patt received the opportunity to ask questions.</p>
+                <p>D Patt Patterson provided consent to proceed with the visit.</p>
+                <p>
+                  D Patt was informed that she had the right to discontinue the appointment at any time. The decision
+                  to accept or refuse a treatment/procedure(s) shall not prejudice her access to ongoing or future
+                  health care.
+                </p>
+                <p>Bharat Vishembera</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -195,9 +255,29 @@ function FieldRenderer({
   onOtherChange,
 }: FieldRendererProps) {
   if (field.type === "section") {
+    const isConsentSection = field.title?.trim() === "Consent:"
     return (
       <div className="pt-4 border-t first:border-t-0 first:pt-0">
         <h3 className="text-lg font-semibold text-foreground">{(field as FormFieldSection).title}</h3>
+        {isConsentSection && (
+          <div className="space-y-2 pt-3 text-sm text-muted-foreground whitespace-pre-wrap">
+            <p>
+              D Patt was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera, PT and who may provide assistance in her care.
+            </p>
+            <p>
+              The scope of the treatment/procedure(s) plans/interventions and/or list of agreed upon treatment/procedure(s), that are clinically indicated and approved for the condition were explained.
+            </p>
+            <p>
+              The potential benefits, limitations, and possible risks of the assessment/treatment/intervention were discussed.
+            </p>
+            <p>D Patt received the opportunity to ask questions.</p>
+            <p>D Patt Patterson provided consent to proceed with the visit.</p>
+            <p>
+              D Patt was informed that she had the right to discontinue the appointment at any time. The decision to accept or refuse a treatment/procedure(s) shall not prejudice her access to ongoing or future health care.
+            </p>
+            <p>Bharat Vishembera</p>
+          </div>
+        )}
       </div>
     )
   }

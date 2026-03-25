@@ -342,7 +342,7 @@ export function InitialAssessmentForm({
                 onChange={(e) =>
                   setFormData({ ...formData, romInitial: e.target.value })
                 }
-                placeholder="Flex: ___, Abd: ___"
+              placeholder="Flexion: ___, Extension: ___, Abduction: ___, Adduction: ___, Internal rotation: ___, External rotation: ___"
                 className="mt-2 rounded-lg border-border focus-visible:ring-2"
                 rows={2}
               />
@@ -357,7 +357,7 @@ export function InitialAssessmentForm({
                 onChange={(e) =>
                   setFormData({ ...formData, strengthInitial: e.target.value })
                 }
-                placeholder="Flex /5, Abd /5"
+                placeholder="Flexion /5, Extension /5, Abduction /5, Adduction /5, Internal rotation /5, External rotation /5"
                 className="mt-2 rounded-lg border-border focus-visible:ring-2"
                 rows={2}
               />

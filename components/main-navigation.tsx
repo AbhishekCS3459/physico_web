@@ -39,7 +39,7 @@ export function MainNavigation() {
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
-            <div className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
+            <div className="h-11 w-11 sm:h-12 sm:w-12 lg:h-12 lg:w-12 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
               <Image
                 src="/logo-nav.jpeg"
                 alt=""
@@ -136,7 +136,7 @@ export function MainNavigation() {
             <SheetContent side="right" className="w-[300px] sm:w-80">
               <div className="flex flex-col space-y-6 mt-6">
                 <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
-                  <div className="h-14 w-14 rounded-xl overflow-hidden border border-border/50 bg-card relative">
+                  <div className="h-16 w-16 rounded-xl overflow-hidden border border-border/50 bg-card relative">
                     <Image
                       src="/logo-nav.jpeg"
                       alt=""

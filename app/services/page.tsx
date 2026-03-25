@@ -11,7 +11,13 @@ const services = [
     title: "Mobile Physiotherapy",
     description: "Comprehensive physiotherapy treatments in the comfort of your home",
     icon: Heart,
-    features: ["Injury rehabilitation", "Post-surgery recovery", "Chronic pain management", "Movement assessment"],
+    features: [
+      "Injury rehabilitation",
+      "Post-surgery recovery",
+      "Chronic pain management",
+      "Movement assessment",
+      "Fall prevention program",
+    ],
     price: "Starting at $120/session",
   },
   {

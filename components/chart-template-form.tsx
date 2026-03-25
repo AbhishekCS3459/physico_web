@@ -292,51 +292,146 @@ function isTreatmentSection(section: ChartSection): boolean {
   return section.title === TREATMENT_SECTION_TITLE || section.title.startsWith("Treatment")
 }
 
-/** RIM/Strength section: Flex ___/5 and Abd ___/5 as separate fields */
+/** RIM/Strength section: multiple axial joint motions with /5 scale */
 const RIM_STRENGTH_TITLE_REGEX = /^RIM\/Strength:?$/i
 
-function parseRimStrengthNotes(notes: string): { flex: string; abd: string; additionalNotes: string } {
+function parseRimStrengthNotes(
+  notes: string,
+): {
+  flexion: string
+  extension: string
+  abduction: string
+  adduction: string
+  internalRotation: string
+  externalRotation: string
+  additionalNotes: string
+} {
   const parts = notes.split(/\n\n+/)
   const firstLine = (parts[0] ?? "").trim()
   const additionalNotes = parts.slice(1).join("\n\n").trim()
-  const flexMatch = firstLine.match(/Flex\s*(___|\d+)\/5/i)
-  const abdMatch = firstLine.match(/Abd\s*(___|\d+)\/5/i)
-  const flex = flexMatch ? (flexMatch[1] === "___" ? "" : flexMatch[1]) : ""
-  const abd = abdMatch ? (abdMatch[1] === "___" ? "" : abdMatch[1]) : ""
-  return { flex, abd, additionalNotes }
+
+  const normalize = (v: string | undefined): string => {
+    const val = (v ?? "").trim()
+    return val === "___" ? "" : val
+  }
+
+  const matchValue = (regexes: RegExp[]): string => {
+    for (const re of regexes) {
+      const m = firstLine.match(re)
+      if (m && typeof m[1] === "string") return normalize(m[1])
+    }
+    return ""
+  }
+
+  const flexion = matchValue([/(?:Flexion|Flex)\s*(___|\d+)\s*\/\s*5/i])
+  const extension = matchValue([/(?:Extension|Ext)\s*(___|\d+)\s*\/\s*5/i])
+  const abduction = matchValue([/(?:Abduction|Abd)\s*(___|\d+)\s*\/\s*5/i])
+  const adduction = matchValue([/(?:Adduction|Add)\s*(___|\d+)\s*\/\s*5/i])
+  const internalRotation = matchValue([
+    /(?:Internal rotation|IR)\s*(___|\d+)\s*\/\s*5/i,
+  ])
+  const externalRotation = matchValue([
+    /(?:External rotation|ER)\s*(___|\d+)\s*\/\s*5/i,
+  ])
+
+  return {
+    flexion,
+    extension,
+    abduction,
+    adduction,
+    internalRotation,
+    externalRotation,
+    additionalNotes,
+  }
 }
 
-function formatRimStrengthNotes(flex: string, abd: string, additionalNotes: string): string {
-  const flexStr = flex ? `${flex}/5` : "___/5"
-  const abdStr = abd ? `${abd}/5` : "___/5"
-  const line = `Flex ${flexStr}    Abd ${abdStr}`
+function formatRimStrengthNotes(
+  flexion: string,
+  extension: string,
+  abduction: string,
+  adduction: string,
+  internalRotation: string,
+  externalRotation: string,
+  additionalNotes: string,
+): string {
+  const seg = (v: string): string => (v ? `${v}/5` : "___/5")
+  const line = `Flexion ${seg(flexion)}    Extension ${seg(extension)}    Abduction ${seg(
+    abduction,
+  )}    Adduction ${seg(adduction)}    Internal rotation ${seg(
+    internalRotation,
+  )}    External rotation ${seg(externalRotation)}`
   return additionalNotes ? `${line}\n\n${additionalNotes}` : line
 }
 
-/** ROM section: Flex ___ and Abd ___ as separate fields (e.g. degrees) */
+/** ROM section: six axial joint motions as separate fields (e.g. degrees) */
 const ROM_SECTION_TITLE_REGEX = /^ROM:?$/i
 
-function parseRomNotes(notes: string): { flex: string; abd: string; additionalNotes: string } {
+function parseRomNotes(
+  notes: string,
+): {
+  flexion: string
+  extension: string
+  abduction: string
+  adduction: string
+  internalRotation: string
+  externalRotation: string
+  additionalNotes: string
+} {
   const parts = notes.split(/\n\n+/)
   const firstLine = (parts[0] ?? "").trim()
   const additionalNotes = parts.slice(1).join("\n\n").trim()
-  const flexMatch = firstLine.match(/Flex\s*(.+?)\s{2,}Abd\s*(.*)$/i)
-  if (!flexMatch) {
-    const flexOnly = firstLine.match(/Flex\s*(.*)$/i)
-    const abdOnly = firstLine.match(/Abd\s*(.*)$/i)
-    const flex = flexOnly ? flexOnly[1].trim().replace(/^___$/, "") : ""
-    const abd = abdOnly ? abdOnly[1].trim().replace(/^___$/, "") : ""
-    return { flex, abd, additionalNotes }
+
+  const normalize = (v: string | undefined): string => {
+    const val = (v ?? "").trim()
+    return val === "___" ? "" : val
   }
-  const flex = (flexMatch[1] ?? "").trim().replace(/^___$/, "")
-  const abd = (flexMatch[2] ?? "").trim().replace(/^___$/, "")
-  return { flex, abd, additionalNotes }
+
+  const matchValue = (regexes: RegExp[]): string => {
+    for (const re of regexes) {
+      const m = firstLine.match(re)
+      if (m && typeof m[1] === "string") return normalize(m[1])
+    }
+    return ""
+  }
+
+  // Backwards compatibility with older templates that only had Flex + Abd.
+  const flexion = matchValue([/(?:Flexion|Flex)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
+  const extension = matchValue([/(?:Extension|Ext)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
+  const abduction = matchValue([/(?:Abduction|Abd)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
+  const adduction = matchValue([/(?:Adduction|Add)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
+  const internalRotation = matchValue([
+    /(?:Internal rotation|IR)\s*:? ?(___|\d+(?:\.\d+)?)\b/i,
+  ])
+  const externalRotation = matchValue([
+    /(?:External rotation|ER)\s*:? ?(___|\d+(?:\.\d+)?)\b/i,
+  ])
+
+  return {
+    flexion,
+    extension,
+    abduction,
+    adduction,
+    internalRotation,
+    externalRotation,
+    additionalNotes,
+  }
 }
 
-function formatRomNotes(flex: string, abd: string, additionalNotes: string): string {
-  const flexStr = flex.trim() || "___"
-  const abdStr = abd.trim() || "___"
-  const line = `Flex ${flexStr}    Abd ${abdStr}`
+function formatRomNotes(
+  flexion: string,
+  extension: string,
+  abduction: string,
+  adduction: string,
+  internalRotation: string,
+  externalRotation: string,
+  additionalNotes: string,
+): string {
+  const seg = (v: string): string => v.trim() || "___"
+  const line = `Flexion ${seg(flexion)}    Extension ${seg(extension)}    Abduction ${seg(
+    abduction,
+  )}    Adduction ${seg(adduction)}    Internal rotation ${seg(
+    internalRotation,
+  )}    External rotation ${seg(externalRotation)}`
   return additionalNotes ? `${line}\n\n${additionalNotes}` : line
 }
 
@@ -386,52 +481,182 @@ function SectionBlock({
         </div>
       )}
 
-      {/* ROM: Flex and Abd as separate fields (e.g. degrees) */}
+      {/* ROM: six axial joint motions (e.g. degrees) */}
       {isRom && romNotes && (
         <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Flex</Label>
+              <Label className="text-sm font-medium text-foreground">Flexion</Label>
               {editable ? (
                 <Input
-                  value={romNotes.flex}
+                  value={romNotes.flexion}
                   onChange={(e) =>
                     onNotesChange(
-                      formatRomNotes(e.target.value, romNotes.abd, romNotes.additionalNotes)
+                      formatRomNotes(
+                        e.target.value,
+                        romNotes.extension,
+                        romNotes.abduction,
+                        romNotes.adduction,
+                        romNotes.internalRotation,
+                        romNotes.externalRotation,
+                        romNotes.additionalNotes,
+                      )
                     )
                   }
                   placeholder="___"
                   className="w-full sm:w-[120px] h-9 text-sm"
                 />
               ) : (
-                <p className="text-sm text-foreground">{romNotes.flex || "—"}</p>
+                <p className="text-sm text-foreground">{romNotes.flexion || "—"}</p>
               )}
             </div>
+
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Abd</Label>
+              <Label className="text-sm font-medium text-foreground">Extension</Label>
               {editable ? (
                 <Input
-                  value={romNotes.abd}
+                  value={romNotes.extension}
                   onChange={(e) =>
                     onNotesChange(
-                      formatRomNotes(romNotes.flex, e.target.value, romNotes.additionalNotes)
+                      formatRomNotes(
+                        romNotes.flexion,
+                        e.target.value,
+                        romNotes.abduction,
+                        romNotes.adduction,
+                        romNotes.internalRotation,
+                        romNotes.externalRotation,
+                        romNotes.additionalNotes,
+                      )
                     )
                   }
                   placeholder="___"
                   className="w-full sm:w-[120px] h-9 text-sm"
                 />
               ) : (
-                <p className="text-sm text-foreground">{romNotes.abd || "—"}</p>
+                <p className="text-sm text-foreground">{romNotes.extension || "—"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">Abduction</Label>
+              {editable ? (
+                <Input
+                  value={romNotes.abduction}
+                  onChange={(e) =>
+                    onNotesChange(
+                      formatRomNotes(
+                        romNotes.flexion,
+                        romNotes.extension,
+                        e.target.value,
+                        romNotes.adduction,
+                        romNotes.internalRotation,
+                        romNotes.externalRotation,
+                        romNotes.additionalNotes,
+                      )
+                    )
+                  }
+                  placeholder="___"
+                  className="w-full sm:w-[120px] h-9 text-sm"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{romNotes.abduction || "—"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">Adduction</Label>
+              {editable ? (
+                <Input
+                  value={romNotes.adduction}
+                  onChange={(e) =>
+                    onNotesChange(
+                      formatRomNotes(
+                        romNotes.flexion,
+                        romNotes.extension,
+                        romNotes.abduction,
+                        e.target.value,
+                        romNotes.internalRotation,
+                        romNotes.externalRotation,
+                        romNotes.additionalNotes,
+                      )
+                    )
+                  }
+                  placeholder="___"
+                  className="w-full sm:w-[120px] h-9 text-sm"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{romNotes.adduction || "—"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">Internal rotation</Label>
+              {editable ? (
+                <Input
+                  value={romNotes.internalRotation}
+                  onChange={(e) =>
+                    onNotesChange(
+                      formatRomNotes(
+                        romNotes.flexion,
+                        romNotes.extension,
+                        romNotes.abduction,
+                        romNotes.adduction,
+                        e.target.value,
+                        romNotes.externalRotation,
+                        romNotes.additionalNotes,
+                      )
+                    )
+                  }
+                  placeholder="___"
+                  className="w-full sm:w-[120px] h-9 text-sm"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{romNotes.internalRotation || "—"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">External rotation</Label>
+              {editable ? (
+                <Input
+                  value={romNotes.externalRotation}
+                  onChange={(e) =>
+                    onNotesChange(
+                      formatRomNotes(
+                        romNotes.flexion,
+                        romNotes.extension,
+                        romNotes.abduction,
+                        romNotes.adduction,
+                        romNotes.internalRotation,
+                        e.target.value,
+                        romNotes.additionalNotes,
+                      )
+                    )
+                  }
+                  placeholder="___"
+                  className="w-full sm:w-[120px] h-9 text-sm"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{romNotes.externalRotation || "—"}</p>
               )}
             </div>
           </div>
+
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-muted-foreground">Additional notes</Label>
             <Textarea
               value={romNotes.additionalNotes}
               onChange={(e) =>
                 onNotesChange(
-                  formatRomNotes(romNotes.flex, romNotes.abd, e.target.value)
+                  formatRomNotes(
+                    romNotes.flexion,
+                    romNotes.extension,
+                    romNotes.abduction,
+                    romNotes.adduction,
+                    romNotes.internalRotation,
+                    romNotes.externalRotation,
+                    e.target.value,
+                  )
                 )
               }
               placeholder="Add notes if needed…"
@@ -443,18 +668,26 @@ function SectionBlock({
         </div>
       )}
 
-      {/* RIM/Strength: Flex and Abd as separate fields (/5 scale) */}
+      {/* RIM/Strength: six axial joint motions as separate /5 fields */}
       {isRimStrength && rimStrength && (
         <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Flex</Label>
+              <Label className="text-sm font-medium text-foreground">Flexion</Label>
               {editable ? (
                 <Select
-                  value={rimStrength.flex || undefined}
+                  value={rimStrength.flexion || undefined}
                   onValueChange={(value) =>
                     onNotesChange(
-                      formatRimStrengthNotes(value, rimStrength.abd, rimStrength.additionalNotes)
+                      formatRimStrengthNotes(
+                        value,
+                        rimStrength.extension,
+                        rimStrength.abduction,
+                        rimStrength.adduction,
+                        rimStrength.internalRotation,
+                        rimStrength.externalRotation,
+                        rimStrength.additionalNotes,
+                      )
                     )
                   }
                 >
@@ -471,18 +704,27 @@ function SectionBlock({
                 </Select>
               ) : (
                 <p className="text-sm text-foreground">
-                  {rimStrength.flex ? `${rimStrength.flex}/5` : "—/5"}
+                  {rimStrength.flexion ? `${rimStrength.flexion}/5` : "—/5"}
                 </p>
               )}
             </div>
+
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Abd</Label>
+              <Label className="text-sm font-medium text-foreground">Extension</Label>
               {editable ? (
                 <Select
-                  value={rimStrength.abd || undefined}
+                  value={rimStrength.extension || undefined}
                   onValueChange={(value) =>
                     onNotesChange(
-                      formatRimStrengthNotes(rimStrength.flex, value, rimStrength.additionalNotes)
+                      formatRimStrengthNotes(
+                        rimStrength.flexion,
+                        value,
+                        rimStrength.abduction,
+                        rimStrength.adduction,
+                        rimStrength.internalRotation,
+                        rimStrength.externalRotation,
+                        rimStrength.additionalNotes,
+                      )
                     )
                   }
                 >
@@ -499,7 +741,155 @@ function SectionBlock({
                 </Select>
               ) : (
                 <p className="text-sm text-foreground">
-                  {rimStrength.abd ? `${rimStrength.abd}/5` : "—/5"}
+                  {rimStrength.extension ? `${rimStrength.extension}/5` : "—/5"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">Abduction</Label>
+              {editable ? (
+                <Select
+                  value={rimStrength.abduction || undefined}
+                  onValueChange={(value) =>
+                    onNotesChange(
+                      formatRimStrengthNotes(
+                        rimStrength.flexion,
+                        rimStrength.extension,
+                        value,
+                        rimStrength.adduction,
+                        rimStrength.internalRotation,
+                        rimStrength.externalRotation,
+                        rimStrength.additionalNotes,
+                      )
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
+                    <SelectValue placeholder="—/5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}/5
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-foreground">
+                  {rimStrength.abduction ? `${rimStrength.abduction}/5` : "—/5"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">Adduction</Label>
+              {editable ? (
+                <Select
+                  value={rimStrength.adduction || undefined}
+                  onValueChange={(value) =>
+                    onNotesChange(
+                      formatRimStrengthNotes(
+                        rimStrength.flexion,
+                        rimStrength.extension,
+                        rimStrength.abduction,
+                        value,
+                        rimStrength.internalRotation,
+                        rimStrength.externalRotation,
+                        rimStrength.additionalNotes,
+                      )
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
+                    <SelectValue placeholder="—/5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}/5
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-foreground">
+                  {rimStrength.adduction ? `${rimStrength.adduction}/5` : "—/5"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">Internal rotation</Label>
+              {editable ? (
+                <Select
+                  value={rimStrength.internalRotation || undefined}
+                  onValueChange={(value) =>
+                    onNotesChange(
+                      formatRimStrengthNotes(
+                        rimStrength.flexion,
+                        rimStrength.extension,
+                        rimStrength.abduction,
+                        rimStrength.adduction,
+                        value,
+                        rimStrength.externalRotation,
+                        rimStrength.additionalNotes,
+                      )
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
+                    <SelectValue placeholder="—/5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}/5
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-foreground">
+                  {rimStrength.internalRotation ? `${rimStrength.internalRotation}/5` : "—/5"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground">External rotation</Label>
+              {editable ? (
+                <Select
+                  value={rimStrength.externalRotation || undefined}
+                  onValueChange={(value) =>
+                    onNotesChange(
+                      formatRimStrengthNotes(
+                        rimStrength.flexion,
+                        rimStrength.extension,
+                        rimStrength.abduction,
+                        rimStrength.adduction,
+                        rimStrength.internalRotation,
+                        value,
+                        rimStrength.additionalNotes,
+                      )
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
+                    <SelectValue placeholder="—/5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}/5
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-foreground">
+                  {rimStrength.externalRotation ? `${rimStrength.externalRotation}/5` : "—/5"}
                 </p>
               )}
             </div>
@@ -511,9 +901,13 @@ function SectionBlock({
               onChange={(e) =>
                 onNotesChange(
                   formatRimStrengthNotes(
-                    rimStrength.flex,
-                    rimStrength.abd,
-                    e.target.value
+                    rimStrength.flexion,
+                    rimStrength.extension,
+                    rimStrength.abduction,
+                    rimStrength.adduction,
+                    rimStrength.internalRotation,
+                    rimStrength.externalRotation,
+                    e.target.value,
                   )
                 )
               }
@@ -560,8 +954,9 @@ function SectionBlock({
         </div>
       )}
 
-      {/* Notes: doctor adds notes below (only when not RIM/Strength or ROM; they have their own blocks above) */}
-      {!isRimStrength && !isRom && (
+      {/* Notes: doctor adds notes below (only when not RIM/Strength or ROM; they have their own blocks above).
+          Hide for Plan since Plan is meant to be filled via sub-points list items. */}
+      {!isRimStrength && !isRom && section.title.trim() !== "Plan:" && (
         <div className="space-y-1.5">
           <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
           <Textarea
