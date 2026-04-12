@@ -1,6 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { resolvePatientDisplayName } from '@/lib/consent-copy'
-import { getDefaultChartNotesContentString } from '@/lib/chart-template'
+import { getDefaultChartNotesAfterConsentContentString } from '@/lib/chart-template'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
           patientId,
           createdById: session.id,
           formTemplateId: formTemplateId ?? null,
-          content: formTemplateId ? '{}' : getDefaultChartNotesContentString(patientDisplayName),
+          content: formTemplateId ? '{}' : getDefaultChartNotesAfterConsentContentString(patientDisplayName),
         },
       })
 
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
         bookingId,
         createdById: session.id,
         formTemplateId: formTemplateId ?? null,
-        content: formTemplateId ? '{}' : getDefaultChartNotesContentString(bookingDisplayName),
+        content: formTemplateId ? '{}' : getDefaultChartNotesAfterConsentContentString(bookingDisplayName),
       },
     })
 

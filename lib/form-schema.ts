@@ -121,11 +121,11 @@ export function generateFieldId(): string {
 /** Default Initial Assessment form schema matching the current chart (Reason for Referral, HPI, Pain, Treatment, Plan, etc.) */
 export const DEFAULT_INITIAL_ASSESSMENT_TEMPLATE_NAME = "Default (Initial Assessment)"
 
-export function getDefaultInitialAssessmentFormSchema(): FormSchema {
+/** Standalone consent step (chart `consentContent`); complete before initial assessment. */
+export function getConsentOnlyFormSchema(): FormSchema {
   return {
     version: FORM_SCHEMA_VERSION,
     fields: [
-      { id: "s_main", type: "section", label: "Section", title: "INITIAL ASSESSMENT" },
       { id: "s_consent", type: "section", label: "Section", title: "Consent:" },
       {
         id: "consent_asked",
@@ -134,6 +134,17 @@ export function getDefaultInitialAssessmentFormSchema(): FormSchema {
         options: ["Consent was discussed and the patient was asked to proceed (questions answered)"],
         required: false,
       },
+    ],
+  }
+}
+
+export const CONSENT_ONLY_FORM_SCHEMA_JSON = JSON.stringify(getConsentOnlyFormSchema())
+
+export function getDefaultInitialAssessmentFormSchema(): FormSchema {
+  return {
+    version: FORM_SCHEMA_VERSION,
+    fields: [
+      { id: "s_main", type: "section", label: "Section", title: "INITIAL ASSESSMENT" },
       { id: "s_referral", type: "section", label: "Section", title: "Reason for Referral:" },
       { id: "reason_for_referral", type: "long_text", label: "Reason for Referral", required: false },
       { id: "s_hpi", type: "section", label: "Section", title: "HPI:" },

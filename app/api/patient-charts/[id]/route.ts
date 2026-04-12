@@ -1,6 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { resolvePatientDisplayName } from '@/lib/consent-copy'
-import { getDefaultChartNotesContentString } from '@/lib/chart-template'
+import { getDefaultChartNotesAfterConsentContentString } from '@/lib/chart-template'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -58,6 +58,9 @@ export async function GET(
         ? { id: chart.formTemplate.id, name: chart.formTemplate.name, schema: chart.formTemplate.schema }
         : null,
       content: chart.content,
+      consentContent: chart.consentContent,
+      consentCompletedAt: chart.consentCompletedAt?.toISOString() ?? null,
+      initialAssessmentCompletedAt: chart.initialAssessmentCompletedAt?.toISOString() ?? null,
       createdAt: chart.createdAt.toISOString(),
       updatedAt: chart.updatedAt.toISOString(),
       createdBy: chart.createdBy ? { id: chart.createdBy.id, email: chart.createdBy.email, name: chart.createdBy.name } : null,
@@ -122,6 +125,8 @@ const updateSchema = z.object({
   content: z.string().nullable().optional(),
   formTemplateId: z.string().nullable().optional(),
   clear: z.literal(true).optional(),
+  consentContent: z.string().nullable().optional(),
+  completeConsent: z.boolean().optional(),
 })
 
 export async function PATCH(
@@ -152,18 +157,50 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'Edit access required' }, { status: 403 })
     }
 
+    const displayName = resolvePatientDisplayName({
+      patient: chart.patient,
+      booking: chart.booking,
+    })
+
     const content =
       parsed.clear === true
         ? chart.formTemplateId
           ? '{}'
-          : getDefaultChartNotesContentString(
-              resolvePatientDisplayName({
-                patient: chart.patient,
-                booking: chart.booking,
-              }),
-            )
-        : (parsed.content ?? chart.content)
-    const updateData: { content: string | null; formTemplateId?: string | null } = { content }
+          : getDefaultChartNotesAfterConsentContentString(displayName)
+        : parsed.content !== undefined
+          ? parsed.content
+          : chart.content
+
+    const nextConsentContent =
+      parsed.consentContent !== undefined ? parsed.consentContent : chart.consentContent
+    const nextConsentCompletedAt =
+      parsed.completeConsent === true ? new Date() : chart.consentCompletedAt
+
+    const consentDoneForInitial =
+      nextConsentCompletedAt != null
+
+    const shouldMarkInitialComplete =
+      parsed.clear !== true &&
+      parsed.content !== undefined &&
+      consentDoneForInitial &&
+      chart.initialAssessmentCompletedAt == null
+
+    const nextInitialAssessmentCompletedAt = shouldMarkInitialComplete
+      ? new Date()
+      : chart.initialAssessmentCompletedAt
+
+    const updateData: {
+      content: string | null
+      formTemplateId?: string | null
+      consentContent?: string | null
+      consentCompletedAt?: Date | null
+      initialAssessmentCompletedAt?: Date | null
+    } = {
+      content,
+      consentContent: nextConsentContent,
+      consentCompletedAt: nextConsentCompletedAt,
+      initialAssessmentCompletedAt: nextInitialAssessmentCompletedAt,
+    }
     if (parsed.formTemplateId !== undefined) updateData.formTemplateId = parsed.formTemplateId
 
     const updated = await prisma.patientChart.update({
@@ -171,11 +208,17 @@ export async function PATCH(
       data: updateData,
     })
 
+    const action =
+      parsed.clear === true
+        ? 'cleared'
+        : parsed.completeConsent === true
+          ? 'consent_completed'
+          : 'updated'
     await prisma.patientChartEvent.create({
       data: {
         chartId: id,
         adminId: session.id,
-        action: parsed.clear === true ? 'cleared' : 'updated',
+        action,
       },
     })
 
@@ -185,6 +228,10 @@ export async function PATCH(
         id: updated.id,
         content: updated.content,
         updatedAt: updated.updatedAt.toISOString(),
+        formTemplateId: updated.formTemplateId,
+        consentContent: updated.consentContent,
+        consentCompletedAt: updated.consentCompletedAt?.toISOString() ?? null,
+        initialAssessmentCompletedAt: updated.initialAssessmentCompletedAt?.toISOString() ?? null,
       },
     })
   } catch (e: any) {

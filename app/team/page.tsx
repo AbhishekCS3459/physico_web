@@ -81,177 +81,176 @@ export default function TeamPage() {
           </div>
 
           <div className="space-y-12">
-            {/* Team Introduction */}
+            {/* Physiotherapist: Bharat — featured first */}
+            <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <BookOpen className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-2xl">Bharat</CardTitle>
+                    <CardDescription className="mt-1 text-primary font-medium">
+                      Physiotherapist
+                    </CardDescription>
+                  </div>
+                  <Badge variant="secondary" className="w-fit">PT</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground leading-relaxed">
+                  Bharat is a highly experienced physiotherapist with over 25 years of clinical practice. He
+                  completed his Master’s degree in Applied Musculoskeletal Physiotherapy in England and has worked
+                  in a wide range of clinical environments, including hospitals and private clinics in both the UK and
+                  Canada.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Over the years, Bharat has completed numerous advanced courses and certifications, gaining
+                  extensive expertise in manipulative therapy, sports injury management, and acupuncture. He
+                  specializes in the assessment and treatment of musculoskeletal conditions, sports injuries,
+                  post-surgical rehabilitation, and chronic pain management.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  His treatment approach combines manual therapy, therapeutic exercise, movement correction, and
+                  patient education to support safe, effective, and long-term recovery. Bharat is trained in
+                  myofascial release, acupuncture, joint manipulation, specific soft tissue mobilization, muscle energy
+                  techniques, vestibular rehabilitation, functional exercise, and Kinesio taping.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Committed to evidence-based practice, Bharat regularly participates in professional development
+                  courses to stay current with modern physiotherapy techniques. He believes strongly in educating and
+                  empowering patients so they can better understand their condition and take an active role in their
+                  recovery and long-term health.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Our Physiotherapists */}
+            <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  Our Physiotherapists
+                </CardTitle>
+                <CardDescription>
+                  Each member of our team is fully qualified and registered, with expertise in a wide range of areas
+                  including orthopedic rehab, post-surgical recovery, neurological conditions, chronic pain management,
+                  and mobility training.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Award className="h-5 w-5 text-primary" />
+                        Areas of Expertise
+                      </h4>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>• Orthopedic rehabilitation</li>
+                        <li>• Post-surgical recovery</li>
+                        <li>• Neurological conditions</li>
+                        <li>• Chronic pain management</li>
+                        <li>• Mobility training</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Continuing Education
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        We stay up to date with the latest techniques and evidence-based practices to ensure you're
+                        receiving the best care possible.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3">Treatment Techniques</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                      {physiotherapyServices.map((service) => (
+                        <Badge key={service} variant="outline" className="text-xs">
+                          {service}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* What Sets Us Apart */}
+            <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl flex items-center gap-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  <Star className="h-6 w-6 text-primary" />
+                  What Sets Us Apart
+                </CardTitle>
+                <CardDescription>Our commitment to excellence in patient care</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {teamQualities.map((quality) => (
+                    <div key={quality} className="flex items-start gap-3 p-4 bg-gradient-to-br from-muted/50 to-background rounded-lg border border-primary/10 hover:border-primary/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] group">
+                      <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                      <span className="text-sm font-medium">{quality}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Clinician Spotlight — other members */}
             <div>
               <h2 className="text-2xl font-bold mb-4 text-center sm:text-left">Clinician Spotlight</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto sm:mx-0 text-center sm:text-left">
                 A closer look at the therapists who bring evidence-based care to your home—centered on safety, comfort, and functional recovery.
               </p>
               <div className="space-y-8 pt-6">
-              <Card className="border-2 hover:border-primary/20 transition-all duration-300 overflow-hidden">
-                <CardHeader className="pb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-primary" />
+                <Card className="border-2 hover:border-primary/20 transition-all duration-300 overflow-hidden">
+                  <CardHeader className="pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                          <Shield className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle className="text-xl md:text-2xl">Binod Baranwal</CardTitle>
+                        <CardDescription className="mt-1 text-primary font-medium">
+                          Occupational Therapist, Diploma in Rehabilitation
+                        </CardDescription>
+                      </div>
+                      <Badge variant="secondary" className="w-fit">OT</Badge>
                     </div>
-                      <CardTitle className="text-xl md:text-2xl">Binod Baranwal</CardTitle>
-                      <CardDescription className="mt-1 text-primary font-medium">
-                        Occupational Therapist, Diploma in Rehabilitation
-                      </CardDescription>
-                    </div>
-                    <Badge variant="secondary" className="w-fit">OT</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed">
-                    Binod is a dedicated and experienced occupational therapist with over 2 decades of experience
-                    enabling individuals to achieve their occupational goals and regain independence in performing
-                    leisure activities, work and ADL related concerns.
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    With a strong background in physical and cognitive health and passion for holistic well-being,
-                    Binod believes in empowering clients through an individual-oriented strength based approach. He is
-                    committed to helping you return to performing the daily activities and your meaningful occupation
-                    that enhances your quality of life. He ensures that your treatment plan is not only evidence-based
-                    but also tailored to your unique goals and passions.
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    His skills in Seating Assessment, Cognitive assessment and his creativity enable him to utilize a
-                    holistic approach to help clients regain, adapt, or maintain skills for daily living, promoting
-                    independence and safety within their own homes.
-                  </p>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge variant="outline" className="text-xs">Seating Assessment</Badge>
-                    <Badge variant="outline" className="text-xs">Cognitive Assessment</Badge>
-                    <Badge variant="outline" className="text-xs">ADL Training</Badge>
-                    <Badge variant="outline" className="text-xs">Holistic Approach</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* What Sets Us Apart */}
-          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                <Star className="h-6 w-6 text-primary" />
-                What Sets Us Apart
-              </CardTitle>
-              <CardDescription>Our commitment to excellence in patient care</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {teamQualities.map((quality) => (
-                  <div key={quality} className="flex items-start gap-3 p-4 bg-gradient-to-br from-muted/50 to-background rounded-lg border border-primary/10 hover:border-primary/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] group">
-                    <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="text-sm font-medium">{quality}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Physiotherapists */}
-          <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Award className="h-5 w-5 text-primary" />
-                Our Physiotherapists
-              </CardTitle>
-              <CardDescription>
-                Each member of our team is fully qualified and registered, with expertise in a wide range of areas
-                including orthopedic rehab, post-surgical recovery, neurological conditions, chronic pain management,
-                and mobility training.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-3 flex items-center gap-2">
-                      <Award className="h-5 w-5 text-primary" />
-                      Areas of Expertise
-                    </h4>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li>• Orthopedic rehabilitation</li>
-                      <li>• Post-surgical recovery</li>
-                      <li>• Neurological conditions</li>
-                      <li>• Chronic pain management</li>
-                      <li>• Mobility training</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-3 flex items-center gap-2">
-                      <BookOpen className="h-5 w-5 text-primary" />
-                      Continuing Education
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      We stay up to date with the latest techniques and evidence-based practices to ensure you're
-                      receiving the best care possible.
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground leading-relaxed">
+                      Binod is a dedicated and experienced occupational therapist with over 2 decades of experience
+                      enabling individuals to achieve their occupational goals and regain independence in performing
+                      leisure activities, work and ADL related concerns.
                     </p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold mb-3">Treatment Techniques</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-                    {physiotherapyServices.map((service) => (
-                      <Badge key={service} variant="outline" className="text-xs">
-                        {service}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      With a strong background in physical and cognitive health and passion for holistic well-being,
+                      Binod believes in empowering clients through an individual-oriented strength based approach. He is
+                      committed to helping you return to performing the daily activities and your meaningful occupation
+                      that enhances your quality of life. He ensures that your treatment plan is not only evidence-based
+                      but also tailored to your unique goals and passions.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      His skills in Seating Assessment, Cognitive assessment and his creativity enable him to utilize a
+                      holistic approach to help clients regain, adapt, or maintain skills for daily living, promoting
+                      independence and safety within their own homes.
+                    </p>
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Badge variant="outline" className="text-xs">Seating Assessment</Badge>
+                      <Badge variant="outline" className="text-xs">Cognitive Assessment</Badge>
+                      <Badge variant="outline" className="text-xs">ADL Training</Badge>
+                      <Badge variant="outline" className="text-xs">Holistic Approach</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Physiotherapist: Bharat */}
-          <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <BookOpen className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">Bharat</CardTitle>
-                  <CardDescription className="mt-1 text-primary font-medium">
-                    Physiotherapist
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary" className="w-fit">PT</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground leading-relaxed">
-                Bharat is a highly experienced physiotherapist with over 25 years of clinical practice. He
-                completed his Master’s degree in Applied Musculoskeletal Physiotherapy in England and has worked
-                in a wide range of clinical environments, including hospitals and private clinics in both the UK and
-                Canada.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Over the years, Bharat has completed numerous advanced courses and certifications, gaining
-                extensive expertise in manipulative therapy, sports injury management, and acupuncture. He
-                specializes in the assessment and treatment of musculoskeletal conditions, sports injuries,
-                post-surgical rehabilitation, and chronic pain management.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                His treatment approach combines manual therapy, therapeutic exercise, movement correction, and
-                patient education to support safe, effective, and long-term recovery. Bharat is trained in
-                myofascial release, acupuncture, joint manipulation, specific soft tissue mobilization, muscle energy
-                techniques, vestibular rehabilitation, functional exercise, and Kinesio taping.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Committed to evidence-based practice, Bharat regularly participates in professional development
-                courses to stay current with modern physiotherapy techniques. He believes strongly in educating and
-                empowering patients so they can better understand their condition and take an active role in their
-                recovery and long-term health.
-              </p>
-            </CardContent>
-          </Card>
+            </div>
 
           {/* Occupational Therapist */}
           <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
@@ -373,7 +372,6 @@ export default function TeamPage() {
                 </Button>
               </CardContent>
             </Card>
-          </div>
           </div>
         </div>
       </main>

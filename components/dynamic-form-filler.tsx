@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -38,6 +38,10 @@ import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+export type DynamicFormFillerHandle = {
+  serialize: () => string
+}
+
 export interface DynamicFormFillerProps {
   /** JSON string of FormSchema */
   schemaJson: string
@@ -51,6 +55,8 @@ export interface DynamicFormFillerProps {
   className?: string
   /** Shown in consent copy; defaults to "the patient" when omitted */
   patientDisplayName?: string
+  /** Debounced auto-save after edits (default true). Set false for consent-only step. */
+  enableAutoSave?: boolean
 }
 
 /** Keep consent block immediately after the main INITIAL ASSESSMENT title for older saved templates */
@@ -79,16 +85,21 @@ function orderFieldsWithConsentFirst(fields: FormField[]): FormField[] {
   return [...without.slice(0, insertAt), ...block, ...without.slice(insertAt)]
 }
 
-export function DynamicFormFiller({
-  schemaJson,
-  initialContent,
-  editable,
-  onSave,
-  saving = false,
-  onAfterDraftSave,
-  className,
-  patientDisplayName,
-}: DynamicFormFillerProps) {
+export const DynamicFormFiller = forwardRef<DynamicFormFillerHandle, DynamicFormFillerProps>(
+  function DynamicFormFiller(
+    {
+      schemaJson,
+      initialContent,
+      editable,
+      onSave,
+      saving = false,
+      onAfterDraftSave,
+      className,
+      patientDisplayName,
+      enableAutoSave = true,
+    },
+    ref,
+  ) {
   const schema = useMemo(() => parseFormSchema(schemaJson), [schemaJson])
   const orderedFields = useMemo(
     () => (schema ? orderFieldsWithConsentFirst(schema.fields) : []),
@@ -138,6 +149,8 @@ export function DynamicFormFiller({
     return JSON.stringify(toStore)
   }, [schema, responses])
 
+  useImperativeHandle(ref, () => ({ serialize: () => serializeContent() }), [serializeContent])
+
   const handleSave = useCallback(async () => {
     if (!onSave || !schema || !dirty) return
     const result = await onSave(serializeContent())
@@ -154,10 +167,11 @@ export function DynamicFormFiller({
   }, [onSave, schema, onAfterDraftSave, serializeContent])
 
   useEffect(() => {
+    if (!enableAutoSave) return
     if (!editable || !dirty || !onSave) return
     const t = setTimeout(handleSave, 800)
     return () => clearTimeout(t)
-  }, [editable, dirty, responses, onSave, handleSave])
+  }, [enableAutoSave, editable, dirty, responses, onSave, handleSave])
 
   if (!schema || schema.fields.length === 0) {
     return (
@@ -258,7 +272,9 @@ export function DynamicFormFiller({
       )}
     </div>
   )
-}
+})
+
+DynamicFormFiller.displayName = "DynamicFormFiller"
 
 interface FieldRendererProps {
   field: FormField

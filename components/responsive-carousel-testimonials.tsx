@@ -28,7 +28,7 @@ export default function ResponsiveCarouselTestimonials() {
       content:
         "Chronic back pain kept me from enjoying time with my grandchildren. The massage therapy and physiotherapy have given me my life back.",
       author: "Maria Rodriguez, 65",
-      location: "Okotoks, AB",
+      location: "Chestermere, AB",
     },
     {
       title: "Professional Excellence",

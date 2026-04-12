@@ -134,10 +134,103 @@ export const DEFAULT_CHART_NOTES_TEMPLATE = {
   ],
 } as const
 
+/** Initial assessment body only; consent is stored separately on the chart (`consentContent` / consent step). */
+export const DEFAULT_CHART_NOTES_AFTER_CONSENT_TEMPLATE = {
+  type: "doc",
+  content: [
+    h2("INITIAL ASSESSMENT"),
+
+    h3("Reason for Referral:"),
+    emptyP(),
+
+    h3("HPI:"),
+    emptyP(),
+
+    h3("Pain:"),
+    p("Pain ___/10    [ ] Intermittent    [ ] Constant"),
+    emptyP(),
+    p("What makes the pain worse:"),
+    emptyP(),
+    p("What helps:    [ ] Rest    [ ] Taking pain meds as needed    [ ] Applying heat/cold"),
+    emptyP(),
+
+    h3("PMHx:"),
+    emptyP(),
+
+    h3("Associated/Relevant Imaging:"),
+    emptyP(),
+
+    h3("Activity:"),
+    emptyP(),
+
+    h3("Exercises:"),
+    emptyP(),
+
+    h3("Observation:"),
+    emptyP(),
+
+    h3("Swelling/circulation:"),
+    emptyP(),
+
+    h3("ROM:"),
+    p("Flex ___    Ext ___    Abd ___    Add ___    IR ___    ER ___"),
+    emptyP(),
+
+    h3("RIM/Strength:"),
+    p("Flex ___/5    Ext ___/5    Abd ___/5    Add ___/5    IR ___/5    ER ___/5"),
+    emptyP(),
+
+    h3("Neuro (screening, reflexes, tension tests):"),
+    emptyP(),
+
+    h3("Tenderness:"),
+    emptyP(),
+
+    h3("Special Tests/Outcome measures:"),
+    emptyP(),
+
+    h3("Clinical Impression/Analysis:"),
+    emptyP(),
+
+    h3("Goal:"),
+    emptyP(),
+
+    h3("Treatment:"),
+    bulletList([
+      li("Modality:"),
+      li("ROM:"),
+      li("Strengthening:"),
+      li("Stretching:"),
+      li("HEP: reviewed, advised to continue"),
+      li("Education:"),
+      li("Restrictions:"),
+      li("Print outs given to the patient:"),
+    ]),
+    emptyP(),
+
+    h3("Plan:"),
+    bulletList([li("Ax strength"), li("Ax Range of Motion"), li("Exercise progression")]),
+    emptyP(),
+  ],
+} as const
+
+/**
+ * Default chart notes for new charts and resets after consent is on file (no duplicate consent block in TipTap).
+ */
+export function getDefaultChartNotesAfterConsentContentString(patientDisplayName?: string): string {
+  const raw = JSON.stringify(DEFAULT_CHART_NOTES_AFTER_CONSENT_TEMPLATE)
+  if (patientDisplayName?.trim()) {
+    return interpolatePatientNameInTipTapJson(raw, patientDisplayName.trim())
+  }
+  return raw
+}
+
 /**
  * Returns the default chart notes as a JSON string for storing in the database.
  * When patientDisplayName is set, {{patient_name}} is replaced in the JSON (e.g. on chart create).
  * Otherwise the token is kept for client-side interpolation when the chart is opened.
+ *
+ * @deprecated Prefer {@link getDefaultChartNotesAfterConsentContentString} — consent is a separate chart step.
  */
 export function getDefaultChartNotesContentString(patientDisplayName?: string): string {
   const raw = JSON.stringify(DEFAULT_CHART_NOTES_TEMPLATE)

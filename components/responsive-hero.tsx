@@ -21,7 +21,7 @@ export default function ResponsiveHero() {
     { number: "24/7", label: "Availability", icon: Clock },
     { number: "Same Day", label: "Booking", icon: CheckCircle },
     { number: "Direct", label: "Billing", icon: Shield },
-    { number: "5 Areas", label: "Served", icon: MapPin },
+    { number: "4 Areas", label: "Served", icon: MapPin },
   ]
 
   return (

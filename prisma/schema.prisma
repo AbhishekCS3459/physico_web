@@ -238,6 +238,10 @@ model PatientChart {
   formTemplate   FormTemplate? @relation(fields: [formTemplateId], references: [id], onDelete: SetNull)
   // Rich text content: TipTap JSON (when formTemplateId is null) OR response JSON (when formTemplateId set)
   content        String?  @db.Text
+  // Consent captured in a separate step before initial assessment (JSON form responses)
+  consentContent                 String?   @db.Text
+  consentCompletedAt             DateTime?
+  initialAssessmentCompletedAt   DateTime?
   createdById    String?
   createdBy      Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt      DateTime @default(now())

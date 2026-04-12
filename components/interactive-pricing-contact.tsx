@@ -57,7 +57,7 @@ const additionalServices = [
   { name: "Documentation/Forms/Reports", price: "From 40" },
 ]
 
-const serviceAreas = ["Calgary", "Airdrie", "Okotoks", "Cochrane", "Crossfield"]
+const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield"]
 
 export function InteractivePricingContact() {
   const [selectedService, setSelectedService] = useState("physiotherapy")

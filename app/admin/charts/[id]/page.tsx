@@ -2,7 +2,7 @@
 
 import { ChartEditor } from "@/components/chart-editor"
 import { ChartTemplateForm } from "@/components/chart-template-form"
-import { DynamicFormFiller } from "@/components/dynamic-form-filler"
+import { DynamicFormFiller, type DynamicFormFillerHandle } from "@/components/dynamic-form-filler"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,12 +56,17 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { NotificationsBell } from "@/components/notifications-bell"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { resolvePatientDisplayName } from "@/lib/consent-copy"
-import { getDefaultChartNotesContentString } from "@/lib/chart-template"
+import { getDefaultChartNotesAfterConsentContentString } from "@/lib/chart-template"
+import { getChartWorkflowPhase } from "@/lib/chart-workflow"
+import { CONSENT_ONLY_FORM_SCHEMA_JSON } from "@/lib/form-schema"
+
+const CONSENT_ASKED_OPTION =
+  "Consent was discussed and the patient was asked to proceed (questions answered)"
 
 interface ChartData {
   id: string
@@ -70,6 +75,9 @@ interface ChartData {
   formTemplateId: string | null
   formTemplate: { id: string; name: string; schema: string } | null
   content: string | null
+  consentContent: string | null
+  consentCompletedAt: string | null
+  initialAssessmentCompletedAt: string | null
   createdAt: string
   updatedAt: string
   createdBy: { id: string; email: string; name: string | null } | null
@@ -155,6 +163,9 @@ export default function ChartDetailPage() {
   const [chartViewMode, setChartViewMode] = useState<"form" | "edit">("form")
   const [formTemplates, setFormTemplates] = useState<{ id: string; name: string }[]>([])
   const [switchingTemplate, setSwitchingTemplate] = useState(false)
+  const [savingConsent, setSavingConsent] = useState(false)
+  const [submittingConsent, setSubmittingConsent] = useState(false)
+  const consentFormRef = useRef<DynamicFormFillerHandle>(null)
 
   const fetchChart = useCallback(async () => {
     try {
@@ -219,6 +230,87 @@ export default function ChartDetailPage() {
     })
   }, [chart])
 
+  const workflowPhase = useMemo(() => (chart ? getChartWorkflowPhase(chart) : "active"), [chart])
+
+  const handleSaveConsentDraft = useCallback(
+    async (content: string): Promise<boolean> => {
+      if (!chart || chart.myPermission !== "edit") return false
+      setSavingConsent(true)
+      try {
+        const res = await fetch(`/api/patient-charts/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ consentContent: content }),
+        })
+        const data = await res.json()
+        if (data.success) {
+          toast.success("Consent draft saved")
+          setChart((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  consentContent: data.data.consentContent,
+                  consentCompletedAt: data.data.consentCompletedAt ?? prev.consentCompletedAt,
+                  updatedAt: data.data.updatedAt,
+                }
+              : null,
+          )
+          fetchTimeline()
+          return true
+        }
+        toast.error(data.error || "Failed to save consent")
+        return false
+      } catch {
+        toast.error("Failed to save consent")
+        return false
+      } finally {
+        setSavingConsent(false)
+      }
+    },
+    [id, chart, fetchTimeline],
+  )
+
+  const handleSubmitConsent = useCallback(async () => {
+    if (!chart || chart.myPermission !== "edit") return
+    const json = consentFormRef.current?.serialize() ?? chart.consentContent ?? "{}"
+    try {
+      const parsed = JSON.parse(json) as { consent_asked?: unknown }
+      const arr = parsed.consent_asked
+      if (
+        !Array.isArray(arr) ||
+        !arr.some((s) => String(s).toLowerCase() === CONSENT_ASKED_OPTION.toLowerCase())
+      ) {
+        toast.error("Please confirm consent was discussed using the checkbox.")
+        return
+      }
+    } catch {
+      toast.error("Could not read the consent form.")
+      return
+    }
+    setSubmittingConsent(true)
+    try {
+      const res = await fetch(`/api/patient-charts/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ consentContent: json, completeConsent: true }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success("Consent submitted — you can complete the initial assessment next.")
+        await fetchChart()
+        fetchTimeline()
+      } else {
+        toast.error(data.error || "Failed to submit consent")
+      }
+    } catch {
+      toast.error("Failed to submit consent")
+    } finally {
+      setSubmittingConsent(false)
+    }
+  }, [chart, fetchChart, fetchTimeline, id])
+
   useEffect(() => {
     fetch("/api/form-templates", { credentials: "include" })
       .then((res) => res.json())
@@ -243,7 +335,18 @@ export default function ChartDetailPage() {
         if (data.success) {
           toast.success("Chart saved")
           setChart((prev) =>
-            prev ? { ...prev, content: data.data.content, updatedAt: data.data.updatedAt } : null
+            prev
+              ? {
+                  ...prev,
+                  content: data.data.content,
+                  updatedAt: data.data.updatedAt,
+                  formTemplateId: data.data.formTemplateId ?? prev.formTemplateId,
+                  initialAssessmentCompletedAt:
+                    data.data.initialAssessmentCompletedAt ?? prev.initialAssessmentCompletedAt,
+                  consentContent: data.data.consentContent ?? prev.consentContent,
+                  consentCompletedAt: data.data.consentCompletedAt ?? prev.consentCompletedAt,
+                }
+              : null,
           )
           fetchTimeline()
           return true
@@ -268,7 +371,7 @@ export default function ChartDetailPage() {
       try {
         const content = templateId
           ? "{}"
-          : getDefaultChartNotesContentString(
+          : getDefaultChartNotesAfterConsentContentString(
               resolvePatientDisplayName({
                 patient: chart.patient,
                 booking: chart.booking,
@@ -778,18 +881,79 @@ export default function ChartDetailPage() {
 
           {/* Editor - wider column for chart notes */}
           <div className="lg:col-span-3">
+            {workflowPhase === "consent" && (
+              <Card className="rounded-xl border border-border/80 shadow-sm overflow-hidden mb-6">
+                <CardHeader className="pb-3 bg-muted/30 border-b border-border/60">
+                  <CardTitle className="text-lg font-semibold tracking-tight">Step 1: Consent</CardTitle>
+                  <CardDescription className="text-muted-foreground mt-1">
+                    Complete consent and submit here first. The initial assessment opens next and only needs to be done
+                    once for this chart; after that you can record follow-up visits without repeating consent or the
+                    initial assessment.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-5 space-y-4">
+                  <DynamicFormFiller
+                    ref={consentFormRef}
+                    key={`${chart.id}-consent-${chart.consentContent ?? "new"}`}
+                    schemaJson={CONSENT_ONLY_FORM_SCHEMA_JSON}
+                    initialContent={chart.consentContent}
+                    editable={chart.myPermission === "edit"}
+                    patientDisplayName={chartPatientDisplayName}
+                    onSave={chart.myPermission === "edit" ? handleSaveConsentDraft : undefined}
+                    saving={savingConsent}
+                    enableAutoSave={false}
+                  />
+                  {chart.myPermission === "edit" && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSubmitConsent}
+                        disabled={submittingConsent || savingConsent}
+                        className="rounded-lg shadow-sm"
+                      >
+                        {submittingConsent ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Submitting…
+                          </>
+                        ) : (
+                          "Submit consent and continue"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {(workflowPhase === "initial" || workflowPhase === "active") && (
             <Card className="rounded-xl border border-border/80 shadow-sm overflow-hidden">
               <CardHeader className="pb-3 bg-muted/30 border-b border-border/60">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-lg font-semibold tracking-tight">Chart notes</CardTitle>
-                    <CardDescription className="text-muted-foreground mt-1">
-                      {chart.formTemplate
-                        ? `Using form: ${chart.formTemplate.name}. Data is saved automatically.`
-                        : chart.myPermission === "edit"
-                          ? "Select treatment options and add notes below each section. Changes are shared with doctors who have access."
-                          : "You have view-only access. Ask the chart owner to grant edit access."}
-                    </CardDescription>
+                    <div className="text-muted-foreground mt-1 space-y-2 text-sm">
+                      {workflowPhase === "initial" && chart.myPermission === "edit" && (
+                        <p className="text-amber-800 dark:text-amber-200/90 font-medium">
+                          Step 2: Initial assessment — the first save completes this step. You can then add subsequent
+                          visits and switch templates as needed.
+                        </p>
+                      )}
+                      {workflowPhase === "active" && (
+                        <p className="text-xs">
+                          Consent and initial assessment are on file. Use the template dropdown for follow-up forms or
+                          continue in chart notes.
+                        </p>
+                      )}
+                      <p>
+                        {chart.formTemplate
+                          ? `Using form: ${chart.formTemplate.name}. Data is saved automatically.`
+                          : chart.myPermission === "edit"
+                            ? "Select treatment options and add notes below each section. Changes are shared with doctors who have access."
+                            : "You have view-only access. Ask the chart owner to grant edit access."}
+                      </p>
+                    </div>
                     {chart.myPermission === "edit" && (
                       <div className="mt-2 flex items-center gap-2">
                         <Select
@@ -871,7 +1035,7 @@ export default function ChartDetailPage() {
                     initialContent={
                       chart.content && chart.content.trim() !== ""
                         ? chart.content
-                        : getDefaultChartNotesContentString(chartPatientDisplayName)
+                        : getDefaultChartNotesAfterConsentContentString(chartPatientDisplayName)
                     }
                     patientDisplayName={chartPatientDisplayName}
                     editable={chart.myPermission === "edit"}
@@ -892,7 +1056,7 @@ export default function ChartDetailPage() {
                     initialContent={
                       chart.content && chart.content.trim() !== ""
                         ? chart.content
-                        : getDefaultChartNotesContentString(chartPatientDisplayName)
+                        : getDefaultChartNotesAfterConsentContentString(chartPatientDisplayName)
                     }
                     patientDisplayName={chartPatientDisplayName}
                     editable={chart.myPermission === "edit"}
@@ -916,6 +1080,7 @@ export default function ChartDetailPage() {
                 )}
               </CardContent>
             </Card>
+            )}
 
             {/* Who has access */}
             <Card className="rounded-xl border border-border/80 shadow-sm mt-6 overflow-hidden">

@@ -7,7 +7,6 @@ import { MapPin, CheckCircle } from "lucide-react"
 const serviceAreas = [
   { city: "Calgary", zones: ["NW", "NE", "SW", "SE", "Downtown"], therapists: 8 },
   { city: "Airdrie", zones: ["All Areas"], therapists: 3 },
-  { city: "Okotoks", zones: ["All Areas"], therapists: 2 },
   { city: "Cochrane", zones: ["All Areas"], therapists: 2 },
   { city: "Crossfield", zones: ["All Areas"], therapists: 1 },
 ]

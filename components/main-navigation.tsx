@@ -13,6 +13,7 @@ const navigationItems = [
   { name: "Home", href: "/" },
   { name: "Services", href: "/services" },
   { name: "Team", href: "/team" },
+  { name: "FAQ", href: "/faq" },
   { name: "Contact", href: "/contact" },
 ]
 
