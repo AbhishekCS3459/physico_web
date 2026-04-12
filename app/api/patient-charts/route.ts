@@ -1,4 +1,5 @@
 import { requireAuth } from '@/lib/auth'
+import { resolvePatientDisplayName } from '@/lib/consent-copy'
 import { getDefaultChartNotesContentString } from '@/lib/chart-template'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
@@ -159,12 +160,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Chart already exists for this patient' }, { status: 400 })
       }
 
+      const patientDisplayName = resolvePatientDisplayName({
+        patient: { firstName: patient.firstName, lastName: patient.lastName },
+      })
       const chart = await prisma.patientChart.create({
         data: {
           patientId,
           createdById: session.id,
           formTemplateId: formTemplateId ?? null,
-          content: body.formTemplateId ? '{}' : getDefaultChartNotesContentString(),
+          content: formTemplateId ? '{}' : getDefaultChartNotesContentString(patientDisplayName),
         },
       })
 
@@ -225,12 +229,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Chart already exists for this patient' }, { status: 400 })
     }
 
+    const bookingDisplayName = resolvePatientDisplayName({
+      booking: { firstName: booking.firstName, lastName: booking.lastName },
+    })
     const chart = await prisma.patientChart.create({
       data: {
         bookingId,
         createdById: session.id,
         formTemplateId: formTemplateId ?? null,
-        content: formTemplateId ? '{}' : getDefaultChartNotesContentString(),
+        content: formTemplateId ? '{}' : getDefaultChartNotesContentString(bookingDisplayName),
       },
     })
 

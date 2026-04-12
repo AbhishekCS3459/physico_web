@@ -1492,37 +1492,71 @@ export default function AdminDashboard() {
                     )}
                     {/* Objective */}
                     {(viewingAssessment.romFollowupFlexion ||
+                      viewingAssessment.romFollowupExtension ||
                       viewingAssessment.romFollowupAbduction ||
+                      viewingAssessment.romFollowupAdduction ||
+                      viewingAssessment.romFollowupInternalRotation ||
+                      viewingAssessment.romFollowupExternalRotation ||
                       viewingAssessment.strengthFollowupFlexion ||
+                      viewingAssessment.strengthFollowupExtension ||
                       viewingAssessment.strengthFollowupAbduction ||
+                      viewingAssessment.strengthFollowupAdduction ||
+                      viewingAssessment.strengthFollowupInternalRotation ||
+                      viewingAssessment.strengthFollowupExternalRotation ||
                       viewingAssessment.palpation ||
                       viewingAssessment.objectiveFindings) && (
                       <div className="border-b pb-4">
                         <Label className="font-semibold text-base">Objective</Label>
                         {(viewingAssessment.romFollowupFlexion ||
-                          viewingAssessment.romFollowupAbduction) && (
+                          viewingAssessment.romFollowupExtension ||
+                          viewingAssessment.romFollowupAbduction ||
+                          viewingAssessment.romFollowupAdduction ||
+                          viewingAssessment.romFollowupInternalRotation ||
+                          viewingAssessment.romFollowupExternalRotation) && (
                           <div className="mt-2">
-                            <Label className="font-semibold text-sm">Range of Motion</Label>
-                            <div className="grid grid-cols-2 gap-4 mt-1">
-                              {viewingAssessment.romFollowupFlexion && (
-                                <p>Flex: {viewingAssessment.romFollowupFlexion}</p>
-                              )}
-                              {viewingAssessment.romFollowupAbduction && (
-                                <p>Abd: {viewingAssessment.romFollowupAbduction}</p>
+                            <Label className="font-semibold text-sm">Range of motion</Label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1 text-sm">
+                              {[
+                                ["Flex", viewingAssessment.romFollowupFlexion],
+                                ["Ext", viewingAssessment.romFollowupExtension],
+                                ["Abd", viewingAssessment.romFollowupAbduction],
+                                ["Add", viewingAssessment.romFollowupAdduction],
+                                ["IR", viewingAssessment.romFollowupInternalRotation],
+                                ["ER", viewingAssessment.romFollowupExternalRotation],
+                              ].map(
+                                ([label, val]) =>
+                                  val ? (
+                                    <p key={label}>
+                                      {label}: {val}
+                                    </p>
+                                  ) : null
                               )}
                             </div>
                           </div>
                         )}
                         {(viewingAssessment.strengthFollowupFlexion ||
-                          viewingAssessment.strengthFollowupAbduction) && (
+                          viewingAssessment.strengthFollowupExtension ||
+                          viewingAssessment.strengthFollowupAbduction ||
+                          viewingAssessment.strengthFollowupAdduction ||
+                          viewingAssessment.strengthFollowupInternalRotation ||
+                          viewingAssessment.strengthFollowupExternalRotation) && (
                           <div className="mt-2">
-                            <Label className="font-semibold text-sm">Strength Flex /5, Abd /5</Label>
-                            <div className="grid grid-cols-2 gap-4 mt-1">
-                              {viewingAssessment.strengthFollowupFlexion && (
-                                <p>Flex: {viewingAssessment.strengthFollowupFlexion}</p>
-                              )}
-                              {viewingAssessment.strengthFollowupAbduction && (
-                                <p>Abd: {viewingAssessment.strengthFollowupAbduction}</p>
+                            <Label className="font-semibold text-sm">RIM / strength (/5)</Label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1 text-sm">
+                              {[
+                                ["Flex", viewingAssessment.strengthFollowupFlexion],
+                                ["Ext", viewingAssessment.strengthFollowupExtension],
+                                ["Abd", viewingAssessment.strengthFollowupAbduction],
+                                ["Add", viewingAssessment.strengthFollowupAdduction],
+                                ["IR", viewingAssessment.strengthFollowupInternalRotation],
+                                ["ER", viewingAssessment.strengthFollowupExternalRotation],
+                              ].map(
+                                ([label, val]) =>
+                                  val ? (
+                                    <p key={label}>
+                                      {label}: {val}
+                                    </p>
+                                  ) : null
                               )}
                             </div>
                           </div>

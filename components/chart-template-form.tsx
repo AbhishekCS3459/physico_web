@@ -20,6 +20,14 @@ import {
   type ChartSection,
   type CheckboxLine,
 } from "@/lib/chart-template-parser"
+import { interpolatePatientNameInTipTapJson } from "@/lib/consent-copy"
+import {
+  formatRimStrengthNotes,
+  formatRomNotes,
+  parseRimStrengthNotes,
+  parseRomNotes,
+  ROM_RIM_MOTION_LEGEND,
+} from "@/lib/rom-rim-chart-notes"
 import { cn } from "@/lib/utils"
 import { FileText, Loader2 } from "lucide-react"
 
@@ -97,11 +105,33 @@ export interface ChartTemplateFormProps {
   saving?: boolean
   onAfterDraftSave?: () => void
   className?: string
+  /** Substitutes {{patient_name}} and legacy sample names in consent text for display */
+  patientDisplayName?: string
+}
+
+function prepareChartJsonForDisplay(raw: string | null, patientDisplayName?: string): string | null {
+  if (!raw?.trim()) return raw
+  if (!patientDisplayName?.trim()) return raw
+  return interpolatePatientNameInTipTapJson(raw, patientDisplayName.trim())
 }
 
 function parseContent(value: string | null): ParsedChartDoc | null {
   if (!value || value.trim() === "") return null
   return parseChartDoc(value)
+}
+
+/** Consent always appears first in the chart form (fixes legacy charts saved before consent was moved). */
+function orderSectionsWithConsentFirst(sections: ChartSection[]): ChartSection[] {
+  const idx = sections.findIndex((s) => /^Consent:?$/i.test(s.title.trim()))
+  if (idx <= 0) return sections
+  const next = [...sections]
+  const [consent] = next.splice(idx, 1)
+  return [consent, ...next]
+}
+
+function withConsentFirst(doc: ParsedChartDoc | null): ParsedChartDoc | null {
+  if (!doc) return null
+  return { ...doc, sections: orderSectionsWithConsentFirst(doc.sections) }
 }
 
 export function ChartTemplateForm({
@@ -111,18 +141,27 @@ export function ChartTemplateForm({
   saving = false,
   onAfterDraftSave,
   className,
+  patientDisplayName,
 }: ChartTemplateFormProps) {
-  const parsed = useMemo(() => parseContent(initialContent), [initialContent])
+  const preparedContent = useMemo(
+    () => prepareChartJsonForDisplay(initialContent, patientDisplayName),
+    [initialContent, patientDisplayName],
+  )
+  const parsed = useMemo(
+    () => withConsentFirst(parseContent(preparedContent)),
+    [preparedContent],
+  )
   const [data, setData] = useState<ParsedChartDoc | null>(() => parsed)
-  const initialContentRef = useRef(initialContent)
+  const syncKeyRef = useRef<string>("")
 
-  // Sync when initialContent changes from outside (e.g. after save from server)
+  // Sync when server content or patient label changes (display interpolation)
   useEffect(() => {
-    if (initialContentRef.current !== initialContent) {
-      initialContentRef.current = initialContent
+    const key = `${initialContent ?? ""}\0${patientDisplayName ?? ""}`
+    if (syncKeyRef.current !== key) {
+      syncKeyRef.current = key
       if (parsed) setData(parsed)
     }
-  }, [initialContent, parsed])
+  }, [initialContent, patientDisplayName, parsed])
 
   const updateSection = useCallback((sectionIndex: number, updater: (section: ChartSection) => ChartSection) => {
     setData((prev) => {
@@ -200,8 +239,39 @@ export function ChartTemplateForm({
     )
   }
 
+  const consentSection =
+    data.sections.length > 0 && /^Consent:?$/i.test(data.sections[0].title.trim())
+      ? data.sections[0]
+      : null
+  const sectionsAfterConsent = consentSection ? data.sections.slice(1) : data.sections
+
+  const renderSectionBlock = (section: ChartSection, sectionIndex: number) => (
+    <SectionBlock
+      key={`${section.title}-${sectionIndex}`}
+      section={section}
+      sectionIndex={sectionIndex}
+      editable={editable}
+      onCheckboxChange={(lineIndex, optionIndex, checked) =>
+        setCheckboxLine(sectionIndex, lineIndex, optionIndex, checked)
+      }
+      onCheckboxLinePrefixChange={(lineIndex, newPrefix) =>
+        setCheckboxLinePrefix(sectionIndex, lineIndex, newPrefix)
+      }
+      onNotesChange={(notes) => setSectionNotes(sectionIndex, notes)}
+      onListItemsChange={(listItems) => setSectionListItems(sectionIndex, listItems)}
+    />
+  )
+
   return (
     <div className={cn("rounded-xl border-2 border-border/60 bg-card overflow-hidden shadow-sm", className)}>
+      {consentSection && (
+        <div className="px-5 pt-5 pb-1 border-b border-border/60 bg-muted/25">
+          <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+            Step 1 — Consent
+          </p>
+          {renderSectionBlock(consentSection, 0)}
+        </div>
+      )}
       <div className="px-5 py-5 border-b border-border/60 bg-muted/30">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -210,7 +280,9 @@ export function ChartTemplateForm({
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold tracking-tight text-foreground">{data.mainTitle || "Chart notes"}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Tick/untick options and add notes below each section. Changes are shared with doctors who have access.
+              {consentSection
+                ? "Complete consent above first, then work through the assessment sections below."
+                : "Tick/untick options and add notes below each section. Changes are shared with doctors who have access."}
             </p>
             {editable && onSave && (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -255,22 +327,14 @@ export function ChartTemplateForm({
         </div>
       </div>
       <div className="min-h-[280px] px-5 py-5 space-y-6 overflow-auto">
-        {data.sections.map((section, sectionIndex) => (
-          <SectionBlock
-            key={`${section.title}-${sectionIndex}`}
-            section={section}
-            sectionIndex={sectionIndex}
-            editable={editable}
-            onCheckboxChange={(lineIndex, optionIndex, checked) =>
-              setCheckboxLine(sectionIndex, lineIndex, optionIndex, checked)
-            }
-            onCheckboxLinePrefixChange={(lineIndex, newPrefix) =>
-              setCheckboxLinePrefix(sectionIndex, lineIndex, newPrefix)
-            }
-            onNotesChange={(notes) => setSectionNotes(sectionIndex, notes)}
-            onListItemsChange={(listItems) => setSectionListItems(sectionIndex, listItems)}
-          />
-        ))}
+        {consentSection && (
+          <p className="text-xs font-medium text-muted-foreground -mt-2 mb-2 uppercase tracking-wide">
+            Step 2 — Assessment
+          </p>
+        )}
+        {sectionsAfterConsent.map((section, i) =>
+          renderSectionBlock(section, consentSection ? i + 1 : i),
+        )}
       </div>
     </div>
   )
@@ -295,147 +359,12 @@ function isTreatmentSection(section: ChartSection): boolean {
 /** RIM/Strength section: multiple axial joint motions with /5 scale */
 const RIM_STRENGTH_TITLE_REGEX = /^RIM\/Strength:?$/i
 
-function parseRimStrengthNotes(
-  notes: string,
-): {
-  flexion: string
-  extension: string
-  abduction: string
-  adduction: string
-  internalRotation: string
-  externalRotation: string
-  additionalNotes: string
-} {
-  const parts = notes.split(/\n\n+/)
-  const firstLine = (parts[0] ?? "").trim()
-  const additionalNotes = parts.slice(1).join("\n\n").trim()
-
-  const normalize = (v: string | undefined): string => {
-    const val = (v ?? "").trim()
-    return val === "___" ? "" : val
-  }
-
-  const matchValue = (regexes: RegExp[]): string => {
-    for (const re of regexes) {
-      const m = firstLine.match(re)
-      if (m && typeof m[1] === "string") return normalize(m[1])
-    }
-    return ""
-  }
-
-  const flexion = matchValue([/(?:Flexion|Flex)\s*(___|\d+)\s*\/\s*5/i])
-  const extension = matchValue([/(?:Extension|Ext)\s*(___|\d+)\s*\/\s*5/i])
-  const abduction = matchValue([/(?:Abduction|Abd)\s*(___|\d+)\s*\/\s*5/i])
-  const adduction = matchValue([/(?:Adduction|Add)\s*(___|\d+)\s*\/\s*5/i])
-  const internalRotation = matchValue([
-    /(?:Internal rotation|IR)\s*(___|\d+)\s*\/\s*5/i,
-  ])
-  const externalRotation = matchValue([
-    /(?:External rotation|ER)\s*(___|\d+)\s*\/\s*5/i,
-  ])
-
-  return {
-    flexion,
-    extension,
-    abduction,
-    adduction,
-    internalRotation,
-    externalRotation,
-    additionalNotes,
-  }
-}
-
-function formatRimStrengthNotes(
-  flexion: string,
-  extension: string,
-  abduction: string,
-  adduction: string,
-  internalRotation: string,
-  externalRotation: string,
-  additionalNotes: string,
-): string {
-  const seg = (v: string): string => (v ? `${v}/5` : "___/5")
-  const line = `Flexion ${seg(flexion)}    Extension ${seg(extension)}    Abduction ${seg(
-    abduction,
-  )}    Adduction ${seg(adduction)}    Internal rotation ${seg(
-    internalRotation,
-  )}    External rotation ${seg(externalRotation)}`
-  return additionalNotes ? `${line}\n\n${additionalNotes}` : line
-}
-
 /** ROM section: six axial joint motions as separate fields (e.g. degrees) */
 const ROM_SECTION_TITLE_REGEX = /^ROM:?$/i
 
-function parseRomNotes(
-  notes: string,
-): {
-  flexion: string
-  extension: string
-  abduction: string
-  adduction: string
-  internalRotation: string
-  externalRotation: string
-  additionalNotes: string
-} {
-  const parts = notes.split(/\n\n+/)
-  const firstLine = (parts[0] ?? "").trim()
-  const additionalNotes = parts.slice(1).join("\n\n").trim()
-
-  const normalize = (v: string | undefined): string => {
-    const val = (v ?? "").trim()
-    return val === "___" ? "" : val
-  }
-
-  const matchValue = (regexes: RegExp[]): string => {
-    for (const re of regexes) {
-      const m = firstLine.match(re)
-      if (m && typeof m[1] === "string") return normalize(m[1])
-    }
-    return ""
-  }
-
-  // Backwards compatibility with older templates that only had Flex + Abd.
-  const flexion = matchValue([/(?:Flexion|Flex)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
-  const extension = matchValue([/(?:Extension|Ext)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
-  const abduction = matchValue([/(?:Abduction|Abd)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
-  const adduction = matchValue([/(?:Adduction|Add)\s*:? ?(___|\d+(?:\.\d+)?)\b/i])
-  const internalRotation = matchValue([
-    /(?:Internal rotation|IR)\s*:? ?(___|\d+(?:\.\d+)?)\b/i,
-  ])
-  const externalRotation = matchValue([
-    /(?:External rotation|ER)\s*:? ?(___|\d+(?:\.\d+)?)\b/i,
-  ])
-
-  return {
-    flexion,
-    extension,
-    abduction,
-    adduction,
-    internalRotation,
-    externalRotation,
-    additionalNotes,
-  }
-}
-
-function formatRomNotes(
-  flexion: string,
-  extension: string,
-  abduction: string,
-  adduction: string,
-  internalRotation: string,
-  externalRotation: string,
-  additionalNotes: string,
-): string {
-  const seg = (v: string): string => v.trim() || "___"
-  const line = `Flexion ${seg(flexion)}    Extension ${seg(extension)}    Abduction ${seg(
-    abduction,
-  )}    Adduction ${seg(adduction)}    Internal rotation ${seg(
-    internalRotation,
-  )}    External rotation ${seg(externalRotation)}`
-  return additionalNotes ? `${line}\n\n${additionalNotes}` : line
-}
-
 const PAIN_PREFIX_REGEX = /^Pain\s*(___|\d+)\/10$/i
+
+const CONSENT_SECTION_TITLE_REGEX = /^Consent:?$/i
 
 function SectionBlock({
   section,
@@ -451,6 +380,7 @@ function SectionBlock({
   const rimStrength = isRimStrength ? parseRimStrengthNotes(section.notes) : null
   const isRom = ROM_SECTION_TITLE_REGEX.test(section.title.trim())
   const romNotes = isRom ? parseRomNotes(section.notes) : null
+  const isConsentSection = CONSENT_SECTION_TITLE_REGEX.test(section.title.trim())
 
   return (
     <div className="rounded-xl border-2 border-border/60 bg-muted/10 p-5 space-y-4 shadow-sm">
@@ -484,9 +414,10 @@ function SectionBlock({
       {/* ROM: six axial joint motions (e.g. degrees) */}
       {isRom && romNotes && (
         <div className="space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">{ROM_RIM_MOTION_LEGEND}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Flexion</Label>
+              <Label className="text-sm font-medium text-foreground">Flex (flexion)</Label>
               {editable ? (
                 <Input
                   value={romNotes.flexion}
@@ -512,7 +443,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Extension</Label>
+              <Label className="text-sm font-medium text-foreground">Ext (extension)</Label>
               {editable ? (
                 <Input
                   value={romNotes.extension}
@@ -538,7 +469,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Abduction</Label>
+              <Label className="text-sm font-medium text-foreground">Abd (abduction)</Label>
               {editable ? (
                 <Input
                   value={romNotes.abduction}
@@ -564,7 +495,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Adduction</Label>
+              <Label className="text-sm font-medium text-foreground">Add (adduction)</Label>
               {editable ? (
                 <Input
                   value={romNotes.adduction}
@@ -590,7 +521,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Internal rotation</Label>
+              <Label className="text-sm font-medium text-foreground">IR (internal rotation)</Label>
               {editable ? (
                 <Input
                   value={romNotes.internalRotation}
@@ -616,7 +547,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">External rotation</Label>
+              <Label className="text-sm font-medium text-foreground">ER (external rotation)</Label>
               {editable ? (
                 <Input
                   value={romNotes.externalRotation}
@@ -671,9 +602,10 @@ function SectionBlock({
       {/* RIM/Strength: six axial joint motions as separate /5 fields */}
       {isRimStrength && rimStrength && (
         <div className="space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">{ROM_RIM_MOTION_LEGEND}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Flexion</Label>
+              <Label className="text-sm font-medium text-foreground">Flex (flexion)</Label>
               {editable ? (
                 <Select
                   value={rimStrength.flexion || undefined}
@@ -710,7 +642,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Extension</Label>
+              <Label className="text-sm font-medium text-foreground">Ext (extension)</Label>
               {editable ? (
                 <Select
                   value={rimStrength.extension || undefined}
@@ -747,7 +679,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Abduction</Label>
+              <Label className="text-sm font-medium text-foreground">Abd (abduction)</Label>
               {editable ? (
                 <Select
                   value={rimStrength.abduction || undefined}
@@ -784,7 +716,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Adduction</Label>
+              <Label className="text-sm font-medium text-foreground">Add (adduction)</Label>
               {editable ? (
                 <Select
                   value={rimStrength.adduction || undefined}
@@ -821,7 +753,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Internal rotation</Label>
+              <Label className="text-sm font-medium text-foreground">IR (internal rotation)</Label>
               {editable ? (
                 <Select
                   value={rimStrength.internalRotation || undefined}
@@ -858,7 +790,7 @@ function SectionBlock({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">External rotation</Label>
+              <Label className="text-sm font-medium text-foreground">ER (external rotation)</Label>
               {editable ? (
                 <Select
                   value={rimStrength.externalRotation || undefined}
@@ -957,14 +889,35 @@ function SectionBlock({
       {/* Notes: doctor adds notes below (only when not RIM/Strength or ROM; they have their own blocks above).
           Hide for Plan since Plan is meant to be filled via sub-points list items. */}
       {!isRimStrength && !isRom && section.title.trim() !== "Plan:" && (
-        <div className="space-y-1.5">
-          <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
+        <div
+          className={cn(
+            "space-y-2",
+            isConsentSection &&
+              "rounded-xl border border-border/80 bg-card/50 p-4 sm:p-5 shadow-sm",
+          )}
+        >
+          {isConsentSection && (
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Informed consent — review with the patient; edit wording here or use the Edit (rich text) tab
+            </p>
+          )}
+          <Label
+            className={cn(
+              "text-sm font-medium",
+              isConsentSection ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            {isConsentSection ? "Consent text on this chart" : "Notes"}
+          </Label>
           <Textarea
             value={section.notes}
             onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Add your notes here…"
-            className="min-h-[72px] text-sm resize-y rounded-lg border-border/80 bg-background focus-visible:ring-2"
-            rows={3}
+            placeholder={isConsentSection ? "Consent paragraphs…" : "Add your notes here…"}
+            className={cn(
+              "text-sm resize-y rounded-lg border-border/80 bg-background focus-visible:ring-2",
+              isConsentSection ? "min-h-[220px] leading-relaxed" : "min-h-[72px]",
+            )}
+            rows={isConsentSection ? 12 : 3}
             readOnly={!editable}
           />
         </div>

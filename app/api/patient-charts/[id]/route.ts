@@ -1,4 +1,5 @@
 import { requireAuth } from '@/lib/auth'
+import { resolvePatientDisplayName } from '@/lib/consent-copy'
 import { getDefaultChartNotesContentString } from '@/lib/chart-template'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
@@ -135,7 +136,11 @@ export async function PATCH(
 
     const chart = await prisma.patientChart.findUnique({
       where: { id },
-      include: { accessList: true },
+      include: {
+        accessList: true,
+        patient: { select: { firstName: true, lastName: true } },
+        booking: { select: { firstName: true, lastName: true } },
+      },
     })
 
     if (!chart) {
@@ -151,7 +156,12 @@ export async function PATCH(
       parsed.clear === true
         ? chart.formTemplateId
           ? '{}'
-          : getDefaultChartNotesContentString()
+          : getDefaultChartNotesContentString(
+              resolvePatientDisplayName({
+                patient: chart.patient,
+                booking: chart.booking,
+              }),
+            )
         : (parsed.content ?? chart.content)
     const updateData: { content: string | null; formTemplateId?: string | null } = { content }
     if (parsed.formTemplateId !== undefined) updateData.formTemplateId = parsed.formTemplateId

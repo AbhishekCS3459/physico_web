@@ -126,6 +126,14 @@ export function getDefaultInitialAssessmentFormSchema(): FormSchema {
     version: FORM_SCHEMA_VERSION,
     fields: [
       { id: "s_main", type: "section", label: "Section", title: "INITIAL ASSESSMENT" },
+      { id: "s_consent", type: "section", label: "Section", title: "Consent:" },
+      {
+        id: "consent_asked",
+        type: "checkbox",
+        label: "Consent asked",
+        options: ["Consent was discussed and the patient was asked to proceed (questions answered)"],
+        required: false,
+      },
       { id: "s_referral", type: "section", label: "Section", title: "Reason for Referral:" },
       { id: "reason_for_referral", type: "long_text", label: "Reason for Referral", required: false },
       { id: "s_hpi", type: "section", label: "Section", title: "HPI:" },
@@ -151,7 +159,7 @@ export function getDefaultInitialAssessmentFormSchema(): FormSchema {
         type: "short_text",
         label: "ROM",
         placeholder:
-          "Flexion ___    Extension ___    Abduction ___    Adduction ___    Internal rotation ___    External rotation ___",
+          "Flex ___    Ext ___    Abd ___    Add ___    IR ___    ER ___",
         required: false,
       },
       { id: "s_strength", type: "section", label: "Section", title: "RIM/Strength:" },
@@ -160,7 +168,7 @@ export function getDefaultInitialAssessmentFormSchema(): FormSchema {
         type: "short_text",
         label: "RIM/Strength",
         placeholder:
-          "Flexion ___/5    Extension ___/5    Abduction ___/5    Adduction ___/5    Internal rotation ___/5    External rotation ___/5",
+          "Flex ___/5    Ext ___/5    Abd ___/5    Add ___/5    IR ___/5    ER ___/5",
         required: false,
       },
       { id: "s_neuro", type: "section", label: "Section", title: "Neuro (screening, reflexes, tension tests):" },
@@ -184,14 +192,6 @@ export function getDefaultInitialAssessmentFormSchema(): FormSchema {
       { id: "treatment_handouts", type: "checkbox", label: "Print outs given to the patient", options: ["No", "Yes", "Other"], allowOther: true, required: false },
       { id: "s_plan", type: "section", label: "Section", title: "Plan:" },
       { id: "plan", type: "long_text", label: "Plan", required: false },
-      { id: "s_consent", type: "section", label: "Section", title: "Consent:" },
-      {
-        id: "consent_asked",
-        type: "checkbox",
-        label: "Consent asked",
-        options: ["Consent was discussed and the patient was asked to proceed (questions answered)"],
-        required: false,
-      },
     ],
   }
 }

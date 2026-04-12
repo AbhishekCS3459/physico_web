@@ -3,41 +3,38 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+const ADMIN_EMAIL = 'admin@physiorehab.com'
+const ADMIN_PASSWORD = 'admin'
+
 async function main() {
   console.log('Seeding database...')
 
-  // Check if admin already exists
-  const existingAdmin = await prisma.admin.findUnique({
-    where: { email: 'admin@physiorehab.com' },
-  })
+  const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10)
 
-  if (existingAdmin) {
-    console.log('Admin user already exists, skipping seed...')
-    return
-  }
-
-  // Hash password
-  const hashedPassword = await bcrypt.hash('admin', 10)
-
-  // Create super_admin user (first user is super_admin)
-  const admin = await prisma.admin.create({
-    data: {
-      email: 'admin@physiorehab.com',
+  const admin = await prisma.admin.upsert({
+    where: { email: ADMIN_EMAIL },
+    create: {
+      email: ADMIN_EMAIL,
       password: hashedPassword,
       name: 'Admin User',
       role: 'super_admin',
     },
+    update: {
+      password: hashedPassword,
+      role: 'super_admin',
+    },
   })
 
-  console.log('Admin user created:', {
+  console.log('Admin user ready:', {
     id: admin.id,
     email: admin.email,
+    role: admin.role,
   })
 
   console.log('Database seeded successfully!')
   console.log('Login credentials:')
-  console.log('Email: admin@physiorehab.com')
-  console.log('Password: admin')
+  console.log(`Email: ${ADMIN_EMAIL}`)
+  console.log(`Password: ${ADMIN_PASSWORD}`)
 }
 
 main()

@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import React, { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { interpolatePatientNameInTipTapJson } from "@/lib/consent-copy"
 import { cn } from "@/lib/utils"
 import {
   Bold,
@@ -28,12 +29,16 @@ export interface ChartEditorProps {
   saving?: boolean
   onAfterDraftSave?: () => void
   className?: string
+  patientDisplayName?: string
 }
 
-function parseContent(value: string | null): object | undefined {
-  if (!value || value.trim() === "") return undefined
+function buildEditorDoc(initialContent: string | null, patientDisplayName?: string): object | undefined {
+  if (!initialContent?.trim()) return undefined
   try {
-    const parsed = JSON.parse(value)
+    const str = patientDisplayName?.trim()
+      ? interpolatePatientNameInTipTapJson(initialContent, patientDisplayName.trim())
+      : initialContent
+    const parsed = JSON.parse(str)
     return typeof parsed === "object" && parsed !== null ? parsed : undefined
   } catch {
     return undefined
@@ -50,6 +55,7 @@ export function ChartEditor({
   saving = false,
   onAfterDraftSave,
   className,
+  patientDisplayName,
 }: ChartEditorProps) {
   const [viewMode, setViewMode] = useState<ChartViewMode>("edit")
   const [mounted, setMounted] = useState(false)
@@ -58,7 +64,7 @@ export function ChartEditor({
     setMounted(true)
   }, [])
 
-  const content = parseContent(initialContent)
+  const content = buildEditorDoc(initialContent, patientDisplayName)
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -78,16 +84,17 @@ export function ChartEditor({
     editor.setEditable(editable && isEditView)
   }, [editor, editable, viewMode])
 
-  // Sync content only when prop changes (e.g. after save from server); avoid overwriting while user types
-  const prevContentRef = React.useRef(initialContent)
+  // Sync when server JSON or patient label changes (consent placeholders)
+  const prevSyncKeyRef = React.useRef("")
   useEffect(() => {
     if (!editor || initialContent === undefined) return
-    if (prevContentRef.current !== initialContent) {
-      prevContentRef.current = initialContent
-      const next = parseContent(initialContent)
+    const key = `${initialContent ?? ""}|${patientDisplayName ?? ""}`
+    if (prevSyncKeyRef.current !== key) {
+      prevSyncKeyRef.current = key
+      const next = buildEditorDoc(initialContent, patientDisplayName)
       if (next !== undefined) editor.commands.setContent(next, false)
     }
-  }, [editor, initialContent])
+  }, [editor, initialContent, patientDisplayName])
 
   const handleSave = useCallback(() => {
     if (!editor || !onSave) return

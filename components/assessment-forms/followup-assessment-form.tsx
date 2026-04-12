@@ -34,9 +34,17 @@ export function FollowupAssessmentForm({
     // Objective
     objectiveFindings: initialData?.objectiveFindings || "",
     romFollowupFlexion: initialData?.romFollowupFlexion || "",
+    romFollowupExtension: initialData?.romFollowupExtension || "",
     romFollowupAbduction: initialData?.romFollowupAbduction || "",
+    romFollowupAdduction: initialData?.romFollowupAdduction || "",
+    romFollowupInternalRotation: initialData?.romFollowupInternalRotation || "",
+    romFollowupExternalRotation: initialData?.romFollowupExternalRotation || "",
     strengthFollowupFlexion: initialData?.strengthFollowupFlexion || "",
+    strengthFollowupExtension: initialData?.strengthFollowupExtension || "",
     strengthFollowupAbduction: initialData?.strengthFollowupAbduction || "",
+    strengthFollowupAdduction: initialData?.strengthFollowupAdduction || "",
+    strengthFollowupInternalRotation: initialData?.strengthFollowupInternalRotation || "",
+    strengthFollowupExternalRotation: initialData?.strengthFollowupExternalRotation || "",
     palpation: initialData?.palpation || "",
     // Assessment
     assessmentModalities: initialData?.assessmentModalities || "",
@@ -212,87 +220,64 @@ export function FollowupAssessmentForm({
         <h3 className="text-lg font-semibold">Objective</h3>
 
         <div>
-          <Label>Range of Motion</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <div>
-              <Label htmlFor="romFollowupFlexion" className="text-sm font-normal">
-                Flex
-              </Label>
-              <Input
-                id="romFollowupFlexion"
-                value={formData.romFollowupFlexion}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    romFollowupFlexion: e.target.value,
-                  })
-                }
-                placeholder="deg pain"
-              />
-            </div>
-            <div>
-              <Label
-                htmlFor="romFollowupAbduction"
-                className="text-sm font-normal"
-              >
-                Abd
-              </Label>
-              <Input
-                id="romFollowupAbduction"
-                value={formData.romFollowupAbduction}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    romFollowupAbduction: e.target.value,
-                  })
-                }
-                placeholder="Within functional limits"
-              />
-            </div>
+          <Label>Range of motion</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+            {(
+              [
+                ["romFollowupFlexion", "Flex (flexion)", "e.g. deg / pain"] as const,
+                ["romFollowupExtension", "Ext (extension)", ""] as const,
+                ["romFollowupAbduction", "Abd (abduction)", "e.g. WFL"] as const,
+                ["romFollowupAdduction", "Add (adduction)", ""] as const,
+                ["romFollowupInternalRotation", "IR", ""] as const,
+                ["romFollowupExternalRotation", "ER", ""] as const,
+              ] as const
+            ).map(([key, sublabel, ph]) => (
+              <div key={key}>
+                <Label htmlFor={key} className="text-sm font-normal">
+                  {sublabel}
+                </Label>
+                <Input
+                  id={key}
+                  value={formData[key as keyof typeof formData] as string}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [key]: e.target.value })
+                  }
+                  placeholder={ph}
+                  className="mt-1"
+                />
+              </div>
+            ))}
           </div>
         </div>
 
         <div>
-          <Label>Strength Flex /5, Abd /5</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <div>
-              <Label
-                htmlFor="strengthFollowupFlexion"
-                className="text-sm font-normal"
-              >
-                Flex
-              </Label>
-              <Input
-                id="strengthFollowupFlexion"
-                value={formData.strengthFollowupFlexion}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    strengthFollowupFlexion: e.target.value,
-                  })
-                }
-                placeholder="/5"
-              />
-            </div>
-            <div>
-              <Label
-                htmlFor="strengthFollowupAbduction"
-                className="text-sm font-normal"
-              >
-                Abd
-              </Label>
-              <Input
-                id="strengthFollowupAbduction"
-                value={formData.strengthFollowupAbduction}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    strengthFollowupAbduction: e.target.value,
-                  })
-                }
-                placeholder="/5"
-              />
-            </div>
+          <Label>RIM / strength (/5)</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+            {(
+              [
+                ["strengthFollowupFlexion", "Flex (flexion)"] as const,
+                ["strengthFollowupExtension", "Ext (extension)"] as const,
+                ["strengthFollowupAbduction", "Abd (abduction)"] as const,
+                ["strengthFollowupAdduction", "Add (adduction)"] as const,
+                ["strengthFollowupInternalRotation", "IR"] as const,
+                ["strengthFollowupExternalRotation", "ER"] as const,
+              ] as const
+            ).map(([key, sublabel]) => (
+              <div key={key}>
+                <Label htmlFor={key} className="text-sm font-normal">
+                  {sublabel}
+                </Label>
+                <Input
+                  id={key}
+                  value={formData[key as keyof typeof formData] as string}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [key]: e.target.value })
+                  }
+                  placeholder="/5"
+                  className="mt-1"
+                />
+              </div>
+            ))}
           </div>
         </div>
 

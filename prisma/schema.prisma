@@ -60,15 +60,23 @@ model Assessment {
   romInitial            String?  // Flexion: ___, Abduction: ___
   
   // ROM - Follow-up
-  romFollowupFlexion    String?  // Flexion with pain
-  romFollowupAbduction  String?  // Abduction within functional limits
+  romFollowupFlexion           String?
+  romFollowupExtension         String?
+  romFollowupAbduction         String?
+  romFollowupAdduction         String?
+  romFollowupInternalRotation  String?
+  romFollowupExternalRotation  String?
   
   // Strength - Initial
   strengthInitial       String?  // Flex: ___/5, Abd: ___/5
   
   // Strength - Follow-up
-  strengthFollowupFlexion   String?  // Flexion: ___/5
-  strengthFollowupAbduction String?  // Abduction: ___/5
+  strengthFollowupFlexion           String?
+  strengthFollowupExtension         String?
+  strengthFollowupAbduction         String?
+  strengthFollowupAdduction         String?
+  strengthFollowupInternalRotation  String?
+  strengthFollowupExternalRotation  String?
   
   // Palpation
   palpation             String?

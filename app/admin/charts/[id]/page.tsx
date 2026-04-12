@@ -56,10 +56,11 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { NotificationsBell } from "@/components/notifications-bell"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { resolvePatientDisplayName } from "@/lib/consent-copy"
 import { getDefaultChartNotesContentString } from "@/lib/chart-template"
 
 interface ChartData {
@@ -210,6 +211,14 @@ export default function ChartDetailPage() {
     if (chart) fetchTimeline()
   }, [chart, fetchTimeline])
 
+  const chartPatientDisplayName = useMemo(() => {
+    if (!chart) return ""
+    return resolvePatientDisplayName({
+      patient: chart.patient,
+      booking: chart.booking,
+    })
+  }, [chart])
+
   useEffect(() => {
     fetch("/api/form-templates", { credentials: "include" })
       .then((res) => res.json())
@@ -257,7 +266,14 @@ export default function ChartDetailPage() {
       if (!chart || chart.myPermission !== "edit") return
       setSwitchingTemplate(true)
       try {
-        const content = templateId ? "{}" : getDefaultChartNotesContentString()
+        const content = templateId
+          ? "{}"
+          : getDefaultChartNotesContentString(
+              resolvePatientDisplayName({
+                patient: chart.patient,
+                booking: chart.booking,
+              }),
+            )
         const res = await fetch(`/api/patient-charts/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -836,6 +852,7 @@ export default function ChartDetailPage() {
                       schemaJson={chart.formTemplate.schema}
                       initialContent={chart.content}
                       editable={chart.myPermission === "edit"}
+                      patientDisplayName={chartPatientDisplayName}
                       onSave={chart.myPermission === "edit" ? handleSave : undefined}
                       saving={saving}
                       onAfterDraftSave={
@@ -854,8 +871,9 @@ export default function ChartDetailPage() {
                     initialContent={
                       chart.content && chart.content.trim() !== ""
                         ? chart.content
-                        : getDefaultChartNotesContentString()
+                        : getDefaultChartNotesContentString(chartPatientDisplayName)
                     }
+                    patientDisplayName={chartPatientDisplayName}
                     editable={chart.myPermission === "edit"}
                     onSave={chart.myPermission === "edit" ? handleSave : undefined}
                     saving={saving}
@@ -874,8 +892,9 @@ export default function ChartDetailPage() {
                     initialContent={
                       chart.content && chart.content.trim() !== ""
                         ? chart.content
-                        : getDefaultChartNotesContentString()
+                        : getDefaultChartNotesContentString(chartPatientDisplayName)
                     }
+                    patientDisplayName={chartPatientDisplayName}
                     editable={chart.myPermission === "edit"}
                     onSave={chart.myPermission === "edit" ? handleSave : undefined}
                     saving={saving}

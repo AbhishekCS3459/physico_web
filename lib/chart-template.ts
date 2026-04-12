@@ -3,7 +3,12 @@
  * form instead of an empty chart. Hierarchy matches the clinical form:
  * main title → section headings (h3) → prompts and sub-items. Plan is left
  * blank for the doctor to write themselves.
+ *
+ * Consent appears first (after the main title). Patient name uses {{patient_name}}
+ * and is filled when the chart is created or at display time via interpolatePatientNameInTipTapJson.
  */
+
+import { interpolatePatientNameInTipTapJson } from "@/lib/consent-copy"
 
 function p(text: string): { type: "paragraph"; content: [{ type: "text"; text: string }] } {
   return { type: "paragraph", content: [{ type: "text", text }] }
@@ -32,11 +37,28 @@ function bulletList(items: Array<{ type: "listItem"; content: unknown[] }>): { t
   return { type: "bulletList", content: items }
 }
 
+const PATIENT = "{{patient_name}}"
+
 /** Tiptap/ProseMirror JSON document for default chart notes (Initial Assessment). */
 export const DEFAULT_CHART_NOTES_TEMPLATE = {
   type: "doc",
   content: [
     h2("INITIAL ASSESSMENT"),
+
+    h3("Consent:"),
+    p("[ ] Consent was discussed and the patient was asked to proceed (questions answered)"),
+    p(
+      `${PATIENT} was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera, PT and who may provide assistance in their care.`,
+    ),
+    p("The scope of the treatment/procedure(s) plans/interventions and/or list of agreed upon treatment/procedure(s), that are clinically indicated and approved for the condition were explained."),
+    p("The potential benefits, limitations, and possible risks of the assessment/treatment/intervention were discussed."),
+    p(`${PATIENT} received the opportunity to ask questions.`),
+    p(`${PATIENT} provided consent to proceed with the visit.`),
+    p(
+      `${PATIENT} was informed that they have the right to discontinue the appointment at any time. The decision to accept or refuse a treatment or procedure shall not prejudice their access to ongoing or future health care.`,
+    ),
+    p("Bharat Vishembera, PT"),
+    emptyP(),
 
     h3("Reason for Referral:"),
     emptyP(),
@@ -71,11 +93,11 @@ export const DEFAULT_CHART_NOTES_TEMPLATE = {
     emptyP(),
 
     h3("ROM:"),
-    p("Flexion ___    Extension ___    Abduction ___    Adduction ___    Internal rotation ___    External rotation ___"),
+    p("Flex ___    Ext ___    Abd ___    Add ___    IR ___    ER ___"),
     emptyP(),
 
     h3("RIM/Strength:"),
-    p("Flexion ___/5    Extension ___/5    Abduction ___/5    Adduction ___/5    Internal rotation ___/5    External rotation ___/5"),
+    p("Flex ___/5    Ext ___/5    Abd ___/5    Add ___/5    IR ___/5    ER ___/5"),
     emptyP(),
 
     h3("Neuro (screening, reflexes, tension tests):"),
@@ -106,24 +128,21 @@ export const DEFAULT_CHART_NOTES_TEMPLATE = {
     ]),
     emptyP(),
 
-    h3("Consent:"),
-    p("[ ] Consent was discussed and the patient was asked if they agree to proceed (questions answered)"),
-    p("D Patt was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera, PT and who may provide assistance in her care."),
-    p("The scope of the treatment/procedure(s) plans/interventions and/or list of agreed upon treatment/procedure(s), that are clinically indicated and approved for the condition were explained."),
-    p("The potential benefits, limitations, and possible risks of the assessment/treatment/intervention were discussed."),
-    p("D Patt received the opportunity to ask questions."),
-    p("D Patt Patterson provided consent to proceed with the visit."),
-    p("D Patt was informed that she had the right to discontinue the appointment at any time. The decision to accept or refuse a treatment/procedure(s) shall not prejudice her access to ongoing or future health care."),
-    p("Bharat Vishembera"),
-    emptyP(),
-
     h3("Plan:"),
     bulletList([li("Ax strength"), li("Ax Range of Motion"), li("Exercise progression")]),
     emptyP(),
   ],
 } as const
 
-/** Returns the default chart notes as a JSON string for storing in the database. */
-export function getDefaultChartNotesContentString(): string {
-  return JSON.stringify(DEFAULT_CHART_NOTES_TEMPLATE)
+/**
+ * Returns the default chart notes as a JSON string for storing in the database.
+ * When patientDisplayName is set, {{patient_name}} is replaced in the JSON (e.g. on chart create).
+ * Otherwise the token is kept for client-side interpolation when the chart is opened.
+ */
+export function getDefaultChartNotesContentString(patientDisplayName?: string): string {
+  const raw = JSON.stringify(DEFAULT_CHART_NOTES_TEMPLATE)
+  if (patientDisplayName?.trim()) {
+    return interpolatePatientNameInTipTapJson(raw, patientDisplayName.trim())
+  }
+  return raw
 }
