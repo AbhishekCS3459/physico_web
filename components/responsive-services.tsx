@@ -22,7 +22,7 @@ export function ResponsiveServices() {
       icon: <IconStethoscope className="h-8 w-8" />,
       title: "Physiotherapy",
       description: "Comprehensive rehabilitation for injuries, post-surgery recovery, and chronic conditions",
-      price: "$140",
+      price: "$150",
       duration: "60 mins initial / 45 mins follow-up",
       features: [
         "Manual therapy techniques",
@@ -49,7 +49,7 @@ export function ResponsiveServices() {
     {
       icon: <IconHeart className="h-8 w-8" />,
       title: "Massage Therapy",
-      description: "Therapeutic massage for pain relief, stress reduction, and improved circulation",
+      description: "Therapeutic massage for pain relief, stress reduction, and improved circulation. Coming soon.",
       comingSoon: true,
       price: "—",
       duration: "—",
@@ -139,6 +139,13 @@ export function ResponsiveServices() {
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">{service.title}</h3>
               <p className="text-muted-foreground text-sm mb-5 line-clamp-3 leading-relaxed">{service.description}</p>
+              {"comingSoon" in service && service.comingSoon && (
+                <div className="mb-4">
+                  <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    Coming soon
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-sm">
                 <span className="font-semibold text-primary">{service.price}</span>
                 <span className="text-muted-foreground">{service.duration}</span>

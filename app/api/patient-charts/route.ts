@@ -22,9 +22,19 @@ const PRISMA_UNAVAILABLE_CODES = new Set([
   'P1008', // Operations timed out
   'P1017', // Server closed connection
 ])
+const PRISMA_SCHEMA_MISMATCH_CODES = new Set([
+  'P2021', // Table does not exist
+  'P2022', // Column does not exist
+])
 
 function isPrismaUnavailable(e: { code?: string }): boolean {
   return typeof e.code === 'string' && PRISMA_UNAVAILABLE_CODES.has(e.code)
+}
+
+function isPrismaSchemaMismatch(e: { code?: string; message?: string }): boolean {
+  if (typeof e.code === 'string' && PRISMA_SCHEMA_MISMATCH_CODES.has(e.code)) return true
+  const msg = (e.message || '').toLowerCase()
+  return msg.includes('does not exist') || msg.includes('column') && msg.includes('does not exist')
 }
 
 export async function GET(request: NextRequest) {
@@ -43,35 +53,65 @@ export async function GET(request: NextRequest) {
     // If bookingId provided, return only that booking's chart (if any)
     const where = bookingId ? { ...baseWhere, bookingId } : baseWhere
 
-    const charts = await prisma.patientChart.findMany({
-      where,
-      include: {
-        booking: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            preferredDate: true,
-            endDate: true,
+    let charts: any[] = []
+    let degraded = false
+    try {
+      charts = await prisma.patientChart.findMany({
+        where,
+        include: {
+          booking: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              preferredDate: true,
+              endDate: true,
+            },
+          },
+          patient: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phoneNumber: true,
+            },
+          },
+          createdBy: { select: { id: true, email: true, name: true } },
+          accessList: {
+            include: { admin: { select: { id: true, email: true, name: true } } },
           },
         },
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phoneNumber: true,
+        orderBy: { updatedAt: 'desc' },
+      })
+    } catch (queryErr: unknown) {
+      const err = queryErr as { code?: string; message?: string }
+      if (!isPrismaSchemaMismatch(err)) {
+        throw queryErr
+      }
+
+      // Fallback for partially migrated prod DBs: load owner charts only.
+      degraded = true
+      console.warn('GET /api/patient-charts falling back due to schema mismatch:', err.code || err.message)
+      charts = await prisma.patientChart.findMany({
+        where: bookingId ? { createdById: session.id, bookingId } : { createdById: session.id },
+        include: {
+          booking: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              preferredDate: true,
+              endDate: true,
+            },
           },
+          createdBy: { select: { id: true, email: true, name: true } },
         },
-        createdBy: { select: { id: true, email: true, name: true } },
-        accessList: {
-          include: { admin: { select: { id: true, email: true, name: true } } },
-        },
-      },
-      orderBy: { updatedAt: 'desc' },
-    })
+        orderBy: { updatedAt: 'desc' },
+      })
+    }
 
     const data = charts.map((c) => ({
       id: c.id,
@@ -102,16 +142,16 @@ export async function GET(request: NextRequest) {
             phoneNumber: c.patient.phoneNumber,
           }
         : null,
-      accessList: c.accessList.map((a) => ({
+      accessList: (c.accessList ?? []).map((a: any) => ({
         adminId: a.adminId,
         permission: a.permission,
         admin: { id: a.admin.id, email: a.admin.email, name: a.admin.name },
       })),
-      myPermission: c.createdById === session.id ? 'edit' : c.accessList.find((a) => a.adminId === session.id)?.permission ?? null,
+      myPermission: c.createdById === session.id ? 'edit' : (c.accessList ?? []).find((a: any) => a.adminId === session.id)?.permission ?? null,
       isOwner: c.createdById === session.id,
     }))
 
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ success: true, data, degraded })
   } catch (e: unknown) {
     const err = e as { message?: string; code?: string }
     if (err.message === 'Unauthorized') {

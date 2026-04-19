@@ -40,13 +40,13 @@ export function MainNavigation() {
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
-            <div className="h-11 w-11 sm:h-12 sm:w-12 lg:h-12 lg:w-12 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
+            <div className="h-[52px] w-[52px] sm:h-14 sm:w-14 lg:h-14 lg:w-14 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
               <Image
                 src="/logo-nav.jpeg"
                 alt=""
                 fill
-                className="object-contain"
-                sizes="(max-width: 640px) 40px, (max-width: 1024px) 44px, 48px"
+                className="object-contain scale-110"
+                sizes="(max-width: 640px) 48px, (max-width: 1024px) 52px, 56px"
               />
             </div>
           </Link>

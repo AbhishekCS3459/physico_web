@@ -418,26 +418,28 @@ export default function AdminChartsPage() {
   const patientsWithoutChart = patients.filter(
     (p) => !charts.some((c) => c.patientId === p.id)
   )
+  const editableChartsCount = charts.filter((chart) => chart.myPermission === "edit").length
+  const viewOnlyChartsCount = charts.length - editableChartsCount
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
-      <div className="container mx-auto max-w-5xl">
+      <div className="container mx-auto max-w-6xl">
         {/* Header */}
-        <header className="mb-8 rounded-2xl border-2 border-border/60 bg-card/80 backdrop-blur-sm p-6 md:p-8 shadow-sm">
+        <header className="mb-8 rounded-2xl border border-border/60 bg-card/85 backdrop-blur-md p-6 md:p-8 shadow-xl shadow-primary/5">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             <div className="flex gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-sm">
                 <Stethoscope className="h-7 w-7" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
                   Patient Charting
                 </h1>
-                <p className="text-muted-foreground mt-1 max-w-xl">
+                <p className="text-muted-foreground/90 mt-1.5 max-w-xl">
                   View and edit shared patient charts. Only doctors with access can see each chart.
                 </p>
                 {adminInfo && (
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/60 px-3 py-1.5">
                     <Avatar className="h-7 w-7 border border-border">
                       <AvatarFallback className="text-xs bg-primary/10 text-primary">
                         {adminInfo.email.slice(0, 2).toUpperCase()}
@@ -452,24 +454,24 @@ export default function AdminChartsPage() {
               <ThemeToggle />
               <NotificationsBell />
               {adminInfo?.role === "super_admin" && (
-                <Button variant="outline" asChild className="border-border">
+                <Button variant="outline" asChild className="border-border rounded-lg">
                   <Link href="/admin">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Dashboard
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" asChild className="border-border">
+              <Button variant="outline" asChild className="border-border rounded-lg">
                 <Link href="/admin/charts/forms">
                   <FileText className="h-4 w-4 mr-2" />
                   Form templates
                 </Link>
               </Button>
-              <Button onClick={openNewChart} className="bg-primary hover:bg-primary/90 shadow-sm">
+              <Button onClick={openNewChart} className="bg-primary hover:bg-primary/90 shadow-md rounded-lg">
                 <Plus className="h-4 w-4 mr-2" />
                 New chart
               </Button>
-              <Button variant="outline" onClick={handleLogout} className="border-border">
+              <Button variant="outline" onClick={handleLogout} className="border-border rounded-lg">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -479,7 +481,7 @@ export default function AdminChartsPage() {
 
         {/* Pending invitations */}
         {!pendingLoading && pendingInvitations.length > 0 && (
-          <Card className="mb-6 border-2 border-primary/30 shadow-sm overflow-hidden">
+          <Card className="mb-6 border border-primary/30 shadow-sm overflow-hidden bg-card/90">
             <CardHeader className="border-b border-border/60 bg-primary/5 py-4">
               <CardTitle className="text-base font-medium flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
@@ -499,7 +501,7 @@ export default function AdminChartsPage() {
                   return (
                     <li
                       key={inv.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 bg-muted/30"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 p-3.5 bg-muted/25"
                     >
                       <div className="min-w-0">
                         <p className="font-medium text-foreground">{chartName}</p>
@@ -535,7 +537,7 @@ export default function AdminChartsPage() {
         )}
 
         {/* Search */}
-        <Card className="mb-6 border-2 shadow-sm overflow-hidden">
+        <Card className="mb-5 border shadow-sm overflow-hidden bg-card/90">
           <CardHeader className="border-b border-border/60 bg-muted/30 py-4">
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <Search className="h-4 w-4 text-primary" />
@@ -551,19 +553,33 @@ export default function AdminChartsPage() {
                   placeholder="e.g. John Smith, john@example.com..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 rounded-lg border-border bg-background"
+                  className="pl-10 h-11 rounded-lg border-border bg-background/90 focus-visible:ring-primary/40"
                 />
               </div>
-              <Button variant="outline" onClick={fetchCharts} className="h-11 rounded-lg shrink-0">
+              <Button variant="outline" onClick={fetchCharts} className="h-11 rounded-lg shrink-0 border-border/80">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
             </div>
           </CardContent>
         </Card>
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-border/70 bg-card/70 px-4 py-3 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Total charts</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">{charts.length}</p>
+          </div>
+          <div className="rounded-xl border border-border/70 bg-card/70 px-4 py-3 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Can edit</p>
+            <p className="mt-1 text-2xl font-semibold text-primary">{editableChartsCount}</p>
+          </div>
+          <div className="rounded-xl border border-border/70 bg-card/70 px-4 py-3 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">View only</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">{viewOnlyChartsCount}</p>
+          </div>
+        </div>
 
         {loading ? (
-          <Card className="border-2 shadow-sm overflow-hidden">
+          <Card className="border shadow-sm overflow-hidden bg-card/90">
             <CardContent className="py-16">
               <div className="flex flex-col items-center justify-center text-center">
                 <div className="relative mb-6">
@@ -577,14 +593,14 @@ export default function AdminChartsPage() {
             </CardContent>
           </Card>
         ) : filtered.length === 0 ? (
-          <Card className="border-2 shadow-sm overflow-hidden border-dashed">
+          <Card className="border shadow-sm overflow-hidden border-dashed bg-card/90">
             <CardContent className="py-16">
               <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto">
-                <div className="h-20 w-20 rounded-2xl bg-muted flex items-center justify-center mb-6">
-                  <FileText className="h-10 w-10 text-muted-foreground" />
+                <div className="h-20 w-20 rounded-2xl bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center mb-6">
+                  <FileText className="h-10 w-10 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">No charts yet</h3>
-                <p className="text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 leading-relaxed">
                   Create your first patient chart to start documenting care. You can link a booking, pick an existing patient, or add a new patient.
                 </p>
                 <Button onClick={openNewChart} className="mt-6 bg-primary hover:bg-primary/90 shadow-sm">
