@@ -35,7 +35,7 @@ export function MainNavigation() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/92 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm">
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
@@ -52,7 +52,7 @@ export function MainNavigation() {
           </Link>
 
           {/* Desktop Navigation - Enhanced for larger screens */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 2xl:space-x-10">
+          <nav className="hidden lg:flex items-center space-x-5 xl:space-x-7 2xl:space-x-9">
             {navigationItems.map((item) => (
               <Link
                 key={item.name}
@@ -71,7 +71,7 @@ export function MainNavigation() {
             ))}
             <Button 
               size="sm" 
-              className="ml-4 px-4 xl:px-6 py-2 text-sm xl:text-base bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105" 
+              className="ml-3 px-4 xl:px-6 py-2 text-sm xl:text-base bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300" 
               asChild
             >
               <Link href="/book">
@@ -82,7 +82,7 @@ export function MainNavigation() {
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="ml-2 px-3 py-2 text-sm xl:text-base border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105" 
+                className="ml-1 px-3 py-2 text-sm xl:text-base border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300" 
                 asChild
               >
                 <Link href="/my-bookings">
@@ -92,7 +92,7 @@ export function MainNavigation() {
                 </Link>
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="ml-2 px-3 py-2 text-sm xl:text-base" asChild>
+            <Button size="sm" variant="ghost" className="ml-1 px-3 py-2 text-sm xl:text-base" asChild>
               <Link href="/login">
                 <LogIn className="h-4 w-4 mr-1" />
                 <span className="hidden xl:inline">Admin</span>

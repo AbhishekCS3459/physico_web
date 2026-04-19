@@ -47,6 +47,7 @@ import {
     User,
     X,
     ClipboardList,
+    DatabaseBackup,
     Plus,
     Users,
 } from "lucide-react"
@@ -106,6 +107,7 @@ export default function AdminDashboard() {
   const [editingAssessment, setEditingAssessment] = useState<any | null>(null)
   const [chartForBooking, setChartForBooking] = useState<{ id: string } | null | "loading">(null)
   const [creatingChart, setCreatingChart] = useState(false)
+  const [triggeringBackup, setTriggeringBackup] = useState(false)
 
   useEffect(() => {
     // Check authentication; staff may only access patient charts (redirect handled by middleware + here as backup)
@@ -152,6 +154,30 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Logout error:", error)
       toast.error("Failed to logout")
+    }
+  }
+
+  const handleDatabaseBackup = async () => {
+    setTriggeringBackup(true)
+    try {
+      const res = await fetch("/api/admin/db-backup", {
+        method: "POST",
+        credentials: "include",
+      })
+      const data = await res.json()
+      if (!data.success) {
+        toast.error(data.error || "Failed to start backup")
+        return
+      }
+      toast.success("Backup started. Opening GitHub Actions…")
+      if (data.actionsUrl) {
+        window.open(data.actionsUrl, "_blank", "noopener,noreferrer")
+      }
+    } catch (error) {
+      console.error("Backup trigger error:", error)
+      toast.error("Failed to start backup")
+    } finally {
+      setTriggeringBackup(false)
     }
   }
 
@@ -437,6 +463,15 @@ export default function AdminDashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ThemeToggle />
+            <Button
+              variant="outline"
+              onClick={handleDatabaseBackup}
+              disabled={triggeringBackup}
+              className="w-full md:w-auto"
+            >
+              <DatabaseBackup className="h-4 w-4 mr-2" />
+              {triggeringBackup ? "Starting backup..." : "Backup DB"}
+            </Button>
             <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/admin/charts">
                 <ClipboardList className="h-4 w-4 mr-2" />

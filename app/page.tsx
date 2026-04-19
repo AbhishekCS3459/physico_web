@@ -14,7 +14,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <MainNavigation />
-      <main>
+      <main className="pb-28 lg:pb-0">
         <ResponsiveHero />
         <ProofStrip />
         <ValueProposition />

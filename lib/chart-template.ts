@@ -48,7 +48,7 @@ export const DEFAULT_CHART_NOTES_TEMPLATE = {
     h3("Consent:"),
     p("[ ] Consent was discussed and the patient was asked to proceed (questions answered)"),
     p(
-      `${PATIENT} was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera, PT and who may provide assistance in their care.`,
+      `${PATIENT} was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera Vishembera, PT and who may provide assistance in their care.`,
     ),
     p("The scope of the treatment/procedure(s) plans/interventions and/or list of agreed upon treatment/procedure(s), that are clinically indicated and approved for the condition were explained."),
     p("The potential benefits, limitations, and possible risks of the assessment/treatment/intervention were discussed."),
@@ -57,7 +57,7 @@ export const DEFAULT_CHART_NOTES_TEMPLATE = {
     p(
       `${PATIENT} was informed that they have the right to discontinue the appointment at any time. The decision to accept or refuse a treatment or procedure shall not prejudice their access to ongoing or future health care.`,
     ),
-    p("Bharat Vishembera, PT"),
+    p("Bharat Vishembera Vishembera, PT"),
     emptyP(),
 
     h3("Reason for Referral:"),

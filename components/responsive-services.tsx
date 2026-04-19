@@ -9,13 +9,22 @@ import {
   IconSparkles,
   IconStethoscope,
 } from "@tabler/icons-react"
-import { motion } from "motion/react"
-import { useState } from "react"
+import { motion, useScroll, useTransform } from "motion/react"
+import { useRef, useState } from "react"
 import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 export function ResponsiveServices() {
   const [activeService, setActiveService] = useState(0)
+  const sectionRef = useRef<HTMLElement | null>(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  })
+  const cardsY = useTransform(scrollYProgress, [0, 1], ["0%", "-5%"])
+  const detailY = useTransform(scrollYProgress, [0, 1], ["0%", "4%"])
+  const benefitsY = useTransform(scrollYProgress, [0, 1], ["0%", "-2%"])
 
   const services = [
     {
@@ -49,7 +58,7 @@ export function ResponsiveServices() {
     {
       icon: <IconHeart className="h-8 w-8" />,
       title: "Massage Therapy",
-      description: "Therapeutic massage for pain relief, stress reduction, and improved circulation. Coming soon.",
+      description: "Coming soon.",
       comingSoon: true,
       price: "—",
       duration: "—",
@@ -81,9 +90,15 @@ export function ResponsiveServices() {
   ]
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 bg-gradient-to-b from-background to-muted/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      ref={sectionRef}
+      className="py-16 sm:py-20 lg:py-28 bg-gradient-to-b from-background to-muted/30"
+    >
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14 sm:mb-16">
+          <Badge variant="outline" className="mb-4 border-primary/30 bg-primary/10 text-primary">
+            Our Core Services
+          </Badge>
           <motion.span
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -110,62 +125,68 @@ export function ResponsiveServices() {
           </motion.p>
         </div>
 
-        {/* Service Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 mb-10 sm:mb-14 lg:mb-16">
-          {services.map((service, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.08 }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setActiveService(index)}
-              className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
-                activeService === index
-                  ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                  : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:shadow-primary/5"
-              }`}
-              onClick={() => setActiveService(index)}
-            >
-              <div
-                className={`inline-flex p-3.5 rounded-xl mb-5 transition-colors ${
+        <motion.div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-10 sm:mb-14 lg:mb-16" style={{ y: cardsY }}>
+          <div className="xl:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {services.map((service, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setActiveService(index)}
+                className={`relative p-6 rounded-2xl border cursor-pointer transition-all duration-300 overflow-hidden ${
                   activeService === index
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                    ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                    : "border-border/70 bg-card/85 hover:border-primary/50 hover:shadow-md hover:shadow-primary/10"
                 }`}
+                onClick={() => setActiveService(index)}
               >
-                {service.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">{service.title}</h3>
-              <p className="text-muted-foreground text-sm mb-5 line-clamp-3 leading-relaxed">{service.description}</p>
-              {"comingSoon" in service && service.comingSoon && (
-                <div className="mb-4">
-                  <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                    Coming soon
-                  </span>
+                <div
+                  className={`inline-flex p-3.5 rounded-xl mb-5 transition-colors ${
+                    activeService === index
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {service.icon}
                 </div>
-              )}
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-primary">{service.price}</span>
-                <span className="text-muted-foreground">{service.duration}</span>
-              </div>
-            </motion.div>
-          ))}
-          {/* Coming Soon Card */}
+                <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">{service.title}</h3>
+                <p className="text-muted-foreground text-sm mb-5 line-clamp-3 leading-relaxed">{service.description}</p>
+                {"comingSoon" in service && service.comingSoon && (
+                  <div className="mb-4">
+                    <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                      Coming soon
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-primary">{service.price}</span>
+                  <span className="text-muted-foreground">{service.duration}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.32 }}
-            className="relative p-6 rounded-2xl border-2 border-dashed border-muted-foreground/30 bg-muted/40 flex flex-col items-center justify-center min-h-[236px] text-center"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="xl:col-span-4 relative p-6 rounded-2xl border border-dashed border-primary/30 bg-gradient-to-br from-muted/50 to-primary/5 flex flex-col justify-center min-h-[236px]"
           >
-            <div className="inline-flex p-3.5 rounded-xl bg-muted text-muted-foreground mb-4">
+            <div className="inline-flex p-3.5 rounded-xl bg-primary/10 text-primary mb-4 w-fit">
               <IconSparkles className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-1">More services</h3>
-            <p className="text-muted-foreground text-sm font-medium">Coming soon</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2">More specialty care is on the way</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              We are expanding with additional rehab and wellness services designed for in-home convenience.
+            </p>
+            <Button asChild variant="outline" className="w-fit bg-background/60">
+              <Link href="/contact">Join waitlist</Link>
+            </Button>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Active Service Details */}
         <motion.div
@@ -173,6 +194,7 @@ export function ResponsiveServices() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
+          style={{ y: detailY }}
           className="rounded-2xl border border-border bg-card p-6 sm:p-8 lg:p-10 mb-10 sm:mb-14 lg:mb-16 shadow-sm"
         >
           {"comingSoon" in services[activeService] && (services[activeService] as { comingSoon?: boolean }).comingSoon ? (
@@ -224,7 +246,7 @@ export function ResponsiveServices() {
         </motion.div>
 
         {/* Benefits Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5" style={{ y: benefitsY }}>
           {benefits.map((benefit, index) => (
             <motion.div
               key={index}
@@ -240,7 +262,7 @@ export function ResponsiveServices() {
               <p className="text-muted-foreground text-sm leading-relaxed">{benefit.description}</p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

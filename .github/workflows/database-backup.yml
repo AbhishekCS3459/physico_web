@@ -1,0 +1,43 @@
+name: Database Backup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate secrets
+        run: |
+          if [ -z "$NEON_DATABASE_URL" ]; then
+            echo "NEON_DATABASE_URL secret is not set."
+            exit 1
+          fi
+
+      - name: Create SQL dump
+        run: |
+          mkdir -p backups
+          TS="$(date -u +%Y%m%dT%H%M%SZ)"
+          FILE="backups/neon_backup_${TS}.sql"
+          pg_dump "$NEON_DATABASE_URL" > "$FILE"
+          ls -lh "$FILE"
+
+      - name: Commit backup file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/*.sql
+          if git diff --cached --quiet; then
+            echo "No backup changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: add automated database backup"
+          git push

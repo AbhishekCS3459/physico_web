@@ -33,15 +33,18 @@ const pricingData = {
     title: "Physiotherapy",
     color: "from-emerald-500 to-teal-600",
     services: [
-      { name: "Initial Assessment", duration: "60 mins", price: 140 },
-      { name: "Follow-Up Session", duration: "45 mins", price: 140 },
+      { name: "Initial Assessment", duration: "60 mins", price: 150 },
+      { name: "Follow-Up Session", duration: "45 mins", price: 150 },
     ],
   },
   occupationalTherapy: {
     icon: Brain,
     title: "Occupational Therapy",
     color: "from-blue-500 to-indigo-600",
-    services: [], // Contact for pricing
+    services: [
+      { name: "Initial Assessment", duration: "60 mins", price: 150 },
+      { name: "Follow-Up Session", duration: "45 mins", price: 130 },
+    ],
   },
   massageTherapy: {
     icon: MassageIcon,
@@ -89,7 +92,7 @@ export function InteractivePricingContact() {
         <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Pricing Section */}
         <motion.div
           className="mb-14 md:mb-16"
@@ -98,24 +101,24 @@ export function InteractivePricingContact() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 sm:mb-14 lg:mb-16">
             <Badge variant="secondary" className="mb-4 bg-primary/80 text-white border-primary">
               <DollarSign className="h-4 w-4 mr-1" />
               Transparent Pricing
             </Badge>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance">
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Fair & Transparent
               </span>
               <br />
               <span className="text-foreground">Pricing Structure</span>
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
+            <p className="text-lg md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
               No hidden fees, no surprises. Direct billing available to most major insurance providers.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             {/* Interactive Pricing Calculator */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -123,10 +126,10 @@ export function InteractivePricingContact() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <Card className="p-8 bg-gradient-to-br from-card via-background to-primary/5 border-2 border-primary/10 shadow-2xl">
+              <Card className="p-5 sm:p-8 bg-gradient-to-br from-card via-background to-primary/5 border-2 border-primary/10 shadow-2xl">
                 <CardHeader className="text-center pb-6">
                   <Calculator className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <CardTitle className="text-2xl">Pricing Calculator</CardTitle>
+                  <CardTitle className="text-xl sm:text-2xl">Pricing Calculator</CardTitle>
                   <CardDescription>Calculate your session costs instantly</CardDescription>
                 </CardHeader>
 
@@ -134,12 +137,12 @@ export function InteractivePricingContact() {
                   {/* Service Selection */}
                   <div className="space-y-3">
                     <Label className="text-base font-semibold">Select Service</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {Object.entries(pricingData).map(([key, service]) => (
                         <Button
                           key={key}
                           variant={selectedService === key ? "default" : "outline"}
-                          className={`p-4 h-auto flex-col gap-2 ${
+                          className={`p-3.5 h-auto min-h-[92px] flex-col gap-2 ${
                             selectedService === key
                               ? `bg-gradient-to-r ${service.color} text-white border-0`
                               : "bg-transparent"
@@ -150,7 +153,7 @@ export function InteractivePricingContact() {
                           }}
                         >
                           <service.icon className="h-5 w-5" />
-                          <span className="text-xs text-center">{service.title}</span>
+                          <span className="text-xs text-center leading-tight">{service.title}</span>
                         </Button>
                       ))}
                     </div>
@@ -173,7 +176,7 @@ export function InteractivePricingContact() {
                               <Link href="/contact">Contact Us</Link>
                             </Button>
                           </div>
-                          <div className="flex gap-3">
+                          <div className="flex flex-col sm:flex-row gap-3">
                             {subtitle === "Coming Soon" ? (
                               <Button className="flex-1" variant="secondary" disabled>
                                 <Calendar className="h-4 w-4 mr-2" />Coming Soon
@@ -212,9 +215,9 @@ export function InteractivePricingContact() {
                         </div>
                         <div className="space-y-3">
                           <Label className="text-base font-semibold">Number of Sessions</Label>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3">
                             <Button variant="outline" size="icon" onClick={() => setSessionCount(Math.max(1, sessionCount - 1))} disabled={sessionCount <= 1}>-</Button>
-                            <Input type="number" value={sessionCount} onChange={(e) => setSessionCount(Math.max(1, Number.parseInt(e.target.value) || 1))} className="text-center w-20" min="1" />
+                            <Input type="number" value={sessionCount} onChange={(e) => setSessionCount(Math.max(1, Number.parseInt(e.target.value) || 1))} className="text-center w-16 sm:w-20" min="1" />
                             <Button variant="outline" size="icon" onClick={() => setSessionCount(sessionCount + 1)} disabled={sessionCount >= 20}>+</Button>
                           </div>
                         </div>
@@ -234,7 +237,7 @@ export function InteractivePricingContact() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
                           <Button className="flex-1 bg-gradient-to-r from-primary to-accent" asChild>
                             <Link href="/book"><Calendar className="h-4 w-4 mr-2" />Book Now</Link>
                           </Button>
@@ -258,7 +261,7 @@ export function InteractivePricingContact() {
               transition={{ duration: 0.6 }}
             >
               {/* Coverage Checker */}
-              <Card className="p-6 border-2 border-primary/10">
+              <Card className="p-5 sm:p-6 border-2 border-primary/10">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-primary" />
@@ -295,7 +298,7 @@ export function InteractivePricingContact() {
               </Card>
 
               {/* Additional Services */}
-              <Card className="p-6 border-2 border-accent/10">
+              <Card className="p-5 sm:p-6 border-2 border-accent/10">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-accent" />

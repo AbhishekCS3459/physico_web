@@ -81,7 +81,7 @@ export default function TeamPage() {
           </div>
 
           <div className="space-y-12">
-            {/* Physiotherapist: Bharat — featured first */}
+            {/* Physiotherapist: Bharat Vishembera — featured first */}
             <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -89,7 +89,7 @@ export default function TeamPage() {
                     <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                       <BookOpen className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Bharat</CardTitle>
+                    <CardTitle className="text-2xl">Bharat Vishembera</CardTitle>
                     <CardDescription className="mt-1 text-primary font-medium">
                       Physiotherapist
                     </CardDescription>
@@ -99,25 +99,25 @@ export default function TeamPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  Bharat is a highly experienced physiotherapist with over 25 years of clinical practice. He
+                  Bharat Vishembera Vishembera is a highly experienced physiotherapist with over 25 years of clinical practice. He
                   completed his Master’s degree in Applied Musculoskeletal Physiotherapy in England and has worked
                   in a wide range of clinical environments, including hospitals and private clinics in both the UK and
                   Canada.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Over the years, Bharat has completed numerous advanced courses and certifications, gaining
+                  Over the years, Bharat Vishembera has completed numerous advanced courses and certifications, gaining
                   extensive expertise in manipulative therapy, sports injury management, and acupuncture. He
                   specializes in the assessment and treatment of musculoskeletal conditions, sports injuries,
                   post-surgical rehabilitation, and chronic pain management.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   His treatment approach combines manual therapy, therapeutic exercise, movement correction, and
-                  patient education to support safe, effective, and long-term recovery. Bharat is trained in
+                  patient education to support safe, effective, and long-term recovery. Bharat Vishembera is trained in
                   myofascial release, acupuncture, joint manipulation, specific soft tissue mobilization, muscle energy
                   techniques, vestibular rehabilitation, functional exercise, and Kinesio taping.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Committed to evidence-based practice, Bharat regularly participates in professional development
+                  Committed to evidence-based practice, Bharat Vishembera regularly participates in professional development
                   courses to stay current with modern physiotherapy techniques. He believes strongly in educating and
                   empowering patients so they can better understand their condition and take an active role in their
                   recovery and long-term health.

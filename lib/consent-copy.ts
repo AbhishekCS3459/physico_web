@@ -52,7 +52,7 @@ export function interpolatePatientNameInTipTapJson(jsonString: string, displayNa
 export function consentDocumentClauses(patientDisplayName: string): string[] {
   const name = patientDisplayName.trim() || "the patient"
   return [
-    `${name} was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera, PT and who may provide assistance in their care.`,
+    `${name} was provided with information about who will perform the treatment/procedure(s) Bharat Vishembera Vishembera, PT and who may provide assistance in their care.`,
     "The scope of the treatment/procedure(s) plans/interventions and/or list of agreed upon treatment/procedure(s), that are clinically indicated and approved for the condition were explained.",
     "The potential benefits, limitations, and possible risks of the assessment/treatment/intervention were discussed.",
     `${name} received the opportunity to ask questions.`,

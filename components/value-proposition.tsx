@@ -40,41 +40,41 @@ const valueProps = [
 
 export function ValueProposition() {
   return (
-    <section className="py-16 md:py-24 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge variant="secondary" className="mb-4">
+    <section className="py-16 md:py-24 lg:py-28 bg-background">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 lg:mb-14">
+          <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary border-primary/20">
             Why Choose Mobile Therapy
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance tracking-tight">
             Healthcare That Comes to <span className="text-primary">You</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+          <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
             Experience the convenience and effectiveness of professional rehabilitation services in your own home.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {valueProps.map((prop, index) => {
             const Icon = prop.icon
             return (
               <Card
                 key={index}
-                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-primary/20"
+                className="group h-full rounded-2xl border border-border/60 bg-card/85 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30"
               >
-                <CardHeader className="pb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <CardHeader className="pb-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                     <Icon className="h-6 w-6 text-primary" />
                   </div>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{prop.title}</CardTitle>
-                    <Badge variant="outline" className="text-xs">
+                    <CardTitle className="text-xl tracking-tight">{prop.title}</CardTitle>
+                    <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
                       {prop.highlight}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">{prop.description}</p>
+                  <p className="text-muted-foreground leading-relaxed text-sm lg:text-base">{prop.description}</p>
                 </CardContent>
               </Card>
             )

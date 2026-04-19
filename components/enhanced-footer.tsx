@@ -61,14 +61,14 @@ export function EnhancedFooter() {
   }
 
   return (
-    <footer className="flex items-center justify-center bg-gradient-to-br from-muted/30 via-background to-primary/5 border-t border-primary/10 relative overflow-hidden">
+    <footer className="flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-primary/5 border-t border-border/60 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden w-full">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 mb-8 sm:mb-12 lg:mb-16">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 mb-8 sm:mb-12 lg:mb-16">
           <motion.div
             className="space-y-6"
             initial={{ opacity: 0, y: 30 }}
