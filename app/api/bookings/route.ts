@@ -100,10 +100,29 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         message: 'Booking request submitted successfully',
-        bookingId: booking.id 
+        bookingId: booking.id,
+        data: {
+          id: booking.id,
+          serviceType: booking.serviceType,
+          appointmentType: booking.appointmentType,
+          preferredDate: booking.preferredDate.toISOString(),
+          endDate: booking.endDate?.toISOString() ?? null,
+          serviceLocation: booking.serviceLocation,
+          fullAddress: booking.fullAddress,
+          firstName: booking.firstName,
+          lastName: booking.lastName,
+          email: booking.email,
+          phoneNumber: booking.phoneNumber,
+          dateOfBirth: booking.dateOfBirth?.toISOString() ?? null,
+          condition: booking.condition,
+          useDirectBilling: booking.useDirectBilling,
+          insuranceProvider: booking.insuranceProvider,
+          status: booking.status,
+          createdAt: booking.createdAt.toISOString(),
+        },
       },
       { status: 201 }
     )

@@ -1,107 +1,83 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for MongoDB
+// https://www.prisma.io/docs/orm/prisma-schema/data-model/models
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
-  // Note: The url property is valid for Prisma 5.x and earlier
-  // If upgrading to Prisma 7+, you may need to use prisma.config.ts instead
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // Hashed password
-  firstName String?
-  lastName  String?
-  phoneNumber String?
-  role      String   @default("user") // user, admin
-  resetPasswordToken String?
+  id                   String   @id @default(cuid()) @map("_id")
+  email                String   @unique
+  password             String
+  firstName            String?
+  lastName             String?
+  phoneNumber          String?
+  role                 String   @default("user")
+  resetPasswordToken   String?
   resetPasswordExpires DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   bookings TherapyBooking[]
-
-  @@index([email])
-  @@index([role])
-  @@index([resetPasswordToken])
 }
 
 model Assessment {
-  id                    String   @id @default(cuid())
-  
-  // Assessment Type
-  assessmentType        String   // "initial" or "followup"
-  
-  // Link to Booking
-  bookingId             String
-  booking               TherapyBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
-  // Initial Assessment Fields
+  id        String   @id @default(cuid()) @map("_id")
+  assessmentType String
+
+  bookingId String
+  booking   TherapyBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   reasonForReferral     String?
   hpi                   String?
   painDescription       String?
-  painLevel             String?  // "___/10"
-  painType              String?  // "Intermittent" or "Constant"
+  painLevel             String?
+  painType              String?
   whatMakesWorse        String?
   whatHelps             String?
-  pmhx                  String?  // Past Medical History
+  pmhx                  String?
   associatedImaging     String?
   baselineActivity      String?
   observation           String?
   swellingCirculation   String?
-  
-  // ROM - Initial
-  romInitial            String?  // Flexion: ___, Abduction: ___
-  
-  // ROM - Follow-up
+
+  romInitial            String?
   romFollowupFlexion           String?
   romFollowupExtension         String?
   romFollowupAbduction         String?
   romFollowupAdduction         String?
   romFollowupInternalRotation  String?
   romFollowupExternalRotation  String?
-  
-  // Strength - Initial
-  strengthInitial       String?  // Flex: ___/5, Abd: ___/5
-  
-  // Strength - Follow-up
+
+  strengthInitial       String?
   strengthFollowupFlexion           String?
   strengthFollowupExtension         String?
   strengthFollowupAbduction         String?
   strengthFollowupAdduction         String?
   strengthFollowupInternalRotation  String?
   strengthFollowupExternalRotation  String?
-  
-  // Palpation
+
   palpation             String?
-  
-  // Neuro
   neuro                 String?
-  
-  // Special Tests / Outcome Measures
+
   specialTests          String?
-  
-  // Clinical Impression
+
   clinicalImpression    String?
   goals                 String?
-  
-  // Subjective (Follow-up)
+
   subjectivePain        String?
   subjectiveActivity    String?
   subjectiveExercises   String?
   subjectiveModalities  String?
   subjectiveMedications String?
-  
-  // Objective (Follow-up)
+
   objectiveFindings     String?
-  
-  // Assessment (Follow-up)
+
   assessmentModalities  String?
   assessmentROM         String?
   assessmentStrengthening String?
@@ -109,8 +85,7 @@ model Assessment {
   assessmentEducation   String?
   assessmentRestrictions String?
   assessmentHandouts    String?
-  
-  // Treatment / Plan
+
   treatment             String?
   treatmentModality     String?
   treatmentROM          String?
@@ -120,81 +95,51 @@ model Assessment {
   treatmentEducation    String?
   treatmentRestrictions String?
   treatmentHandouts     String?
-  
-  // Plan (Both types)
+
   plan                  String?
-  planAxStrength        String?  // Ax strength
-  planAxROM             String?  // Ax Range of Motion
-  planExerciseProgression String? // Exercise progression
+  planAxStrength        String?
+  planAxROM             String?
+  planExerciseProgression String?
 
-  // Admin/User who created the assessment
   createdBy             String?
-  
-  // Timestamps
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
 
-  @@index([bookingId])
-  @@index([assessmentType])
-  @@index([createdAt])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model TherapyBooking {
-  id                    String   @id @default(cuid())
-  // Service Information
-  serviceType           String
-  appointmentType       String
-  preferredDate         DateTime
-  preferredTime         String?
-  endDate               DateTime?
-  serviceLocation       String
-  fullAddress           String
-  
-  // Personal Information
-  firstName             String
-  lastName              String
-  email                 String
-  phoneNumber           String
-  dateOfBirth           DateTime?
-  condition             String?
-  medicalHistory        String?
-  
-  // Insurance Information
-  useDirectBilling      Boolean  @default(false)
-  insuranceProvider     String?
-  policyNumber          String?
-  groupNumber           String?
-  
-  // Additional Information
-  emergencyContact      String?
-  specialInstructions   String?
-  
-  // Status
-  status                String   @default("pending") // pending, confirmed, cancelled, completed
-  
-  // User relationship
-  userId                String?
-  user                  User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  // Timestamps
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  // Assessments relationship
-  assessments           Assessment[]
-
-  // Patient chart (one per booking for doctor charting)
-  patientChart          PatientChart?
-
-  @@index([email])
-  @@index([status])
-  @@index([createdAt])
-  @@index([userId])
+  id                 String   @id @default(cuid()) @map("_id")
+  serviceType        String
+  appointmentType    String
+  preferredDate      DateTime
+  preferredTime      String?
+  endDate            DateTime?
+  serviceLocation    String
+  fullAddress        String
+  firstName          String
+  lastName           String
+  email              String
+  phoneNumber        String
+  dateOfBirth        DateTime?
+  condition          String?
+  medicalHistory     String?
+  useDirectBilling   Boolean  @default(false)
+  insuranceProvider  String?
+  policyNumber       String?
+  groupNumber        String?
+  emergencyContact   String?
+  specialInstructions  String?
+  status             String   @default("pending")
+  userId             String?
+  user               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  assessments        Assessment[]
+  patientChart       PatientChart?
 }
 
-// Standalone patient (created from chart section: email, name, phone optional)
 model Patient {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   email       String
   firstName   String
   lastName    String?
@@ -203,158 +148,120 @@ model Patient {
   createdBy   Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  chart PatientChart?
-
-  @@index([email])
-  @@index([createdById])
+  chart       PatientChart?
 }
 
-// Custom form template (Google-Forms-style): schema defines fields, used to render and persist chart data
 model FormTemplate {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   name        String
-  description String?  @db.Text
-  // JSON: { version: 1, fields: FormField[] } — section, short_text, long_text, checkbox, radio, dropdown
-  schema      String   @db.Text
+  description String?
+  schema      String
   createdById String?
   createdBy   Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   patientCharts PatientChart[]
-
-  @@index([createdById])
 }
 
-// Patient chart: shared clinical notes per patient/booking (doctors only)
 model PatientChart {
-  id             String   @id @default(cuid())
-  bookingId      String?  @unique
-  booking        TherapyBooking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  patientId      String?  @unique
-  patient        Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  formTemplateId String?
-  formTemplate   FormTemplate? @relation(fields: [formTemplateId], references: [id], onDelete: SetNull)
-  // Rich text content: TipTap JSON (when formTemplateId is null) OR response JSON (when formTemplateId set)
-  content        String?  @db.Text
-  // Consent captured in a separate step before initial assessment (JSON form responses)
-  consentContent                 String?   @db.Text
-  consentCompletedAt             DateTime?
-  initialAssessmentCompletedAt   DateTime?
-  createdById    String?
-  createdBy      Admin?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  accessList  PatientChartAccess[]
-  events      PatientChartEvent[]
-  invitations ChartInvitation[]
-  accessRequests ChartAccessRequest[]
-
-  @@index([bookingId])
-  @@index([patientId])
-  @@index([formTemplateId])
-  @@index([createdById])
+  id                         String   @id @default(cuid()) @map("_id")
+  bookingId                  String?  @unique
+  booking                    TherapyBooking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  patientId                  String?  @unique
+  patient                    Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  formTemplateId             String?
+  formTemplate               FormTemplate? @relation(fields: [formTemplateId], references: [id], onDelete: SetNull)
+  content                    String?
+  consentContent               String?
+  consentCompletedAt           DateTime?
+  initialAssessmentCompletedAt DateTime?
+  createdById                String?
+  createdBy                  Admin? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  accessList                 PatientChartAccess[]
+  events                     PatientChartEvent[]
+  invitations                ChartInvitation[]
+  accessRequests             ChartAccessRequest[]
 }
 
-// Pending chart invitations (like GitHub collaborator invites)
 model ChartInvitation {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   chartId     String
   chart       PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
-  inviteeId   String   // admin who is invited
+  inviteeId   String
   invitee     Admin    @relation("invitationsReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
-  invitedById String   // admin who sent the invite
+  invitedById String
   invitedBy   Admin    @relation("invitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
-  permission  String   // "view" | "edit"
-  status      String   @default("pending") // "pending" | "accepted" | "declined"
+  permission  String
+  status      String   @default("pending")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@unique([chartId, inviteeId])
-  @@index([chartId])
-  @@index([inviteeId])
-  @@index([status])
 }
 
-// Staff can request access to a chart; owner can grant or deny
 model ChartAccessRequest {
-  id             String    @id @default(cuid())
-  chartId        String
-  chart          PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
-  requestedById  String
-  requestedBy    Admin     @relation("accessRequestsSent", fields: [requestedById], references: [id], onDelete: Cascade)
-  permission     String    // "view" | "edit"
-  status         String    @default("pending") // "pending" | "granted" | "denied"
-  respondedById  String?
-  respondedBy    Admin?    @relation("accessRequestsResponded", fields: [respondedById], references: [id], onDelete: SetNull)
-  respondedAt    DateTime?
-  createdAt      DateTime  @default(now())
+  id            String    @id @default(cuid()) @map("_id")
+  chartId       String
+  chart         PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   Admin     @relation("accessRequestsSent", fields: [requestedById], references: [id], onDelete: Cascade)
+  permission    String
+  status        String    @default("pending")
+  respondedById String?
+  respondedBy   Admin?    @relation("accessRequestsResponded", fields: [respondedById], references: [id], onDelete: SetNull)
+  respondedAt   DateTime?
+  createdAt     DateTime  @default(now())
 
   @@unique([chartId, requestedById])
-  @@index([chartId])
-  @@index([requestedById])
-  @@index([status])
 }
 
-// In-app notifications for admins (access granted/revoked, requests, etc.)
 model AdminNotification {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   adminId   String
   admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  type      String   // "access_granted" | "access_revoked" | "invitation_received" | "request_granted" | "request_denied" | "request_received"
+  type      String
   title     String
-  message   String   @db.Text
+  message   String
   read      Boolean  @default(false)
   chartId   String?
-  link      String?  // e.g. /admin/charts/xyz
+  link      String?
   createdAt DateTime @default(now())
-
-  @@index([adminId])
-  @@index([read])
-  @@index([createdAt])
 }
 
-// Which doctor has view or edit access to a chart
 model PatientChartAccess {
-  id         String   @id @default(cuid())
+  id         String   @id @default(cuid()) @map("_id")
   chartId    String
   chart      PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
   adminId    String
   admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  permission String   // "view" | "edit"
+  permission String
   createdAt  DateTime @default(now())
 
   @@unique([chartId, adminId])
-  @@index([chartId])
-  @@index([adminId])
 }
 
-// Timeline events: created, updated (for activity feed)
 model PatientChartEvent {
-  id        String       @id @default(cuid())
+  id        String       @id @default(cuid()) @map("_id")
   chartId   String
   chart     PatientChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
   adminId   String?
   admin     Admin?       @relation(fields: [adminId], references: [id], onDelete: SetNull)
-  action    String       // "created" | "updated"
+  action    String
   createdAt DateTime     @default(now())
-
-  @@index([chartId])
-  @@index([createdAt])
 }
 
 model Admin {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // Hashed password
-  name      String?
-  role      String   @default("staff") // "staff" | "super_admin"
-  resetPasswordToken String?
+  id                   String   @id @default(cuid()) @map("_id")
+  email                String   @unique
+  password             String
+  name                 String?
+  role                 String   @default("staff")
+  resetPasswordToken   String?
   resetPasswordExpires DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   formTemplatesCreated FormTemplate[]
   patientChartAccess   PatientChartAccess[]
@@ -366,8 +273,4 @@ model Admin {
   notifications        AdminNotification[]
   accessRequestsSent   ChartAccessRequest[] @relation("accessRequestsSent")
   accessRequestsResponded ChartAccessRequest[] @relation("accessRequestsResponded")
-
-  @@index([email])
-  @@index([role])
-  @@index([resetPasswordToken])
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { BookingForm } from "@/components/booking-form"
+import { LoadingScreen } from "@/components/lottie-loader"
 import { Footer } from "@/components/footer"
 import { Navigation } from "@/components/navigation"
 import { Badge } from "@/components/ui/badge"
@@ -37,13 +38,7 @@ export default function BookingPage() {
   }, [])
 
   if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Checking authentication...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen fullScreen message="Loading…" />
   }
 
   return (

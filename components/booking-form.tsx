@@ -11,10 +11,50 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, CheckCircle2, Loader2, Shield, Sparkles, User } from "lucide-react"
+import {
+  Calendar as CalendarIcon,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  Sparkles,
+  User,
+} from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
-import { useState } from "react"
+import Link from "next/link"
+import { useCallback, useEffect, useState } from "react"
 import toast from "react-hot-toast"
+
+function RequiredStar() {
+  return <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>
+}
+
+function FieldLabel({
+  htmlFor,
+  required,
+  children,
+  className,
+}: {
+  htmlFor?: string
+  required?: boolean
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <Label htmlFor={htmlFor} className={className}>
+      {children}
+      {required ? <RequiredStar /> : null}
+    </Label>
+  )
+}
+
+type AppointmentTypeOption = {
+  id: string
+  label: string
+  description?: string
+}
 
 interface BookingFormData {
   serviceType: string
@@ -40,59 +80,151 @@ interface BookingFormData {
   consentGiven: boolean
 }
 
+const BOOKING_SERVICES: {
+  id: string
+  name: string
+  description: string
+  comingSoon?: boolean
+  appointmentTypes: AppointmentTypeOption[]
+}[] = [
+  {
+    id: "physiotherapy",
+    name: "Physiotherapy",
+    description: "Rehabilitation and movement therapy",
+    appointmentTypes: [
+      { id: "initial", label: "Initial assessment", description: "$140 · 60 min" },
+      { id: "followup", label: "Follow-up session", description: "$140 · 45 min" },
+      { id: "extended", label: "Extended session", description: "Longer visit — we'll confirm pricing" },
+    ],
+  },
+  {
+    id: "occupational-therapy",
+    name: "Occupational Therapy",
+    description: "Daily living and independence support",
+    appointmentTypes: [
+      { id: "initial", label: "Initial consultation", description: "First visit" },
+      { id: "followup", label: "Follow-up session", description: "Ongoing care" },
+    ],
+  },
+  {
+    id: "massage-therapy",
+    name: "Massage Therapy",
+    description: "Therapeutic massage by RMT",
+    comingSoon: true,
+    appointmentTypes: [],
+  },
+]
+
+interface CompletedBooking {
+  id: string
+  serviceType: string
+  appointmentType: string
+  preferredDate: string
+  endDate: string | null
+  serviceLocation: string
+  fullAddress: string
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string
+  useDirectBilling: boolean
+  insuranceProvider: string | null
+  status: string
+  createdAt: string
+}
+
+const SERVICE_LOCATION_LABELS: Record<string, string> = {
+  home: "My Home",
+  workplace: "My Workplace",
+  "care-facility": "Care Facility",
+}
+
+function formatSlugLabel(value: string) {
+  return value
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
+
+function getServiceName(serviceType: string) {
+  return BOOKING_SERVICES.find((s) => s.id === serviceType)?.name ?? formatSlugLabel(serviceType)
+}
+
+function getAppointmentLabel(serviceType: string, appointmentType: string) {
+  const service = BOOKING_SERVICES.find((s) => s.id === serviceType)
+  const match = service?.appointmentTypes.find((t) => t.id === appointmentType)
+  return match?.label ?? formatSlugLabel(appointmentType)
+}
+
+function formatBookingDateRange(preferredDate: string, endDate: string | null) {
+  const start = format(new Date(preferredDate), "MMM dd, yyyy")
+  if (!endDate) return start
+  const end = format(new Date(endDate), "MMM dd, yyyy")
+  return start === end ? start : `${start} – ${end}`
+}
+
+const INITIAL_FORM_DATA: Partial<BookingFormData> = {
+  serviceType: "",
+  appointmentType: "",
+  startDate: "",
+  endDate: "",
+  serviceLocation: "",
+  fullAddress: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phoneNumber: "",
+  dateOfBirth: "",
+  condition: "",
+  medicalHistory: "",
+  useDirectBilling: false,
+  insuranceProvider: "",
+  policyNumber: "",
+  groupNumber: "",
+  emergencyContact: "",
+  specialInstructions: "",
+  termsAccepted: false,
+  consentGiven: false,
+}
+
 export function BookingForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [completedBooking, setCompletedBooking] = useState<CompletedBooking | null>(null)
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
   const totalSteps = 4
 
-  const [formData, setFormData] = useState<Partial<BookingFormData>>({
-    serviceType: "",
-    appointmentType: "",
-    startDate: "",
-    endDate: "",
-    serviceLocation: "",
-    fullAddress: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    dateOfBirth: "",
-    condition: "",
-    medicalHistory: "",
-    useDirectBilling: false,
-    insuranceProvider: "",
-    policyNumber: "",
-    groupNumber: "",
-    emergencyContact: "",
-    specialInstructions: "",
-    termsAccepted: false,
-    consentGiven: false,
-  })
+  useEffect(() => {
+    fetch("/api/auth/user/me")
+      .then((res) => res.json())
+      .then((data) => setIsUserLoggedIn(Boolean(data.authenticated)))
+      .catch(() => setIsUserLoggedIn(false))
+  }, [])
 
-  const services = [
-    {
-      id: "physiotherapy",
-      name: "Physiotherapy",
-      description: "Rehabilitation and movement therapy",
-      prices: {
-        initial: "$140 (60 min)",
-        followup: "$140 (45 min)",
-      },
-    },
-    {
-      id: "occupational-therapy",
-      name: "Occupational Therapy",
-      description: "Daily living and independence support — contact for pricing",
-      prices: {},
-    },
-    {
-      id: "massage-therapy",
-      name: "Massage Therapy",
-      description: "Therapeutic massage by RMT",
-      comingSoon: true,
-      prices: {},
-    },
-  ]
+  const [formData, setFormData] = useState<Partial<BookingFormData>>(INITIAL_FORM_DATA)
+
+  const resetBookingForm = useCallback(() => {
+    setCompletedBooking(null)
+    setFormData(INITIAL_FORM_DATA)
+    setCurrentStep(1)
+  }, [])
+
+  const selectedService = BOOKING_SERVICES.find((s) => s.id === formData.serviceType)
+
+  const selectService = useCallback((serviceId: string) => {
+    const service = BOOKING_SERVICES.find((s) => s.id === serviceId)
+    if (!service || service.comingSoon) return
+    setFormData((prev) => ({
+      ...prev,
+      serviceType: serviceId,
+      appointmentType:
+        prev.serviceType === serviceId ? prev.appointmentType : "",
+    }))
+  }, [])
+
+  const selectAppointmentType = useCallback((typeId: string) => {
+    setFormData((prev) => ({ ...prev, appointmentType: typeId }))
+  }, [])
 
   const insuranceProviders = [
     "Blue Cross",
@@ -106,18 +238,46 @@ export function BookingForm() {
   ]
 
   const nextStep = () => {
-    // Validate current step before proceeding
-    if (currentStep === 1 && !formData.serviceType) {
-      toast.error("Please select a service type")
-      return
+    if (currentStep === 1) {
+      if (!formData.serviceType) {
+        toast.error("Please select a service")
+        return
+      }
+      if (!formData.appointmentType) {
+        toast.error("Please choose a session type for your visit")
+        return
+      }
     }
-    if (currentStep === 2 && (!formData.startDate || !formData.endDate || !formData.fullAddress)) {
-      toast.error("Please fill in all required fields")
-      return
+    if (currentStep === 2) {
+      if (!formData.startDate) {
+        toast.error("Please choose a preferred start date")
+        return
+      }
+      if (!formData.serviceLocation) {
+        toast.error("Please select where we should visit")
+        return
+      }
+      if (!formData.fullAddress?.trim()) {
+        toast.error("Please enter your full address")
+        return
+      }
+      if (!formData.endDate && formData.startDate) {
+        setFormData((prev) => ({ ...prev, endDate: prev.startDate }))
+      }
     }
-    if (currentStep === 3 && (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber)) {
-      toast.error("Please fill in all required fields")
-      return
+    if (currentStep === 3) {
+      if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
+        toast.error("Please enter your first and last name")
+        return
+      }
+      if (!formData.email?.trim()) {
+        toast.error("Please enter your email")
+        return
+      }
+      if (!formData.phoneNumber?.trim()) {
+        toast.error("Please enter your phone number")
+        return
+      }
     }
     setCurrentStep(Math.min(currentStep + 1, totalSteps))
   }
@@ -129,6 +289,32 @@ export function BookingForm() {
       toast.error("Please accept the terms and conditions")
       return
     }
+    if (!formData.serviceType || !formData.appointmentType) {
+      toast.error("Please complete service selection (step 1)")
+      setCurrentStep(1)
+      return
+    }
+    if (
+      !formData.startDate ||
+      !formData.serviceLocation ||
+      !formData.fullAddress?.trim() ||
+      !formData.firstName?.trim() ||
+      !formData.lastName?.trim() ||
+      !formData.email?.trim() ||
+      !formData.phoneNumber?.trim()
+    ) {
+      toast.error("Please complete all required fields")
+      return
+    }
+    if (formData.useDirectBilling) {
+      if (!formData.insuranceProvider || !formData.policyNumber?.trim()) {
+        toast.error("Insurance provider and policy number are required for direct billing")
+        setCurrentStep(4)
+        return
+      }
+    }
+
+    const endDate = formData.endDate || formData.startDate
 
     setIsSubmitting(true)
     try {
@@ -141,7 +327,7 @@ export function BookingForm() {
           serviceType: formData.serviceType,
           appointmentType: formData.appointmentType,
           startDate: formData.startDate,
-          endDate: formData.endDate,
+          endDate,
           serviceLocation: formData.serviceLocation,
           fullAddress: formData.fullAddress,
           firstName: formData.firstName,
@@ -162,33 +348,13 @@ export function BookingForm() {
 
       const data = await response.json()
 
-      if (data.success) {
+      if (data.success && data.data) {
+        setCompletedBooking(data.data as CompletedBooking)
+        toast.success("Booking confirmed! Review your details below.")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      } else if (data.success) {
         toast.success("Booking request submitted successfully! We'll contact you soon.")
-        // Reset form
-        setFormData({
-          serviceType: "",
-          appointmentType: "",
-          startDate: "",
-          endDate: "",
-          serviceLocation: "",
-          fullAddress: "",
-          firstName: "",
-          lastName: "",
-          email: "",
-          phoneNumber: "",
-          dateOfBirth: "",
-          condition: "",
-          medicalHistory: "",
-          useDirectBilling: false,
-          insuranceProvider: "",
-          policyNumber: "",
-          groupNumber: "",
-          emergencyContact: "",
-          specialInstructions: "",
-          termsAccepted: false,
-          consentGiven: false,
-        })
-        setCurrentStep(1)
+        resetBookingForm()
       } else {
         toast.error(data.error || "Failed to submit booking request")
       }
@@ -201,6 +367,156 @@ export function BookingForm() {
   }
 
   const stepLabels = ["Service", "Schedule", "Personal Info", "Confirmation"]
+
+  if (completedBooking) {
+    return (
+      <motion.div
+        className="max-w-4xl mx-auto"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Card className="border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-card via-background to-primary/5">
+          <CardHeader className="text-center pb-4 border-b border-primary/10 bg-gradient-to-r from-primary/5 to-accent/5">
+            <motion.div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <CheckCircle2 className="h-9 w-9 text-primary" />
+            </motion.div>
+            <CardTitle className="text-2xl sm:text-3xl font-bold">Booking confirmed</CardTitle>
+            <CardDescription className="text-base sm:text-lg mt-2 max-w-xl mx-auto">
+              Your request has been received. We&apos;ll contact you to confirm your appointment.
+              A confirmation email has been sent to {completedBooking.email}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Reference
+                </p>
+                <p className="font-mono text-sm sm:text-base font-semibold">{completedBooking.id}</p>
+              </div>
+              <Badge variant="secondary" className="capitalize text-sm px-3 py-1">
+                {completedBooking.status}
+              </Badge>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <section className="space-y-3 rounded-xl border p-4 sm:p-5">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  Patient
+                </h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Name</dt>
+                    <dd className="font-medium text-right">
+                      {completedBooking.firstName} {completedBooking.lastName}
+                    </dd>
+                  </div>
+                  <motion.div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground flex items-center gap-1">
+                      <Mail className="h-3.5 w-3.5" /> Email
+                    </dt>
+                    <dd className="font-medium text-right break-all">{completedBooking.email}</dd>
+                  </motion.div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground flex items-center gap-1">
+                      <Phone className="h-3.5 w-3.5" /> Phone
+                    </dt>
+                    <dd className="font-medium">{completedBooking.phoneNumber}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="space-y-3 rounded-xl border p-4 sm:p-5">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  Appointment
+                </h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Service</dt>
+                    <dd className="font-medium text-right">
+                      {getServiceName(completedBooking.serviceType)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Session</dt>
+                    <dd className="font-medium text-right">
+                      {getAppointmentLabel(
+                        completedBooking.serviceType,
+                        completedBooking.appointmentType
+                      )}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Preferred dates</dt>
+                    <dd className="font-medium text-right">
+                      {formatBookingDateRange(
+                        completedBooking.preferredDate,
+                        completedBooking.endDate
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="space-y-3 rounded-xl border p-4 sm:p-5 sm:col-span-2">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Visit location
+                </h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Location type</dt>
+                    <dd className="font-medium">
+                      {SERVICE_LOCATION_LABELS[completedBooking.serviceLocation] ??
+                        formatSlugLabel(completedBooking.serviceLocation)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground mb-1">Address</dt>
+                    <dd className="font-medium whitespace-pre-wrap">{completedBooking.fullAddress}</dd>
+                  </div>
+                  {completedBooking.useDirectBilling && (
+                    <div className="flex justify-between gap-4 pt-2 border-t">
+                      <dt className="text-muted-foreground flex items-center gap-1">
+                        <Shield className="h-3.5 w-3.5" /> Direct billing
+                      </dt>
+                      <dd className="font-medium capitalize">
+                        {completedBooking.insuranceProvider
+                          ? formatSlugLabel(completedBooking.insuranceProvider)
+                          : "Yes"}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </section>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 min-h-[52px] border-2"
+                onClick={resetBookingForm}
+              >
+                Book another appointment
+              </Button>
+              {isUserLoggedIn ? (
+                <Button asChild className="flex-1 min-h-[52px] bg-gradient-to-r from-primary to-accent">
+                  <Link href="/my-bookings">View all my bookings</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="secondary" className="flex-1 min-h-[52px]">
+                  <Link href="/user-login">Sign in to manage bookings</Link>
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -315,7 +631,7 @@ export function BookingForm() {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <CardDescription className="text-base sm:text-lg mt-2">
-              {currentStep === 1 && "Choose the service you need"}
+              {currentStep === 1 && "Choose your service and session type"}
               {currentStep === 2 && "Select your preferred date and time"}
               {currentStep === 3 && "Tell us about yourself and your needs"}
               {currentStep === 4 && "Insurance details and final confirmation"}
@@ -323,6 +639,9 @@ export function BookingForm() {
           </motion.div>
         </CardHeader>
         <CardContent className="space-y-6 sm:space-y-8 p-6 sm:p-8">
+          <p className="text-sm text-muted-foreground -mt-2">
+            Fields marked with <RequiredStar /> are required.
+          </p>
           <AnimatePresence mode="wait">
             {/* Step 1: Service Selection */}
             {currentStep === 1 && (
@@ -335,14 +654,16 @@ export function BookingForm() {
               >
             <div className="space-y-6 sm:space-y-8">
               <div>
-                <Label className="text-lg sm:text-xl font-medium mb-4 sm:mb-6 block">Select Service Type</Label>
+                <FieldLabel required className="text-lg sm:text-xl font-medium mb-4 sm:mb-6 block">
+                  Select a service
+                </FieldLabel>
                 <RadioGroup 
                   value={formData.serviceType || ""} 
-                  onValueChange={(value) => setFormData({ ...formData, serviceType: value })}
+                  onValueChange={selectService}
                   className="space-y-4 sm:space-y-6"
                 >
-                  {services.map((service, index) => {
-                    const isComingSoon = "comingSoon" in service && (service as { comingSoon?: boolean }).comingSoon
+                  {BOOKING_SERVICES.map((service, index) => {
+                    const isComingSoon = Boolean(service.comingSoon)
                     return (
                     <motion.div
                       key={service.id}
@@ -359,7 +680,7 @@ export function BookingForm() {
                               ? "border-primary bg-primary/10 shadow-lg shadow-primary/10 cursor-pointer"
                               : "border-border hover:border-primary/50 bg-gradient-to-br from-background to-card/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
                         }`}
-                        onClick={() => !isComingSoon && setFormData({ ...formData, serviceType: service.id })}
+                        onClick={() => selectService(service.id)}
                       >
                         <RadioGroupItem 
                           value={service.id} 
@@ -371,7 +692,6 @@ export function BookingForm() {
                           <Label
                             htmlFor={service.id}
                             className="text-base sm:text-lg font-semibold leading-relaxed flex items-center gap-2 group-hover:text-primary transition-colors cursor-pointer"
-                            onClick={(e) => { e.stopPropagation(); if (!isComingSoon) setFormData({ ...formData, serviceType: service.id }) }}
                           >
                             {service.name}
                             {isComingSoon ? (
@@ -383,19 +703,6 @@ export function BookingForm() {
                           <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 leading-relaxed mt-1">
                             {service.description}
                           </p>
-                          {Object.keys(service.prices).length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {Object.entries(service.prices).map(([type, price]) => (
-                                <Badge 
-                                  key={type} 
-                                  variant="outline" 
-                                  className="text-xs sm:text-sm bg-primary/5 border-primary/20 text-primary font-medium hover:bg-primary/10 transition-colors"
-                                >
-                                  {price}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </motion.div>
@@ -403,30 +710,39 @@ export function BookingForm() {
                 </RadioGroup>
               </div>
 
-              <div>
-                <Label htmlFor="appointment-type" className="text-base sm:text-lg font-medium">
-                  Appointment Type
-                </Label>
-                <Select 
-                  value={formData.appointmentType || ""}
-                  onValueChange={(value) => setFormData({ ...formData, appointmentType: value })}
-                >
-                  <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
-                    <SelectValue placeholder="Select appointment type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="initial" className="text-base py-3">
-                      Initial Assessment
-                    </SelectItem>
-                    <SelectItem value="followup" className="text-base py-3">
-                      Follow-up Session
-                    </SelectItem>
-                    <SelectItem value="extended" className="text-base py-3">
-                      Extended Session
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {selectedService && !selectedService.comingSoon && (
+                <div className="space-y-3">
+                  <FieldLabel required className="text-base sm:text-lg font-medium block">
+                    Session type
+                  </FieldLabel>
+                  <p className="text-sm text-muted-foreground -mt-1">
+                    Tap the visit type you need — it goes with the service you selected above.
+                  </p>
+                  <motion.div layout className="grid gap-3 sm:grid-cols-2">
+                    {selectedService.appointmentTypes.map((session) => {
+                      const selected = formData.appointmentType === session.id
+                      return (
+                        <button
+                          key={session.id}
+                          type="button"
+                          onClick={() => selectAppointmentType(session.id)}
+                          className={cn(
+                            "text-left rounded-xl border-2 p-4 transition-all",
+                            selected
+                              ? "border-primary bg-primary/10 shadow-md"
+                              : "border-border hover:border-primary/40 bg-card/50"
+                          )}
+                        >
+                          <p className="font-semibold text-foreground">{session.label}</p>
+                          {session.description ? (
+                            <p className="text-sm text-muted-foreground mt-1">{session.description}</p>
+                          ) : null}
+                        </button>
+                      )
+                    })}
+                  </motion.div>
+                </div>
+              )}
             </div>
               </motion.div>
             )}
@@ -443,9 +759,9 @@ export function BookingForm() {
             <div className="space-y-6 sm:space-y-8">
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <Label htmlFor="start-date" className="text-base sm:text-lg font-medium">
-                    Start Date
-                  </Label>
+                  <FieldLabel htmlFor="start-date" required className="text-base sm:text-lg font-medium">
+                    Preferred start date
+                  </FieldLabel>
                   <div className="relative mt-2 sm:mt-3">
                     <CalendarIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 z-10 pointer-events-none" />
                     <Input
@@ -453,7 +769,13 @@ export function BookingForm() {
                       type="date"
                       value={formData.startDate || ""}
                       onChange={(e) => {
-                        setFormData({ ...formData, startDate: e.target.value })
+                        const startDate = e.target.value
+                        setFormData((prev) => ({
+                          ...prev,
+                          startDate,
+                          endDate:
+                            prev.endDate && prev.endDate >= startDate ? prev.endDate : prev.endDate || "",
+                        }))
                       }}
                       min={new Date().toISOString().split('T')[0]}
                       className={cn(
@@ -461,7 +783,6 @@ export function BookingForm() {
                         formData.startDate && "border-primary/50 bg-primary/5"
                       )}
                       disabled={isSubmitting}
-                      required
                     />
                   </div>
                   {formData.startDate && (
@@ -471,9 +792,9 @@ export function BookingForm() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="end-date" className="text-base sm:text-lg font-medium">
-                    End Date
-                  </Label>
+                  <FieldLabel htmlFor="end-date" className="text-base sm:text-lg font-medium">
+                    End date <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                  </FieldLabel>
                   <div className="relative mt-2 sm:mt-3">
                     <CalendarIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 z-10 pointer-events-none" />
                     <Input
@@ -489,28 +810,32 @@ export function BookingForm() {
                         formData.endDate && "border-primary/50 bg-primary/5"
                       )}
                       disabled={isSubmitting || !formData.startDate}
-                      required
                     />
                   </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Leave blank for a single-day visit — we&apos;ll use your start date.
+                  </p>
                   {formData.endDate && (
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Selected: {format(new Date(formData.endDate), "PPP")}
                     </p>
                   )}
                 </div>
               </div>
-              {formData.startDate && formData.endDate && (
+              {formData.startDate && (
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                   <p className="text-sm font-medium text-primary">
-                    Date Range: {format(new Date(formData.startDate), "MMM dd, yyyy")} - {format(new Date(formData.endDate), "MMM dd, yyyy")}
+                    {formData.endDate && formData.endDate !== formData.startDate
+                      ? `Date range: ${format(new Date(formData.startDate), "MMM dd, yyyy")} – ${format(new Date(formData.endDate), "MMM dd, yyyy")}`
+                      : `Preferred date: ${format(new Date(formData.startDate), "MMM dd, yyyy")}`}
                   </p>
                 </div>
               )}
 
               <div>
-                <Label htmlFor="location" className="text-base sm:text-lg font-medium">
-                  Service Location
-                </Label>
+                <FieldLabel htmlFor="location" required className="text-base sm:text-lg font-medium">
+                  Service location
+                </FieldLabel>
                 <Select 
                   value={formData.serviceLocation || ""}
                   onValueChange={(value) => setFormData({ ...formData, serviceLocation: value })}
@@ -533,10 +858,10 @@ export function BookingForm() {
               </div>
 
               <div>
-                <Label htmlFor="address" className="text-base sm:text-lg font-medium">
-                  Full Address
-                </Label>
-                  <Textarea
+                <FieldLabel htmlFor="address" required className="text-base sm:text-lg font-medium">
+                  Full address
+                </FieldLabel>
+                <Textarea
                   id="address"
                   placeholder="Please provide your complete address including postal code"
                   value={formData.fullAddress || ""}
@@ -561,9 +886,9 @@ export function BookingForm() {
             <div className="space-y-6 sm:space-y-8">
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <Label htmlFor="first-name" className="text-base sm:text-lg font-medium">
-                    First Name
-                  </Label>
+                  <FieldLabel htmlFor="first-name" required className="text-base sm:text-lg font-medium">
+                    First name
+                  </FieldLabel>
                   <Input 
                     id="first-name" 
                     value={formData.firstName || ""}
@@ -572,9 +897,9 @@ export function BookingForm() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="last-name" className="text-base sm:text-lg font-medium">
-                    Last Name
-                  </Label>
+                  <FieldLabel htmlFor="last-name" required className="text-base sm:text-lg font-medium">
+                    Last name
+                  </FieldLabel>
                   <Input 
                     id="last-name" 
                     value={formData.lastName || ""}
@@ -586,9 +911,9 @@ export function BookingForm() {
 
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <Label htmlFor="phone" className="text-base sm:text-lg font-medium">
-                    Phone Number
-                  </Label>
+                  <FieldLabel htmlFor="phone" required className="text-base sm:text-lg font-medium">
+                    Phone number
+                  </FieldLabel>
                   <Input 
                     id="phone" 
                     type="tel" 
@@ -598,9 +923,9 @@ export function BookingForm() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-base sm:text-lg font-medium">
-                    Email Address
-                  </Label>
+                  <FieldLabel htmlFor="email" required className="text-base sm:text-lg font-medium">
+                    Email address
+                  </FieldLabel>
                   <Input 
                     id="email" 
                     type="email" 
@@ -612,9 +937,9 @@ export function BookingForm() {
               </div>
 
               <div>
-                <Label htmlFor="date-of-birth" className="text-base sm:text-lg font-medium">
-                  Date of Birth
-                </Label>
+                <FieldLabel htmlFor="date-of-birth" className="text-base sm:text-lg font-medium">
+                  Date of birth <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                </FieldLabel>
                 <Input 
                   id="date-of-birth" 
                   type="date" 
@@ -625,9 +950,9 @@ export function BookingForm() {
               </div>
 
               <div>
-                <Label htmlFor="condition" className="text-base sm:text-lg font-medium">
-                  Condition/Reason for Treatment
-                </Label>
+                <FieldLabel htmlFor="condition" className="text-base sm:text-lg font-medium">
+                  Condition / reason for treatment <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                </FieldLabel>
                 <Textarea
                   id="condition"
                   placeholder="Please describe your condition, symptoms, or reason for seeking treatment"
@@ -639,9 +964,9 @@ export function BookingForm() {
               </div>
 
               <div>
-                <Label htmlFor="medical-history" className="text-base sm:text-lg font-medium">
-                  Relevant Medical History
-                </Label>
+                <FieldLabel htmlFor="medical-history" className="text-base sm:text-lg font-medium">
+                  Relevant medical history <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                </FieldLabel>
                 <Textarea
                   id="medical-history"
                   placeholder="Any relevant medical history, surgeries, medications, or conditions we should know about"
@@ -683,13 +1008,21 @@ export function BookingForm() {
                 </Label>
               </motion.div>
 
-              <div>
-                <Label htmlFor="insurance-provider" className="text-base sm:text-lg font-medium">
-                  Insurance Provider
-                </Label>
+              <div className={cn(!formData.useDirectBilling && "opacity-60 pointer-events-none")}>
+                <FieldLabel
+                  htmlFor="insurance-provider"
+                  required={Boolean(formData.useDirectBilling)}
+                  className="text-base sm:text-lg font-medium"
+                >
+                  Insurance provider
+                </FieldLabel>
+                {!formData.useDirectBilling && (
+                  <p className="text-xs text-muted-foreground mb-2">Only needed if you use direct billing above.</p>
+                )}
                 <Select 
                   value={formData.insuranceProvider || ""}
                   onValueChange={(value) => setFormData({ ...formData, insuranceProvider: value })}
+                  disabled={!formData.useDirectBilling}
                 >
                   <SelectTrigger className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue placeholder="Select your insurance provider" />
@@ -710,20 +1043,25 @@ export function BookingForm() {
 
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <Label htmlFor="policy-number" className="text-base sm:text-lg font-medium">
-                    Policy Number
-                  </Label>
+                  <FieldLabel
+                    htmlFor="policy-number"
+                    required={Boolean(formData.useDirectBilling)}
+                    className="text-base sm:text-lg font-medium"
+                  >
+                    Policy number
+                  </FieldLabel>
                   <Input 
                     id="policy-number" 
                     value={formData.policyNumber || ""}
                     onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
+                    disabled={!formData.useDirectBilling}
                     className="mt-2 sm:mt-3 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" 
                   />
                 </div>
                 <div>
-                  <Label htmlFor="group-number" className="text-base sm:text-lg font-medium">
-                    Group Number (if applicable)
-                  </Label>
+                  <FieldLabel htmlFor="group-number" className="text-base sm:text-lg font-medium">
+                    Group number <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                  </FieldLabel>
                   <Input 
                     id="group-number" 
                     value={formData.groupNumber || ""}
@@ -734,9 +1072,9 @@ export function BookingForm() {
               </div>
 
               <div>
-                <Label htmlFor="emergency-contact" className="text-base sm:text-lg font-medium">
-                  Emergency Contact
-                </Label>
+                <FieldLabel htmlFor="emergency-contact" className="text-base sm:text-lg font-medium">
+                  Emergency contact <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                </FieldLabel>
                 <Input
                   id="emergency-contact"
                   placeholder="Name and phone number"
@@ -747,9 +1085,9 @@ export function BookingForm() {
               </div>
 
               <div>
-                <Label htmlFor="special-instructions" className="text-base sm:text-lg font-medium">
-                  Special Instructions
-                </Label>
+                <FieldLabel htmlFor="special-instructions" className="text-base sm:text-lg font-medium">
+                  Special instructions <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                </FieldLabel>
                 <Textarea
                   id="special-instructions"
                   placeholder="Any special instructions for our visit (parking, building access, etc.)"
@@ -775,7 +1113,10 @@ export function BookingForm() {
                   />
                   <Label htmlFor="terms" className="text-sm sm:text-base cursor-pointer leading-relaxed flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>I agree to the terms and conditions and privacy policy</span>
+                    <span>
+                      I agree to the terms and conditions and privacy policy
+                      <RequiredStar />
+                    </span>
                   </Label>
                 </motion.div>
                 <motion.div
@@ -792,7 +1133,10 @@ export function BookingForm() {
                   />
                   <Label htmlFor="consent" className="text-sm sm:text-base cursor-pointer leading-relaxed flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>I consent to treatment and understand the fees involved</span>
+                    <span>
+                      I consent to treatment and understand the fees involved
+                      <RequiredStar />
+                    </span>
                   </Label>
                 </motion.div>
               </div>

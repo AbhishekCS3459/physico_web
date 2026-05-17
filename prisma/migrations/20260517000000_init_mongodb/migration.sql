@@ -1,0 +1,10 @@
+-- MongoDB baseline (2026-05-17)
+--
+-- Prisma Migrate does not apply SQL to MongoDB. This folder records the cutover
+-- from PostgreSQL (see prisma/migrations_postgresql_backup).
+--
+-- Apply schema to your cluster:
+--   DATABASE_URL="mongodb+srv://..." npx prisma db push
+--
+-- Seed admin user:
+--   npx prisma db seed

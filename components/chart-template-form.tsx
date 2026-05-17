@@ -30,6 +30,7 @@ import {
 } from "@/lib/rom-rim-chart-notes"
 import { cn } from "@/lib/utils"
 import { FileText, Loader2 } from "lucide-react"
+import RichNotesEditor from "./RichNotesEditor"
 
 /** Treatment section: row labels and multiple-choice options (radio) per row */
 const TREATMENT_ROW_LABELS = [
@@ -105,9 +106,9 @@ export interface ChartTemplateFormProps {
   saving?: boolean
   onAfterDraftSave?: () => void
   className?: string
-  /** Substitutes {{patient_name}} and legacy sample names in consent text for display */
   patientDisplayName?: string
 }
+
 
 function prepareChartJsonForDisplay(raw: string | null, patientDisplayName?: string): string | null {
   if (!raw?.trim()) return raw
@@ -120,7 +121,6 @@ function parseContent(value: string | null): ParsedChartDoc | null {
   return parseChartDoc(value)
 }
 
-/** Consent always appears first in the chart form (fixes legacy charts saved before consent was moved). */
 function orderSectionsWithConsentFirst(sections: ChartSection[]): ChartSection[] {
   const idx = sections.findIndex((s) => /^Consent:?$/i.test(s.title.trim()))
   if (idx <= 0) return sections
@@ -133,6 +133,7 @@ function withConsentFirst(doc: ParsedChartDoc | null): ParsedChartDoc | null {
   if (!doc) return null
   return { ...doc, sections: orderSectionsWithConsentFirst(doc.sections) }
 }
+
 
 export function ChartTemplateForm({
   initialContent,
@@ -147,14 +148,10 @@ export function ChartTemplateForm({
     () => prepareChartJsonForDisplay(initialContent, patientDisplayName),
     [initialContent, patientDisplayName],
   )
-  const parsed = useMemo(
-    () => withConsentFirst(parseContent(preparedContent)),
-    [preparedContent],
-  )
+  const parsed = useMemo(() => withConsentFirst(parseContent(preparedContent)), [preparedContent])
   const [data, setData] = useState<ParsedChartDoc | null>(() => parsed)
   const syncKeyRef = useRef<string>("")
 
-  // Sync when server content or patient label changes (display interpolation)
   useEffect(() => {
     const key = `${initialContent ?? ""}\0${patientDisplayName ?? ""}`
     if (syncKeyRef.current !== key) {
@@ -189,8 +186,7 @@ export function ChartTemplateForm({
     (sectionIndex: number, lineIndex: number, newPrefix: string) => {
       updateSection(sectionIndex, (section) => {
         const lines = [...section.checkboxLines]
-        const line = { ...lines[lineIndex], prefix: newPrefix }
-        lines[lineIndex] = line
+        lines[lineIndex] = { ...lines[lineIndex], prefix: newPrefix }
         return { ...section, checkboxLines: lines }
       })
     },
@@ -213,25 +209,18 @@ export function ChartTemplateForm({
 
   const handleSave = useCallback(() => {
     if (!data || !onSave) return
-    const doc = serializeChartDoc(data)
-    onSave(JSON.stringify(doc))
+    onSave(JSON.stringify(serializeChartDoc(data)))
   }, [data, onSave])
 
   const handleSaveDraftAndClose = useCallback(async () => {
     if (!data || !onSave || !onAfterDraftSave) return
-    const doc = serializeChartDoc(data)
-    const result = await Promise.resolve(onSave(JSON.stringify(doc)))
+    const result = await Promise.resolve(onSave(JSON.stringify(serializeChartDoc(data))))
     if (result === true) onAfterDraftSave()
   }, [data, onSave, onAfterDraftSave])
 
   if (!data || data.sections.length === 0) {
     return (
-      <div
-        className={cn(
-          "rounded-xl border-2 border-dashed border-border bg-muted/20 min-h-[200px] flex flex-col items-center justify-center p-8 text-center",
-          className
-        )}
-      >
+      <div className={cn("rounded-xl border-2 border-dashed border-border bg-muted/20 min-h-[200px] flex flex-col items-center justify-center p-8 text-center", className)}>
         <FileText className="h-10 w-10 text-muted-foreground/60 mb-3" />
         <p className="text-sm font-medium text-foreground">Chart could not be shown as a form</p>
         <p className="text-sm text-muted-foreground mt-1">Use the Edit view to edit content.</p>
@@ -241,8 +230,7 @@ export function ChartTemplateForm({
 
   const consentSection =
     data.sections.length > 0 && /^Consent:?$/i.test(data.sections[0].title.trim())
-      ? data.sections[0]
-      : null
+      ? data.sections[0] : null
   const sectionsAfterConsent = consentSection ? data.sections.slice(1) : data.sections
 
   const renderSectionBlock = (section: ChartSection, sectionIndex: number) => (
@@ -251,14 +239,10 @@ export function ChartTemplateForm({
       section={section}
       sectionIndex={sectionIndex}
       editable={editable}
-      onCheckboxChange={(lineIndex, optionIndex, checked) =>
-        setCheckboxLine(sectionIndex, lineIndex, optionIndex, checked)
-      }
-      onCheckboxLinePrefixChange={(lineIndex, newPrefix) =>
-        setCheckboxLinePrefix(sectionIndex, lineIndex, newPrefix)
-      }
+      onCheckboxChange={(li, oi, checked) => setCheckboxLine(sectionIndex, li, oi, checked)}
+      onCheckboxLinePrefixChange={(li, p) => setCheckboxLinePrefix(sectionIndex, li, p)}
       onNotesChange={(notes) => setSectionNotes(sectionIndex, notes)}
-      onListItemsChange={(listItems) => setSectionListItems(sectionIndex, listItems)}
+      onListItemsChange={(items) => setSectionListItems(sectionIndex, items)}
     />
   )
 
@@ -266,9 +250,7 @@ export function ChartTemplateForm({
     <div className={cn("rounded-xl border-2 border-border/60 bg-card overflow-hidden shadow-sm", className)}>
       {consentSection && (
         <div className="px-5 pt-5 pb-1 border-b border-border/60 bg-muted/25">
-          <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
-            Step 1 — Consent
-          </p>
+          <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Step 1 — Consent</p>
           {renderSectionBlock(consentSection, 0)}
         </div>
       )}
@@ -286,39 +268,12 @@ export function ChartTemplateForm({
             </p>
             {editable && onSave && (
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="rounded-lg shadow-sm"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save chart"
-                  )}
+                <Button type="button" size="sm" onClick={handleSave} disabled={saving} className="rounded-lg shadow-sm">
+                  {saving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving...</> : "Save chart"}
                 </Button>
                 {onAfterDraftSave && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    onClick={handleSaveDraftAndClose}
-                    disabled={saving}
-                    className="rounded-lg"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save as draft & close"
-                    )}
+                  <Button type="button" size="sm" variant="secondary" onClick={handleSaveDraftAndClose} disabled={saving} className="rounded-lg">
+                    {saving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving...</> : "Save as draft & close"}
                   </Button>
                 )}
               </div>
@@ -328,17 +283,15 @@ export function ChartTemplateForm({
       </div>
       <div className="min-h-[280px] px-5 py-5 space-y-6 overflow-auto">
         {consentSection && (
-          <p className="text-xs font-medium text-muted-foreground -mt-2 mb-2 uppercase tracking-wide">
-            Step 2 — Assessment
-          </p>
+          <p className="text-xs font-medium text-muted-foreground -mt-2 mb-2 uppercase tracking-wide">Step 2 — Assessment</p>
         )}
-        {sectionsAfterConsent.map((section, i) =>
-          renderSectionBlock(section, consentSection ? i + 1 : i),
-        )}
+        {sectionsAfterConsent.map((section, i) => renderSectionBlock(section, consentSection ? i + 1 : i))}
       </div>
     </div>
   )
 }
+
+// ─── SectionBlock ─────────────────────────────────────────────────────────────
 
 interface SectionBlockProps {
   section: ChartSection
@@ -351,20 +304,14 @@ interface SectionBlockProps {
 }
 
 const TREATMENT_SECTION_TITLE = "Treatment:"
+const RIM_STRENGTH_TITLE_REGEX = /^RIM\/Strength:?$/i
+const ROM_SECTION_TITLE_REGEX = /^ROM:?$/i
+const PAIN_PREFIX_REGEX = /^Pain\s*(___|\d+)\/10$/i
+const CONSENT_SECTION_TITLE_REGEX = /^Consent:?$/i
 
 function isTreatmentSection(section: ChartSection): boolean {
   return section.title === TREATMENT_SECTION_TITLE || section.title.startsWith("Treatment")
 }
-
-/** RIM/Strength section: multiple axial joint motions with /5 scale */
-const RIM_STRENGTH_TITLE_REGEX = /^RIM\/Strength:?$/i
-
-/** ROM section: six axial joint motions as separate fields (e.g. degrees) */
-const ROM_SECTION_TITLE_REGEX = /^ROM:?$/i
-
-const PAIN_PREFIX_REGEX = /^Pain\s*(___|\d+)\/10$/i
-
-const CONSENT_SECTION_TITLE_REGEX = /^Consent:?$/i
 
 function SectionBlock({
   section,
@@ -388,7 +335,7 @@ function SectionBlock({
         {section.title}
       </h3>
 
-      {/* Checkbox lines: tick/untick options */}
+      {/* Checkbox lines */}
       {section.checkboxLines.length > 0 && (
         <div className="space-y-3">
           {section.checkboxLines.map((line, lineIndex) => (
@@ -398,12 +345,10 @@ function SectionBlock({
               lineIndex={lineIndex}
               editable={editable}
               isPainLine={PAIN_PREFIX_REGEX.test(line.prefix.trim())}
-              onToggle={(optionIndex, checked) =>
-                onCheckboxChange(lineIndex, optionIndex, checked)
-              }
+              onToggle={(oi, checked) => onCheckboxChange(lineIndex, oi, checked)}
               onPainLevelChange={
                 onCheckboxLinePrefixChange
-                  ? (value) => onCheckboxLinePrefixChange(lineIndex, `Pain ${value}/10`)
+                  ? (v) => onCheckboxLinePrefixChange(lineIndex, `Pain ${v}/10`)
                   : undefined
               }
             />
@@ -411,185 +356,50 @@ function SectionBlock({
         </div>
       )}
 
-      {/* ROM: six axial joint motions (e.g. degrees) */}
+      {/* ROM fields */}
       {isRom && romNotes && (
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground leading-relaxed">{ROM_RIM_MOTION_LEGEND}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Flex (flexion)</Label>
-              {editable ? (
-                <Input
-                  value={romNotes.flexion}
-                  onChange={(e) =>
-                    onNotesChange(
-                      formatRomNotes(
-                        e.target.value,
-                        romNotes.extension,
-                        romNotes.abduction,
-                        romNotes.adduction,
-                        romNotes.internalRotation,
-                        romNotes.externalRotation,
+            {(["flexion","extension","abduction","adduction","internalRotation","externalRotation"] as const).map((key) => {
+              const labels: Record<string, string> = {
+                flexion: "Flex (flexion)", extension: "Ext (extension)",
+                abduction: "Abd (abduction)", adduction: "Add (adduction)",
+                internalRotation: "IR (internal rotation)", externalRotation: "ER (external rotation)",
+              }
+              return (
+                <div key={key} className="space-y-1.5">
+                  <Label className="text-sm font-medium text-foreground">{labels[key]}</Label>
+                  {editable ? (
+                    <Input
+                      value={romNotes[key]}
+                      onChange={(e) => onNotesChange(formatRomNotes(
+                        key === "flexion" ? e.target.value : romNotes.flexion,
+                        key === "extension" ? e.target.value : romNotes.extension,
+                        key === "abduction" ? e.target.value : romNotes.abduction,
+                        key === "adduction" ? e.target.value : romNotes.adduction,
+                        key === "internalRotation" ? e.target.value : romNotes.internalRotation,
+                        key === "externalRotation" ? e.target.value : romNotes.externalRotation,
                         romNotes.additionalNotes,
-                      )
-                    )
-                  }
-                  placeholder="___"
-                  className="w-full sm:w-[120px] h-9 text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{romNotes.flexion || "—"}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Ext (extension)</Label>
-              {editable ? (
-                <Input
-                  value={romNotes.extension}
-                  onChange={(e) =>
-                    onNotesChange(
-                      formatRomNotes(
-                        romNotes.flexion,
-                        e.target.value,
-                        romNotes.abduction,
-                        romNotes.adduction,
-                        romNotes.internalRotation,
-                        romNotes.externalRotation,
-                        romNotes.additionalNotes,
-                      )
-                    )
-                  }
-                  placeholder="___"
-                  className="w-full sm:w-[120px] h-9 text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{romNotes.extension || "—"}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Abd (abduction)</Label>
-              {editable ? (
-                <Input
-                  value={romNotes.abduction}
-                  onChange={(e) =>
-                    onNotesChange(
-                      formatRomNotes(
-                        romNotes.flexion,
-                        romNotes.extension,
-                        e.target.value,
-                        romNotes.adduction,
-                        romNotes.internalRotation,
-                        romNotes.externalRotation,
-                        romNotes.additionalNotes,
-                      )
-                    )
-                  }
-                  placeholder="___"
-                  className="w-full sm:w-[120px] h-9 text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{romNotes.abduction || "—"}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Add (adduction)</Label>
-              {editable ? (
-                <Input
-                  value={romNotes.adduction}
-                  onChange={(e) =>
-                    onNotesChange(
-                      formatRomNotes(
-                        romNotes.flexion,
-                        romNotes.extension,
-                        romNotes.abduction,
-                        e.target.value,
-                        romNotes.internalRotation,
-                        romNotes.externalRotation,
-                        romNotes.additionalNotes,
-                      )
-                    )
-                  }
-                  placeholder="___"
-                  className="w-full sm:w-[120px] h-9 text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{romNotes.adduction || "—"}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">IR (internal rotation)</Label>
-              {editable ? (
-                <Input
-                  value={romNotes.internalRotation}
-                  onChange={(e) =>
-                    onNotesChange(
-                      formatRomNotes(
-                        romNotes.flexion,
-                        romNotes.extension,
-                        romNotes.abduction,
-                        romNotes.adduction,
-                        e.target.value,
-                        romNotes.externalRotation,
-                        romNotes.additionalNotes,
-                      )
-                    )
-                  }
-                  placeholder="___"
-                  className="w-full sm:w-[120px] h-9 text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{romNotes.internalRotation || "—"}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">ER (external rotation)</Label>
-              {editable ? (
-                <Input
-                  value={romNotes.externalRotation}
-                  onChange={(e) =>
-                    onNotesChange(
-                      formatRomNotes(
-                        romNotes.flexion,
-                        romNotes.extension,
-                        romNotes.abduction,
-                        romNotes.adduction,
-                        romNotes.internalRotation,
-                        e.target.value,
-                        romNotes.additionalNotes,
-                      )
-                    )
-                  }
-                  placeholder="___"
-                  className="w-full sm:w-[120px] h-9 text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{romNotes.externalRotation || "—"}</p>
-              )}
-            </div>
+                      ))}
+                      placeholder="___"
+                      className="w-full sm:w-[120px] h-9 text-sm"
+                    />
+                  ) : (
+                    <p className="text-sm text-foreground">{romNotes[key] || "—"}</p>
+                  )}
+                </div>
+              )
+            })}
           </div>
-
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-muted-foreground">Additional notes</Label>
             <Textarea
               value={romNotes.additionalNotes}
-              onChange={(e) =>
-                onNotesChange(
-                  formatRomNotes(
-                    romNotes.flexion,
-                    romNotes.extension,
-                    romNotes.abduction,
-                    romNotes.adduction,
-                    romNotes.internalRotation,
-                    romNotes.externalRotation,
-                    e.target.value,
-                  )
-                )
-              }
+              onChange={(e) => onNotesChange(formatRomNotes(
+                romNotes.flexion, romNotes.extension, romNotes.abduction,
+                romNotes.adduction, romNotes.internalRotation, romNotes.externalRotation, e.target.value,
+              ))}
               placeholder="Add notes if needed…"
               className="min-h-[60px] text-sm resize-y rounded-lg border-border/80 bg-background focus-visible:ring-2"
               rows={2}
@@ -599,250 +409,59 @@ function SectionBlock({
         </div>
       )}
 
-      {/* RIM/Strength: six axial joint motions as separate /5 fields */}
+      {/* RIM/Strength fields */}
       {isRimStrength && rimStrength && (
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground leading-relaxed">{ROM_RIM_MOTION_LEGEND}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Flex (flexion)</Label>
-              {editable ? (
-                <Select
-                  value={rimStrength.flexion || undefined}
-                  onValueChange={(value) =>
-                    onNotesChange(
-                      formatRimStrengthNotes(
-                        value,
-                        rimStrength.extension,
-                        rimStrength.abduction,
-                        rimStrength.adduction,
-                        rimStrength.internalRotation,
-                        rimStrength.externalRotation,
+            {(["flexion","extension","abduction","adduction","internalRotation","externalRotation"] as const).map((key) => {
+              const labels: Record<string, string> = {
+                flexion: "Flex (flexion)", extension: "Ext (extension)",
+                abduction: "Abd (abduction)", adduction: "Add (adduction)",
+                internalRotation: "IR (internal rotation)", externalRotation: "ER (external rotation)",
+              }
+              return (
+                <div key={key} className="space-y-1.5">
+                  <Label className="text-sm font-medium text-foreground">{labels[key]}</Label>
+                  {editable ? (
+                    <Select
+                      value={rimStrength[key] || undefined}
+                      onValueChange={(v) => onNotesChange(formatRimStrengthNotes(
+                        key === "flexion" ? v : rimStrength.flexion,
+                        key === "extension" ? v : rimStrength.extension,
+                        key === "abduction" ? v : rimStrength.abduction,
+                        key === "adduction" ? v : rimStrength.adduction,
+                        key === "internalRotation" ? v : rimStrength.internalRotation,
+                        key === "externalRotation" ? v : rimStrength.externalRotation,
                         rimStrength.additionalNotes,
-                      )
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
-                    <SelectValue placeholder="—/5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n}/5
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {rimStrength.flexion ? `${rimStrength.flexion}/5` : "—/5"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Ext (extension)</Label>
-              {editable ? (
-                <Select
-                  value={rimStrength.extension || undefined}
-                  onValueChange={(value) =>
-                    onNotesChange(
-                      formatRimStrengthNotes(
-                        rimStrength.flexion,
-                        value,
-                        rimStrength.abduction,
-                        rimStrength.adduction,
-                        rimStrength.internalRotation,
-                        rimStrength.externalRotation,
-                        rimStrength.additionalNotes,
-                      )
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
-                    <SelectValue placeholder="—/5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n}/5
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {rimStrength.extension ? `${rimStrength.extension}/5` : "—/5"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Abd (abduction)</Label>
-              {editable ? (
-                <Select
-                  value={rimStrength.abduction || undefined}
-                  onValueChange={(value) =>
-                    onNotesChange(
-                      formatRimStrengthNotes(
-                        rimStrength.flexion,
-                        rimStrength.extension,
-                        value,
-                        rimStrength.adduction,
-                        rimStrength.internalRotation,
-                        rimStrength.externalRotation,
-                        rimStrength.additionalNotes,
-                      )
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
-                    <SelectValue placeholder="—/5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n}/5
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {rimStrength.abduction ? `${rimStrength.abduction}/5` : "—/5"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">Add (adduction)</Label>
-              {editable ? (
-                <Select
-                  value={rimStrength.adduction || undefined}
-                  onValueChange={(value) =>
-                    onNotesChange(
-                      formatRimStrengthNotes(
-                        rimStrength.flexion,
-                        rimStrength.extension,
-                        rimStrength.abduction,
-                        value,
-                        rimStrength.internalRotation,
-                        rimStrength.externalRotation,
-                        rimStrength.additionalNotes,
-                      )
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
-                    <SelectValue placeholder="—/5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n}/5
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {rimStrength.adduction ? `${rimStrength.adduction}/5` : "—/5"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">IR (internal rotation)</Label>
-              {editable ? (
-                <Select
-                  value={rimStrength.internalRotation || undefined}
-                  onValueChange={(value) =>
-                    onNotesChange(
-                      formatRimStrengthNotes(
-                        rimStrength.flexion,
-                        rimStrength.extension,
-                        rimStrength.abduction,
-                        rimStrength.adduction,
-                        value,
-                        rimStrength.externalRotation,
-                        rimStrength.additionalNotes,
-                      )
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
-                    <SelectValue placeholder="—/5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n}/5
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {rimStrength.internalRotation ? `${rimStrength.internalRotation}/5` : "—/5"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-foreground">ER (external rotation)</Label>
-              {editable ? (
-                <Select
-                  value={rimStrength.externalRotation || undefined}
-                  onValueChange={(value) =>
-                    onNotesChange(
-                      formatRimStrengthNotes(
-                        rimStrength.flexion,
-                        rimStrength.extension,
-                        rimStrength.abduction,
-                        rimStrength.adduction,
-                        rimStrength.internalRotation,
-                        value,
-                        rimStrength.additionalNotes,
-                      )
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
-                    <SelectValue placeholder="—/5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n}/5
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {rimStrength.externalRotation ? `${rimStrength.externalRotation}/5` : "—/5"}
-                </p>
-              )}
-            </div>
+                      ))}
+                    >
+                      <SelectTrigger className="w-full sm:w-[100px] h-9 text-sm">
+                        <SelectValue placeholder="—/5" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1,2,3,4,5].map((n) => (
+                          <SelectItem key={n} value={String(n)}>{n}/5</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm text-foreground">
+                      {rimStrength[key] ? `${rimStrength[key]}/5` : "—/5"}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-muted-foreground">Additional notes</Label>
             <Textarea
               value={rimStrength.additionalNotes}
-              onChange={(e) =>
-                onNotesChange(
-                  formatRimStrengthNotes(
-                    rimStrength.flexion,
-                    rimStrength.extension,
-                    rimStrength.abduction,
-                    rimStrength.adduction,
-                    rimStrength.internalRotation,
-                    rimStrength.externalRotation,
-                    e.target.value,
-                  )
-                )
-              }
+              onChange={(e) => onNotesChange(formatRimStrengthNotes(
+                rimStrength.flexion, rimStrength.extension, rimStrength.abduction,
+                rimStrength.adduction, rimStrength.internalRotation, rimStrength.externalRotation, e.target.value,
+              ))}
               placeholder="Add notes if needed…"
               className="min-h-[60px] text-sm resize-y rounded-lg border-border/80 bg-background focus-visible:ring-2"
               rows={2}
@@ -852,7 +471,7 @@ function SectionBlock({
         </div>
       )}
 
-      {/* Treatment: multiple-choice options per row */}
+      {/* Treatment section */}
       {isTreatment && (
         <TreatmentRadioSection
           listItems={section.listItems}
@@ -861,64 +480,43 @@ function SectionBlock({
         />
       )}
 
-      {/* Bullet list (non-Treatment sections with list items) - editable as one text per line */}
+      {/* Non-treatment list items */}
       {section.listItems.length > 0 && !isTreatment && (
         <div className="space-y-1">
           <Label className="text-sm font-medium text-muted-foreground">Items</Label>
           {editable ? (
             <Textarea
               value={section.listItems.join("\n")}
-              onChange={(e) => {
-                const lines = e.target.value.split("\n")
-                onListItemsChange(lines.map((s) => s.trim()))
-              }}
+              onChange={(e) => onListItemsChange(e.target.value.split("\n").map((s) => s.trim()))}
               placeholder="One item per line"
               className="min-h-[80px] text-sm rounded-lg border-border/80 focus-visible:ring-2"
               rows={Math.max(3, section.listItems.length)}
             />
           ) : (
             <ul className="list-disc pl-6 text-sm space-y-1 text-foreground">
-              {section.listItems.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
+              {section.listItems.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           )}
         </div>
       )}
 
-      {/* Notes: doctor adds notes below (only when not RIM/Strength or ROM; they have their own blocks above).
-          Hide for Plan since Plan is meant to be filled via sub-points list items. */}
+      {/* Notes — now uses RichNotesEditor for rich text support */}
       {!isRimStrength && !isRom && section.title.trim() !== "Plan:" && (
-        <div
-          className={cn(
-            "space-y-2",
-            isConsentSection &&
-              "rounded-xl border border-border/80 bg-card/50 p-4 sm:p-5 shadow-sm",
-          )}
-        >
+        <div className={cn("space-y-2", isConsentSection && "rounded-xl border border-border/80 bg-card/50 p-4 sm:p-5 shadow-sm")}>
           {isConsentSection && (
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Informed consent — review with the patient; edit wording here or use the Edit (rich text) tab
+              Informed consent — review with the patient; supports bold, italic, underline formatting
             </p>
           )}
-          <Label
-            className={cn(
-              "text-sm font-medium",
-              isConsentSection ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
+          <Label className={cn("text-sm font-medium", isConsentSection ? "text-foreground" : "text-muted-foreground")}>
             {isConsentSection ? "Consent text on this chart" : "Notes"}
           </Label>
-          <Textarea
+          <RichNotesEditor
             value={section.notes}
-            onChange={(e) => onNotesChange(e.target.value)}
+            onChange={onNotesChange}
+            editable={editable}
             placeholder={isConsentSection ? "Consent paragraphs…" : "Add your notes here…"}
-            className={cn(
-              "text-sm resize-y rounded-lg border-border/80 bg-background focus-visible:ring-2",
-              isConsentSection ? "min-h-[220px] leading-relaxed" : "min-h-[72px]",
-            )}
-            rows={isConsentSection ? 12 : 3}
-            readOnly={!editable}
+            minHeight={isConsentSection ? "220px" : "72px"}
           />
         </div>
       )}
@@ -926,90 +524,63 @@ function SectionBlock({
   )
 }
 
+// ─── TreatmentRadioSection (unchanged) ───────────────────────────────────────
+
 interface TreatmentRadioSectionProps {
   listItems: string[]
   editable: boolean
   onListItemsChange: (listItems: string[]) => void
 }
 
-function TreatmentRadioSection({
-  listItems,
-  editable,
-  onListItemsChange,
-}: TreatmentRadioSectionProps) {
-  const rows = useMemo(() => {
-    return TREATMENT_ROW_LABELS.map((label, i) => {
+function TreatmentRadioSection({ listItems, editable, onListItemsChange }: TreatmentRadioSectionProps) {
+  const rows = useMemo(() => TREATMENT_ROW_LABELS.map((label, i) => {
+    const raw = listItems[i] ?? ""
+    const { values, notes } = parseTreatmentValueAndNotes(raw, label)
+    return { label, selectedSet: new Set(values.map((v) => v.toLowerCase())), values, options: TREATMENT_OPTIONS[label], notes }
+  }), [listItems])
+
+  const handleToggle = useCallback((rowIndex: number, option: string, checked: boolean) => {
+    const next = TREATMENT_ROW_LABELS.map((label, i) => {
       const raw = listItems[i] ?? ""
       const { values, notes } = parseTreatmentValueAndNotes(raw, label)
-      const options = TREATMENT_OPTIONS[label]
-      const selectedSet = new Set(values.map((v) => v.toLowerCase()))
-      return { label, selectedSet, values, options, notes }
+      if (i !== rowIndex) return formatTreatmentListItemWithNotes(label, values, notes)
+      let nextValues: string[]
+      if (checked) {
+        nextValues = option.toLowerCase() === "none"
+          ? [option]
+          : [...values.filter((v) => v.toLowerCase() !== "none" && v.toLowerCase() !== option.toLowerCase()), option]
+      } else {
+        nextValues = values.filter((v) => v.toLowerCase() !== option.toLowerCase())
+      }
+      return formatTreatmentListItemWithNotes(label, nextValues, notes)
     })
-  }, [listItems])
+    onListItemsChange(next)
+  }, [listItems, onListItemsChange])
 
-  const handleToggle = useCallback(
-    (rowIndex: number, option: string, checked: boolean) => {
-      const next = TREATMENT_ROW_LABELS.map((label, i) => {
-        const raw = listItems[i] ?? ""
-        const { values, notes } = parseTreatmentValueAndNotes(raw, label)
-        if (i !== rowIndex) return formatTreatmentListItemWithNotes(label, values, notes)
-        let nextValues: string[]
-        if (checked) {
-          const isNone = option.toLowerCase() === "none"
-          if (isNone) {
-            nextValues = [option]
-          } else {
-            nextValues = [
-              ...values.filter((v) => v.toLowerCase() !== "none" && v.toLowerCase() !== option.toLowerCase()),
-              option,
-            ]
-          }
-        } else {
-          nextValues = values.filter((v) => v.toLowerCase() !== option.toLowerCase())
-        }
-        return formatTreatmentListItemWithNotes(label, nextValues, notes)
-      })
-      onListItemsChange(next)
-    },
-    [listItems, onListItemsChange]
-  )
-
-  const handleNotesChange = useCallback(
-    (rowIndex: number, newNotes: string) => {
-      const next = TREATMENT_ROW_LABELS.map((label, i) => {
-        const raw = listItems[i] ?? ""
-        const { values, notes } = parseTreatmentValueAndNotes(raw, label)
-        const notesForRow = i === rowIndex ? newNotes : notes
-        return formatTreatmentListItemWithNotes(label, values, notesForRow)
-      })
-      onListItemsChange(next)
-    },
-    [listItems, onListItemsChange]
-  )
+  const handleNotesChange = useCallback((rowIndex: number, newNotes: string) => {
+    const next = TREATMENT_ROW_LABELS.map((label, i) => {
+      const raw = listItems[i] ?? ""
+      const { values, notes } = parseTreatmentValueAndNotes(raw, label)
+      return formatTreatmentListItemWithNotes(label, values, i === rowIndex ? newNotes : notes)
+    })
+    onListItemsChange(next)
+  }, [listItems, onListItemsChange])
 
   return (
     <div className="space-y-4">
       <Label className="text-sm font-medium text-muted-foreground">Options (multi-select)</Label>
       <div className="grid gap-3 sm:grid-cols-1">
         {rows.map((row, rowIndex) => (
-          <div
-            key={row.label}
-            className="rounded-lg border border-border/60 bg-background/80 p-4 space-y-2 shadow-sm"
-          >
+          <div key={row.label} className="rounded-lg border border-border/60 bg-background/80 p-4 space-y-2 shadow-sm">
             <span className="text-sm font-medium text-foreground">{row.label}:</span>
             {editable ? (
               <>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">
                   {row.options.map((opt) => (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground"
-                    >
+                    <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground">
                       <Checkbox
                         checked={row.selectedSet.has(opt.toLowerCase())}
-                        onCheckedChange={(checked) =>
-                          handleToggle(rowIndex, opt, checked === true)
-                        }
+                        onCheckedChange={(checked) => handleToggle(rowIndex, opt, checked === true)}
                         className="shrink-0"
                       />
                       <span>{opt}</span>
@@ -1018,18 +589,12 @@ function TreatmentRadioSection({
                 </div>
                 <div className="pt-1 space-y-1">
                   <Label className="text-xs text-muted-foreground">
-                    {row.selectedSet.has("other")
-                      ? "Describe other"
-                      : "Notes"}
+                    {row.selectedSet.has("other") ? "Describe other" : "Notes"}
                   </Label>
                   <Textarea
                     value={row.notes}
                     onChange={(e) => handleNotesChange(rowIndex, e.target.value)}
-                    placeholder={
-                      row.selectedSet.has("other")
-                        ? `Describe what "Other" refers to for ${row.label}…`
-                        : `Add notes for ${row.label} (e.g. details for Other)…`
-                    }
+                    placeholder={row.selectedSet.has("other") ? `Describe "Other" for ${row.label}…` : `Add notes for ${row.label}…`}
                     className="min-h-[60px] text-sm resize-y rounded-lg border-border/80 bg-background focus-visible:ring-2"
                     rows={2}
                   />
@@ -1037,9 +602,7 @@ function TreatmentRadioSection({
               </>
             ) : (
               <>
-                <p className="text-sm text-foreground pt-1">
-                  {row.values.length ? row.values.join(TREATMENT_VALUES_SEP) : "—"}
-                </p>
+                <p className="text-sm text-foreground pt-1">{row.values.length ? row.values.join(TREATMENT_VALUES_SEP) : "—"}</p>
                 {row.notes && (
                   <div className="pt-1 space-y-0.5">
                     <span className="text-xs text-muted-foreground">Notes:</span>
@@ -1055,6 +618,8 @@ function TreatmentRadioSection({
   )
 }
 
+// ─── CheckboxLineRow (unchanged) ─────────────────────────────────────────────
+
 interface CheckboxLineRowProps {
   line: CheckboxLine
   lineIndex: number
@@ -1069,15 +634,8 @@ function parsePainLevel(prefix: string): string {
   return m ? m[1] : ""
 }
 
-function CheckboxLineRow({
-  line,
-  editable,
-  isPainLine,
-  onToggle,
-  onPainLevelChange,
-}: CheckboxLineRowProps) {
+function CheckboxLineRow({ line, editable, isPainLine, onToggle, onPainLevelChange }: CheckboxLineRowProps) {
   const painValue = isPainLine ? parsePainLevel(line.prefix) : ""
-
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       {line.prefix && !isPainLine && (
@@ -1087,48 +645,29 @@ function CheckboxLineRow({
         <>
           <span className="text-sm text-foreground font-medium">Pain</span>
           {editable && onPainLevelChange ? (
-            <Select
-              value={painValue || undefined}
-              onValueChange={onPainLevelChange}
-            >
-              <SelectTrigger className="w-[72px] h-8 text-sm">
-                <SelectValue placeholder="—" />
-              </SelectTrigger>
+            <Select value={painValue || undefined} onValueChange={onPainLevelChange}>
+              <SelectTrigger className="w-[72px] h-8 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
               <SelectContent>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
+                {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                  <SelectItem key={n} value={String(n)}>{n}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           ) : (
-            <span className="text-sm text-foreground font-medium">
-              {painValue ? `${painValue}/10` : "—/10"}
-            </span>
+            <span className="text-sm text-foreground font-medium">{painValue ? `${painValue}/10` : "—/10"}</span>
           )}
           <span className="text-sm text-muted-foreground">/10</span>
         </>
       )}
       {line.options.map((opt, optionIndex) => (
-        <label
-          key={optionIndex}
-          className={cn(
-            "flex items-center gap-2 cursor-pointer text-sm",
-            !editable && "cursor-default"
-          )}
-        >
+        <label key={optionIndex} className={cn("flex items-center gap-2 cursor-pointer text-sm", !editable && "cursor-default")}>
           <Checkbox
             checked={opt.checked}
-            onCheckedChange={(checked) =>
-              editable && onToggle(optionIndex, checked === true)
-            }
+            onCheckedChange={(checked) => editable && onToggle(optionIndex, checked === true)}
             disabled={!editable}
             className="shrink-0"
           />
-          <span className={opt.checked ? "text-foreground" : "text-muted-foreground"}>
-            {opt.label}
-          </span>
+          <span className={opt.checked ? "text-foreground" : "text-muted-foreground"}>{opt.label}</span>
         </label>
       ))}
     </div>
