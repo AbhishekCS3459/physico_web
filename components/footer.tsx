@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Phone, Mail, MapPin, Clock, Shield } from "lucide-react"
@@ -25,8 +26,8 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">PR</span>
+              <div className="h-10 w-10 rounded-lg overflow-hidden relative shrink-0">
+                <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
               </div>
               <span className="font-bold text-lg">Physio Rehab at Home</span>
             </div>

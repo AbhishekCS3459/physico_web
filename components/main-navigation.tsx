@@ -42,7 +42,7 @@ export function MainNavigation() {
           <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
             <div className="h-[52px] w-[52px] sm:h-14 sm:w-14 lg:h-14 lg:w-14 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
               <Image
-                src="/logo-nav.jpeg"
+                src="/MainLogo.png"
                 alt=""
                 fill
                 className="object-contain scale-110"
@@ -139,7 +139,7 @@ export function MainNavigation() {
                 <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
                   <div className="h-16 w-16 rounded-xl overflow-hidden border border-border/50 bg-card relative">
                     <Image
-                      src="/logo-nav.jpeg"
+                      src="/MainLogo.png"
                       alt=""
                       fill
                       className="object-contain"

@@ -27,11 +27,11 @@ export const metadata: Metadata = {
   generator: "v0.app",
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/MainLogo.png", type: "image/png" },
+      { url: "/MainLogo.png", type: "image/png", sizes: "any" },
     ],
     apple: [
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/MainLogo.png", type: "image/png" },
     ],
   },
 }

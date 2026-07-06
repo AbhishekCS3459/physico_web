@@ -71,7 +71,7 @@ export function PremiumNavigation() {
               whileHover={{ rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Image src="/logo-nav.jpeg" alt="" width={48} height={48} className="h-full w-full object-contain" />
+              <Image src="/MainLogo.png" alt="" width={48} height={48} className="h-full w-full object-contain" />
             </motion.div>
           </Link>
 
@@ -181,7 +181,7 @@ export function PremiumNavigation() {
                 {/* Mobile logo */}
                 <div className="flex items-center gap-3 pb-6 border-b border-primary/10">
                   <div className="h-12 w-12 rounded-xl overflow-hidden relative flex-shrink-0">
-                    <Image src="/logo-nav.jpeg" alt="" fill className="object-contain" />
+                    <Image src="/MainLogo.png" alt="" fill className="object-contain" />
                   </div>
                 </div>
 

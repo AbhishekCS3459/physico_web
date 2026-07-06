@@ -19,6 +19,7 @@ import {
   Star,
 } from "lucide-react"
 import { motion } from "motion/react"
+import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -77,8 +78,8 @@ export function EnhancedFooter() {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center space-x-3">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                <Heart className="text-white h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl overflow-hidden relative shrink-0 shadow-lg">
+                <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
               </div>
               <div>
                 <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

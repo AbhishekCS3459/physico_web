@@ -22,7 +22,7 @@ export function Navigation() {
       <div className="container flex h-16 lg:h-18 items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
           <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-lg overflow-hidden relative">
-            <Image src="/logo-nav.jpeg" alt="" fill className="object-contain" />
+            <Image src="/MainLogo.png" alt="" fill className="object-contain" />
           </div>
         </Link>
 
