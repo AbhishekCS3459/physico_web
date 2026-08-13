@@ -60,7 +60,7 @@ const testimonials = [
   {
     name: "Eleanor Watson",
     age: "81",
-    location: "Okotoks",
+    location: "Chestermere",
     service: "Occupational Therapy",
     rating: 5,
     quote:

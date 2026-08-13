@@ -473,6 +473,12 @@ export default function AdminDashboard() {
               {triggeringBackup ? "Starting backup..." : "Backup DB"}
             </Button>
             <Button variant="outline" asChild className="w-full md:w-auto">
+              <Link href="/admin/coverage">
+                <MapPin className="h-4 w-4 mr-2" />
+                Coverage pincodes
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/admin/charts">
                 <ClipboardList className="h-4 w-4 mr-2" />
                 Patient Charts

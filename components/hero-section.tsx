@@ -24,7 +24,7 @@ export function HeroSection() {
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed text-pretty">
                 Mobile physiotherapy, occupational therapy, massage therapy, and nursing services. We bring
                 personalized, one-on-one rehabilitation care directly to your home, workplace, or care facility in
-                Calgary, Airdrie, Okotoks, Cochrane, and Crossfield.
+                Calgary, Airdrie, Cochrane, and Crossfield.
               </p>
             </div>
 

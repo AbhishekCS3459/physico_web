@@ -40,6 +40,7 @@ import {
   Loader2,
   LogOut,
   Mail,
+  MapPin,
   Plus,
   RefreshCw,
   Search,
@@ -461,6 +462,12 @@ export default function AdminChartsPage() {
                   </Link>
                 </Button>
               )}
+              <Button variant="outline" asChild className="border-border rounded-lg">
+                <Link href="/admin/coverage">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Coverage
+                </Link>
+              </Button>
               <Button variant="outline" asChild className="border-border rounded-lg">
                 <Link href="/admin/charts/forms">
                   <FileText className="h-4 w-4 mr-2" />

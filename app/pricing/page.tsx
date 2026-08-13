@@ -39,11 +39,11 @@ export default function PricingPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span>Initial Assessment (60 mins)</span>
-                    <span className="font-semibold">$140</span>
+                    <span className="font-semibold">$150</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Follow-Up Session (45 mins)</span>
-                    <span className="font-semibold">$140</span>
+                    <span className="font-semibold">$150</span>
                   </div>
                 </div>
               </CardContent>

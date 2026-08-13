@@ -68,7 +68,7 @@ export const sendBookingConfirmationEmail = async (bookingData: BookingEmailData
               <p>Thank you for choosing our physiotherapy services!</p>
             </div>
             <div class="content">
-              <p>Dear ${bookingData.firstName} ${bookingData.lastName},</p>
+              <p>Dear ${[bookingData.firstName, bookingData.lastName].filter(Boolean).join(" ")},</p>
               <p>We have received your booking request and will contact you shortly to confirm your appointment.</p>
               
               <div class="info-section">
@@ -135,7 +135,7 @@ export const sendBookingConfirmationEmail = async (bookingData: BookingEmailData
             <div class="content">
               <div class="info-section">
                 <div class="info-label">Patient Information</div>
-                <div class="info-row"><strong>Name:</strong> ${bookingData.firstName} ${bookingData.lastName}</div>
+                <div class="info-row"><strong>Name:</strong> ${[bookingData.firstName, bookingData.lastName].filter(Boolean).join(" ")}</div>
                 <div class="info-row"><strong>Email:</strong> ${bookingData.email}</div>
                 <div class="info-row"><strong>Phone:</strong> ${bookingData.phoneNumber}</div>
                 ${bookingData.dateOfBirth ? `<div class="info-row"><strong>Date of Birth:</strong> ${new Date(bookingData.dateOfBirth).toLocaleDateString()}</div>` : ''}
@@ -199,7 +199,7 @@ export const sendBookingConfirmationEmail = async (bookingData: BookingEmailData
     await transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: 'abhishekverman3459@gmail.com',
-      subject: `New Booking Request - ${bookingData.firstName} ${bookingData.lastName}`,
+      subject: `New Booking Request - ${[bookingData.firstName, bookingData.lastName].filter(Boolean).join(" ")}`,
       html: adminEmailHtml,
     })
 

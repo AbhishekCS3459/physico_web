@@ -15,11 +15,11 @@ const bookingSchema = z.object({
   
   // Personal Information
   firstName: z.string().min(1),
-  lastName: z.string().min(1),
+  lastName: z.string().optional().default(""),
   email: z.string().email(),
   phoneNumber: z.string().min(1),
   dateOfBirth: z.string().optional(),
-  condition: z.string().optional(),
+  condition: z.string().min(1, "Condition / reason for treatment is required"),
   medicalHistory: z.string().optional(),
   
   // Insurance Information
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         serviceLocation: validatedData.serviceLocation,
         fullAddress: validatedData.fullAddress,
         firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
+        lastName: validatedData.lastName?.trim() || "",
         email: validatedData.email,
         phoneNumber: validatedData.phoneNumber,
         dateOfBirth,

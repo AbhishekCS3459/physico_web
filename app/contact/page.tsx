@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react"
+import Link from "next/link"
 
 export default function ContactPage() {
-  const serviceAreas = ["Calgary", "Airdrie", "Okotoks", "Cochrane", "Crossfield"]
+  const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield"]
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center">
@@ -117,13 +118,17 @@ export default function ContactPage() {
                   <CardDescription>Get started right away</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button size="lg" className="w-full text-lg bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    Book Online Appointment
+                  <Button size="lg" className="w-full text-lg bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105" asChild>
+                    <Link href="/book">
+                      <Calendar className="h-5 w-5 mr-2" />
+                      Book Online Appointment
+                    </Link>
                   </Button>
-                  <Button variant="outline" size="lg" className="w-full text-lg bg-transparent border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105">
-                    <Phone className="h-5 w-5 mr-2" />
-                    Call (587) 586-5566
+                  <Button variant="outline" size="lg" className="w-full text-lg bg-transparent border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105" asChild>
+                    <a href="tel:587-586-5566">
+                      <Phone className="h-5 w-5 mr-2" />
+                      Call (587) 586-5566
+                    </a>
                   </Button>
                 </CardContent>
               </Card>

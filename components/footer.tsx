@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { CoverageChecker } from "@/components/coverage-checker"
 import { Phone, Mail, MapPin, Clock, Shield } from "lucide-react"
 
 const insurers = [
@@ -16,7 +15,7 @@ const insurers = [
   "Chambers of Commerce",
 ]
 
-const serviceAreas = ["Calgary", "Airdrie", "Okotoks", "Cochrane", "Crossfield", "Chestermere"]
+const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield", "Chestermere"]
 
 export function Footer() {
   return (
@@ -26,7 +25,7 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-lg overflow-hidden relative shrink-0">
+              <div className="h-10 w-10 relative shrink-0">
                 <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
               </div>
               <span className="font-bold text-lg">Physio Rehab at Home</span>
@@ -75,10 +74,7 @@ export function Footer() {
               ))}
             </div>
             <div className="pt-2">
-              <Input placeholder="Enter your postal code" className="mb-2" />
-              <Button variant="outline" size="sm" className="w-full bg-transparent">
-                Check Coverage
-              </Button>
+              <CoverageChecker compact />
             </div>
           </div>
 

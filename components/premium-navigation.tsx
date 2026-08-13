@@ -65,13 +65,11 @@ export function PremiumNavigation() {
         <div className="container flex h-16 lg:h-20 items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center group" aria-label="Physio Rehab at Home">
             <motion.div
-              className={`h-10 w-10 lg:h-12 lg:w-12 rounded-xl overflow-hidden flex items-center justify-center shadow-lg transition-all duration-300 ${
-                isScrolled ? "shadow-primary/20" : "shadow-primary/10"
-              } group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-primary/30`}
-              whileHover={{ rotate: 5 }}
+              className="h-12 w-12 lg:h-14 lg:w-14 relative"
+              whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Image src="/MainLogo.png" alt="" width={48} height={48} className="h-full w-full object-contain" />
+              <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
             </motion.div>
           </Link>
 
@@ -180,8 +178,8 @@ export function PremiumNavigation() {
               <div className="flex flex-col space-y-6 mt-8">
                 {/* Mobile logo */}
                 <div className="flex items-center gap-3 pb-6 border-b border-primary/10">
-                  <div className="h-12 w-12 rounded-xl overflow-hidden relative flex-shrink-0">
-                    <Image src="/MainLogo.png" alt="" fill className="object-contain" />
+                  <div className="h-12 w-12 relative flex-shrink-0">
+                    <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
                   </div>
                 </div>
 

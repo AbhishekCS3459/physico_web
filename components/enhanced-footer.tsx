@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   ArrowRight,
   Award,
@@ -18,10 +17,10 @@ import {
   Shield,
   Star,
 } from "lucide-react"
+import { CoverageChecker } from "@/components/coverage-checker"
 import { motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
 
 const insurers = [
   "Alberta Health",
@@ -35,7 +34,7 @@ const insurers = [
   "Chambers of Commerce",
 ]
 
-const serviceAreas = ["Calgary", "Airdrie", "Okotoks", "Cochrane", "Crossfield", "Chestermere"]
+const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield", "Chestermere"]
 
 const quickLinks = [
   { name: "Services", href: "/services" },
@@ -47,20 +46,6 @@ const quickLinks = [
 ]
 
 export function EnhancedFooter() {
-  const [postalCode, setPostalCode] = useState("")
-  const [coverageResult, setCoverageResult] = useState("")
-
-  const checkCoverage = () => {
-    if (postalCode.length >= 3) {
-      const firstChar = postalCode.charAt(0).toUpperCase()
-      if (["T"].includes(firstChar)) {
-        setCoverageResult("✅ We serve your area!")
-      } else {
-        setCoverageResult("📞 Call us to check coverage")
-      }
-    }
-  }
-
   return (
     <footer className="flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-primary/5 border-t border-border/60 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden w-full">
@@ -78,7 +63,7 @@ export function EnhancedFooter() {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center space-x-3">
-              <div className="h-12 w-12 rounded-xl overflow-hidden relative shrink-0 shadow-lg">
+              <div className="h-12 w-12 relative shrink-0">
                 <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
               </div>
               <div>
@@ -201,26 +186,7 @@ export function EnhancedFooter() {
             {/* Coverage checker */}
             <div className="pt-4 border-t border-primary/10">
               <h4 className="font-semibold mb-3">Check Coverage</h4>
-              <div className="space-y-3">
-                <Input
-                  placeholder="Enter postal code (e.g., T2P 1J9)"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  className="uppercase"
-                />
-                <Button
-                  onClick={checkCoverage}
-                  variant="outline"
-                  size="sm"
-                  className="w-full bg-transparent border-primary/20 hover:bg-primary/5"
-                >
-                  Check Coverage
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-                {coverageResult && (
-                  <div className="p-2 bg-primary/5 rounded-lg text-sm font-medium text-center">{coverageResult}</div>
-                )}
-              </div>
+              <CoverageChecker compact />
             </div>
           </motion.div>
 

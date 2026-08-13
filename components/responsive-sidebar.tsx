@@ -93,7 +93,7 @@ export default function ResponsiveSidebar({ children }: { children: React.ReactN
 export const Logo = () => {
   return (
     <a href="#" className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-8 w-8 shrink-0 rounded-lg overflow-hidden relative">
+      <div className="h-8 w-8 shrink-0 relative">
         <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
       </div>
       <motion.span
@@ -110,7 +110,7 @@ export const Logo = () => {
 export const LogoIcon = () => {
   return (
     <a href="#" className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-8 w-8 shrink-0 rounded-lg overflow-hidden relative">
+      <div className="h-8 w-8 shrink-0 relative">
         <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
       </div>
     </a>

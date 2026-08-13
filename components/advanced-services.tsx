@@ -31,8 +31,8 @@ const services = [
       "Pain Management Strategies",
     ],
     pricing: {
-      initial: 140,
-      followUp: 140,
+      initial: 150,
+      followUp: 150,
     },
     duration: "60 mins initial / 45 mins follow-up",
     popular: true,
@@ -267,7 +267,7 @@ export function AdvancedServices() {
           <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-8 md:p-12 border border-primary/10">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">Serving Calgary & Surrounding Areas</h3>
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-              We provide mobile services throughout Calgary, Airdrie, Okotoks, Cochrane, and Crossfield. All treatments
+              We provide mobile services throughout Calgary, Airdrie, Cochrane, and Crossfield. All treatments
               include direct billing to most major insurance providers.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

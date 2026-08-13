@@ -24,6 +24,7 @@ import {
   Shield,
   Users
 } from "lucide-react"
+import { CoverageChecker } from "@/components/coverage-checker"
 import { motion } from "motion/react"
 import { useState } from "react"
 
@@ -66,23 +67,10 @@ export function InteractivePricingContact() {
   const [selectedService, setSelectedService] = useState("physiotherapy")
   const [selectedSession, setSelectedSession] = useState(0)
   const [sessionCount, setSessionCount] = useState(1)
-  const [postalCode, setPostalCode] = useState("")
-  const [coverageResult, setCoverageResult] = useState("")
   const calculateTotal = () => {
     const service = pricingData[selectedService as keyof typeof pricingData]
     const sessionPrice = service.services[selectedSession]?.price || 0
     return sessionPrice * sessionCount
-  }
-
-  const checkCoverage = () => {
-    if (postalCode.length >= 3) {
-      const firstChar = postalCode.charAt(0).toUpperCase()
-      if (["T", "T1", "T2", "T3", "T4"].some((code) => postalCode.toUpperCase().startsWith(code))) {
-        setCoverageResult("✅ We serve your area! No travel fee applies.")
-      } else {
-        setCoverageResult("⚠️ Outside our primary service area. Travel fee may apply.")
-      }
-    }
   }
 
   return (
@@ -271,21 +259,8 @@ export function InteractivePricingContact() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label>Enter Your Postal Code</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="T2P 1J9"
-                        value={postalCode}
-                        onChange={(e) => setPostalCode(e.target.value)}
-                        className="uppercase"
-                      />
-                      <Button onClick={checkCoverage} variant="outline" className="bg-transparent">
-                        Check
-                      </Button>
-                    </div>
+                    <CoverageChecker />
                   </div>
-                  {coverageResult && (
-                    <div className="p-3 bg-muted rounded-lg text-sm font-medium">{coverageResult}</div>
-                  )}
                   <div className="grid grid-cols-2 gap-2 pt-2">
                     {serviceAreas.map((area) => (
                       <div key={area} className="flex items-center gap-2 text-sm">

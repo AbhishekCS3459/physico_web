@@ -40,13 +40,14 @@ export function MainNavigation() {
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
-            <div className="h-[52px] w-[52px] sm:h-14 sm:w-14 lg:h-14 lg:w-14 rounded-xl overflow-hidden border border-border/50 bg-card shrink-0 relative flex items-center justify-center">
+            <div className="h-[52px] w-[52px] sm:h-14 sm:w-14 lg:h-16 lg:w-16 shrink-0 relative">
               <Image
                 src="/MainLogo.png"
-                alt=""
+                alt="Physio Rehab at Home"
                 fill
-                className="object-contain scale-110"
-                sizes="(max-width: 640px) 48px, (max-width: 1024px) 52px, 56px"
+                className="object-contain"
+                sizes="(max-width: 640px) 52px, 64px"
+                priority
               />
             </div>
           </Link>
@@ -137,10 +138,10 @@ export function MainNavigation() {
             <SheetContent side="right" className="w-[300px] sm:w-80">
               <div className="flex flex-col space-y-6 mt-6">
                 <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
-                  <div className="h-16 w-16 rounded-xl overflow-hidden border border-border/50 bg-card relative">
+                  <div className="h-16 w-16 relative">
                     <Image
                       src="/MainLogo.png"
-                      alt=""
+                      alt="Physio Rehab at Home"
                       fill
                       className="object-contain"
                     />

@@ -92,8 +92,8 @@ const BOOKING_SERVICES: {
     name: "Physiotherapy",
     description: "Rehabilitation and movement therapy",
     appointmentTypes: [
-      { id: "initial", label: "Initial assessment", description: "$140 · 60 min" },
-      { id: "followup", label: "Follow-up session", description: "$140 · 45 min" },
+      { id: "initial", label: "Initial assessment", description: "$150 · 60 min" },
+      { id: "followup", label: "Follow-up session", description: "$150 · 45 min" },
       { id: "extended", label: "Extended session", description: "Longer visit — we'll confirm pricing" },
     ],
   },
@@ -266,8 +266,8 @@ export function BookingForm() {
       }
     }
     if (currentStep === 3) {
-      if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
-        toast.error("Please enter your first and last name")
+      if (!formData.firstName?.trim()) {
+        toast.error("Please enter your first name")
         return
       }
       if (!formData.email?.trim()) {
@@ -276,6 +276,10 @@ export function BookingForm() {
       }
       if (!formData.phoneNumber?.trim()) {
         toast.error("Please enter your phone number")
+        return
+      }
+      if (!formData.condition?.trim()) {
+        toast.error("Please describe your condition or reason for treatment")
         return
       }
     }
@@ -299,16 +303,16 @@ export function BookingForm() {
       !formData.serviceLocation ||
       !formData.fullAddress?.trim() ||
       !formData.firstName?.trim() ||
-      !formData.lastName?.trim() ||
       !formData.email?.trim() ||
-      !formData.phoneNumber?.trim()
+      !formData.phoneNumber?.trim() ||
+      !formData.condition?.trim()
     ) {
       toast.error("Please complete all required fields")
       return
     }
     if (formData.useDirectBilling) {
-      if (!formData.insuranceProvider || !formData.policyNumber?.trim()) {
-        toast.error("Insurance provider and policy number are required for direct billing")
+      if (!formData.insuranceProvider) {
+        toast.error("Insurance provider is required for direct billing")
         setCurrentStep(4)
         return
       }
@@ -331,11 +335,11 @@ export function BookingForm() {
           serviceLocation: formData.serviceLocation,
           fullAddress: formData.fullAddress,
           firstName: formData.firstName,
-          lastName: formData.lastName,
+          lastName: formData.lastName?.trim() || "",
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           dateOfBirth: formData.dateOfBirth || undefined,
-          condition: formData.condition || undefined,
+          condition: formData.condition?.trim(),
           medicalHistory: formData.medicalHistory || undefined,
           useDirectBilling: formData.useDirectBilling || false,
           insuranceProvider: formData.insuranceProvider || undefined,
@@ -410,7 +414,7 @@ export function BookingForm() {
                   <div className="flex justify-between gap-4">
                     <dt className="text-muted-foreground">Name</dt>
                     <dd className="font-medium text-right">
-                      {completedBooking.firstName} {completedBooking.lastName}
+                      {[completedBooking.firstName, completedBooking.lastName].filter(Boolean).join(" ")}
                     </dd>
                   </div>
                   <motion.div className="flex justify-between gap-4">
@@ -780,13 +784,14 @@ export function BookingForm() {
                       min={new Date().toISOString().split('T')[0]}
                       className={cn(
                         "pl-12 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-background/50 backdrop-blur-sm",
-                        formData.startDate && "border-primary/50 bg-primary/5"
+                        formData.startDate && "border-primary bg-primary/10 ring-2 ring-primary/30 font-semibold text-primary"
                       )}
                       disabled={isSubmitting}
                     />
                   </div>
                   {formData.startDate && (
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-primary">
+                      <CalendarIcon className="h-3.5 w-3.5" />
                       Selected: {format(new Date(formData.startDate), "PPP")}
                     </p>
                   )}
@@ -807,7 +812,7 @@ export function BookingForm() {
                       min={formData.startDate || new Date().toISOString().split('T')[0]}
                       className={cn(
                         "pl-12 h-12 sm:h-14 text-base border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-background/50 backdrop-blur-sm",
-                        formData.endDate && "border-primary/50 bg-primary/5"
+                        formData.endDate && "border-primary bg-primary/10 ring-2 ring-primary/30 font-semibold text-primary"
                       )}
                       disabled={isSubmitting || !formData.startDate}
                     />
@@ -816,18 +821,19 @@ export function BookingForm() {
                     Leave blank for a single-day visit — we&apos;ll use your start date.
                   </p>
                   {formData.endDate && (
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-primary">
+                      <CalendarIcon className="h-3.5 w-3.5" />
                       Selected: {format(new Date(formData.endDate), "PPP")}
                     </p>
                   )}
                 </div>
               </div>
               {formData.startDate && (
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                  <p className="text-sm font-medium text-primary">
+                <div className="p-4 rounded-xl bg-primary/15 border-2 border-primary/40 shadow-sm">
+                  <p className="text-base font-semibold text-primary">
                     {formData.endDate && formData.endDate !== formData.startDate
-                      ? `Date range: ${format(new Date(formData.startDate), "MMM dd, yyyy")} – ${format(new Date(formData.endDate), "MMM dd, yyyy")}`
-                      : `Preferred date: ${format(new Date(formData.startDate), "MMM dd, yyyy")}`}
+                      ? `Preferred dates: ${format(new Date(formData.startDate), "MMM dd, yyyy")} – ${format(new Date(formData.endDate), "MMM dd, yyyy")}`
+                      : `Preferred date: ${format(new Date(formData.startDate), "EEEE, MMM dd, yyyy")}`}
                   </p>
                 </div>
               )}
@@ -897,8 +903,8 @@ export function BookingForm() {
                   />
                 </div>
                 <div>
-                  <FieldLabel htmlFor="last-name" required className="text-base sm:text-lg font-medium">
-                    Last name
+                  <FieldLabel htmlFor="last-name" className="text-base sm:text-lg font-medium">
+                    Last name <span className="text-muted-foreground font-normal text-sm">(optional)</span>
                   </FieldLabel>
                   <Input 
                     id="last-name" 
@@ -950,8 +956,8 @@ export function BookingForm() {
               </div>
 
               <div>
-                <FieldLabel htmlFor="condition" className="text-base sm:text-lg font-medium">
-                  Condition / reason for treatment <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                <FieldLabel htmlFor="condition" required className="text-base sm:text-lg font-medium">
+                  Condition / reason for treatment
                 </FieldLabel>
                 <Textarea
                   id="condition"
@@ -1045,10 +1051,9 @@ export function BookingForm() {
                 <div>
                   <FieldLabel
                     htmlFor="policy-number"
-                    required={Boolean(formData.useDirectBilling)}
                     className="text-base sm:text-lg font-medium"
                   >
-                    Policy number
+                    Policy number <span className="text-muted-foreground font-normal text-sm">(optional)</span>
                   </FieldLabel>
                   <Input 
                     id="policy-number" 
