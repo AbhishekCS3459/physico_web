@@ -17,9 +17,9 @@ import {
   Shield,
   Star,
 } from "lucide-react"
+import { BrandLogo } from "@/components/brand-logo"
 import { CoverageChecker } from "@/components/coverage-checker"
 import { motion } from "motion/react"
-import Image from "next/image"
 import Link from "next/link"
 
 const insurers = [
@@ -62,16 +62,9 @@ export function EnhancedFooter() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center space-x-3">
-              <div className="h-12 w-12 relative shrink-0">
-                <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
-              </div>
-              <div>
-                <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Physio Rehab at Home
-                </span>
-                <div className="text-sm text-muted-foreground">Mobile Healthcare Excellence</div>
-              </div>
+            <div className="space-y-2">
+              <BrandLogo className="h-12 w-[178px]" />
+              <div className="text-sm text-muted-foreground">Mobile Healthcare Excellence</div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Professional mobile rehabilitation services bringing expert physiotherapy, occupational therapy, and
@@ -187,6 +180,9 @@ export function EnhancedFooter() {
             <div className="pt-4 border-t border-primary/10">
               <h4 className="font-semibold mb-3">Check Coverage</h4>
               <CoverageChecker compact />
+              <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+                Travel charges may apply outside Calgary.
+              </p>
             </div>
           </motion.div>
 

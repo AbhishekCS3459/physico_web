@@ -11,8 +11,7 @@ import {
   IconMapPin,
   IconClock,
 } from "@tabler/icons-react"
-import { motion } from "motion/react"
-import Image from "next/image"
+import { BrandLogo } from "@/components/brand-logo"
 import { cn } from "@/lib/utils"
 
 export default function ResponsiveSidebar({ children }: { children: React.ReactNode }) {
@@ -93,16 +92,7 @@ export default function ResponsiveSidebar({ children }: { children: React.ReactN
 export const Logo = () => {
   return (
     <a href="#" className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-8 w-8 shrink-0 relative">
-        <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
-      </div>
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-bold whitespace-pre text-black dark:text-white text-lg"
-      >
-        Physio Rehab
-      </motion.span>
+      <BrandLogo className="h-8 w-[118px]" />
     </a>
   )
 }
@@ -110,9 +100,7 @@ export const Logo = () => {
 export const LogoIcon = () => {
   return (
     <a href="#" className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-8 w-8 shrink-0 relative">
-        <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
-      </div>
+      <BrandLogo className="h-8 w-8" />
     </a>
   )
 }

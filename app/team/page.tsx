@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Award, BookOpen, Heart, Shield, Star, Users } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 export default function TeamPage() {
@@ -60,10 +61,10 @@ export default function TeamPage() {
               <Users className="h-4 w-4 mr-1" />
               Meet Our Team
             </Badge>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
               Experienced, Licensed & <span className="text-primary">Compassionate</span> Professionals
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+            <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty">
               Our team is made up of experienced, licensed, and compassionate healthcare professionals dedicated to
               delivering high-quality care wherever you are.
             </p>
@@ -81,42 +82,56 @@ export default function TeamPage() {
           </div>
 
           <div className="space-y-12">
+            {/* Clinician Spotlight — named clinicians first */}
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center sm:text-left">Clinician Spotlight</h2>
+              <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto sm:mx-0 text-center sm:text-left">
+                A closer look at the therapists who bring evidence-based care to your home—centered on safety, comfort, and functional recovery.
+              </p>
+              <div className="space-y-8 pt-6">
             {/* Physiotherapist: Bharat Vishembera — featured first */}
             <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                      <BookOpen className="h-6 w-6 text-primary" />
+                    <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden border-2 border-primary/20 shrink-0 bg-muted">
+                      <Image
+                        src="/team/bharat-vishembera.jpg"
+                        alt="Bharat Vishembera, Physiotherapist"
+                        fill
+                        className="object-cover object-[center_18%]"
+                      />
                     </div>
-                    <CardTitle className="text-2xl">Bharat Vishembera</CardTitle>
-                    <CardDescription className="mt-1 text-primary font-medium">
-                      Physiotherapist
-                    </CardDescription>
+                    <div>
+                      <CardTitle className="text-3xl sm:text-4xl">Bharat Vishembera</CardTitle>
+                      <CardDescription className="mt-1 text-lg text-primary font-medium">
+                        Physiotherapist
+                      </CardDescription>
+                    </div>
                   </div>
                   <Badge variant="secondary" className="w-fit">PT</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                   Bharat Vishembera Vishembera is a highly experienced physiotherapist with over 25 years of clinical practice. He
                   completed his Master’s degree in Applied Musculoskeletal Physiotherapy in England and has worked
                   in a wide range of clinical environments, including hospitals and private clinics in both the UK and
                   Canada.
                 </p>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                   Over the years, Bharat Vishembera has completed numerous advanced courses and certifications, gaining
                   extensive expertise in manipulative therapy, sports injury management, and acupuncture. He
                   specializes in the assessment and treatment of musculoskeletal conditions, sports injuries,
                   post-surgical rehabilitation, and chronic pain management.
                 </p>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                   His treatment approach combines manual therapy, therapeutic exercise, movement correction, and
                   patient education to support safe, effective, and long-term recovery. Bharat Vishembera is trained in
                   myofascial release, acupuncture, joint manipulation, specific soft tissue mobilization, muscle energy
                   techniques, vestibular rehabilitation, functional exercise, and Kinesio taping.
                 </p>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                   Committed to evidence-based practice, Bharat Vishembera regularly participates in professional development
                   courses to stay current with modern physiotherapy techniques. He believes strongly in educating and
                   empowering patients so they can better understand their condition and take an active role in their
@@ -124,15 +139,17 @@ export default function TeamPage() {
                 </p>
               </CardContent>
             </Card>
+              </div>
+            </div>
 
             {/* Our Physiotherapists */}
             <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
               <CardHeader>
-                <CardTitle className="text-2xl flex items-center gap-2">
+                <CardTitle className="text-3xl flex items-center gap-2">
                   <Award className="h-5 w-5 text-primary" />
                   Our Physiotherapists
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-lg">
                   Each member of our team is fully qualified and registered, with expertise in a wide range of areas
                   including orthopedic rehab, post-surgical recovery, neurological conditions, chronic pain management,
                   and mobility training.
@@ -142,11 +159,11 @@ export default function TeamPage() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <h4 className="text-xl font-semibold mb-3 flex items-center gap-2">
                         <Award className="h-5 w-5 text-primary" />
                         Areas of Expertise
                       </h4>
-                      <ul className="space-y-2 text-sm text-muted-foreground">
+                      <ul className="space-y-2 text-base lg:text-lg text-muted-foreground">
                         <li>• Orthopedic rehabilitation</li>
                         <li>• Post-surgical recovery</li>
                         <li>• Neurological conditions</li>
@@ -155,11 +172,11 @@ export default function TeamPage() {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <h4 className="text-xl font-semibold mb-3 flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-primary" />
                         Continuing Education
                       </h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-base lg:text-lg text-muted-foreground">
                         We stay up to date with the latest techniques and evidence-based practices to ensure you're
                         receiving the best care possible.
                       </p>
@@ -167,7 +184,7 @@ export default function TeamPage() {
                   </div>
 
                   <div>
-                    <h4 className="font-semibold mb-3">Treatment Techniques</h4>
+                    <h4 className="text-xl font-semibold mb-3">Treatment Techniques</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                       {physiotherapyServices.map((service) => (
                         <Badge key={service} variant="outline" className="text-xs">
@@ -183,90 +200,88 @@ export default function TeamPage() {
             {/* What Sets Us Apart */}
             <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
               <CardHeader>
-                <CardTitle className="text-2xl flex items-center gap-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <CardTitle className="text-3xl flex items-center gap-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   <Star className="h-6 w-6 text-primary" />
                   What Sets Us Apart
                 </CardTitle>
-                <CardDescription>Our commitment to excellence in patient care</CardDescription>
+                <CardDescription className="text-lg">Our commitment to excellence in patient care</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {teamQualities.map((quality) => (
                     <div key={quality} className="flex items-start gap-3 p-4 bg-gradient-to-br from-muted/50 to-background rounded-lg border border-primary/10 hover:border-primary/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] group">
                       <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="text-sm font-medium">{quality}</span>
+                      <span className="text-base font-medium">{quality}</span>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Clinician Spotlight — other members */}
-            <div>
-              <h2 className="text-2xl font-bold mb-4 text-center sm:text-left">Clinician Spotlight</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto sm:mx-0 text-center sm:text-left">
-                A closer look at the therapists who bring evidence-based care to your home—centered on safety, comfort, and functional recovery.
-              </p>
-              <div className="space-y-8 pt-6">
-                <Card className="border-2 hover:border-primary/20 transition-all duration-300 overflow-hidden">
-                  <CardHeader className="pb-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                          <Shield className="h-6 w-6 text-primary" />
-                        </div>
-                        <CardTitle className="text-xl md:text-2xl">Binod Baranwal</CardTitle>
-                        <CardDescription className="mt-1 text-primary font-medium">
-                          Occupational Therapist, Diploma in Rehabilitation
-                        </CardDescription>
-                      </div>
-                      <Badge variant="secondary" className="w-fit">OT</Badge>
+            <Card className="border-2 hover:border-primary/20 transition-all duration-300 overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden border-2 border-primary/20 shrink-0 bg-muted">
+                      <Image
+                        src="/team/binod-baranwal.jpg"
+                        alt="Binod Baranwal, Occupational Therapist"
+                        fill
+                        className="object-cover object-[center_20%]"
+                      />
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground leading-relaxed">
-                      Binod is a dedicated and experienced occupational therapist with over 2 decades of experience
-                      enabling individuals to achieve their occupational goals and regain independence in performing
-                      leisure activities, work and ADL related concerns.
-                    </p>
-                    <p className="text-muted-foreground leading-relaxed">
-                      With a strong background in physical and cognitive health and passion for holistic well-being,
-                      Binod believes in empowering clients through an individual-oriented strength based approach. He is
-                      committed to helping you return to performing the daily activities and your meaningful occupation
-                      that enhances your quality of life. He ensures that your treatment plan is not only evidence-based
-                      but also tailored to your unique goals and passions.
-                    </p>
-                    <p className="text-muted-foreground leading-relaxed">
-                      His skills in Seating Assessment, Cognitive assessment and his creativity enable him to utilize a
-                      holistic approach to help clients regain, adapt, or maintain skills for daily living, promoting
-                      independence and safety within their own homes.
-                    </p>
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <Badge variant="outline" className="text-xs">Seating Assessment</Badge>
-                      <Badge variant="outline" className="text-xs">Cognitive Assessment</Badge>
-                      <Badge variant="outline" className="text-xs">ADL Training</Badge>
-                      <Badge variant="outline" className="text-xs">Holistic Approach</Badge>
+                    <div>
+                      <CardTitle className="text-3xl sm:text-4xl">Binod Baranwal</CardTitle>
+                      <CardDescription className="mt-1 text-lg text-primary font-medium">
+                        Occupational Therapist, Diploma in Rehabilitation
+                      </CardDescription>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+                  </div>
+                  <Badge variant="secondary" className="w-fit">OT</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
+                  Binod is a dedicated and experienced occupational therapist with over 2 decades of experience
+                  enabling individuals to achieve their occupational goals and regain independence in performing
+                  leisure activities, work and ADL related concerns.
+                </p>
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
+                  With a strong background in physical and cognitive health and passion for holistic well-being,
+                  Binod believes in empowering clients through an individual-oriented strength based approach. He is
+                  committed to helping you return to performing the daily activities and your meaningful occupation
+                  that enhances your quality of life. He ensures that your treatment plan is not only evidence-based
+                  but also tailored to your unique goals and passions.
+                </p>
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
+                  His skills in Seating Assessment, Cognitive assessment and his creativity enable him to utilize a
+                  holistic approach to help clients regain, adapt, or maintain skills for daily living, promoting
+                  independence and safety within their own homes.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Badge variant="outline" className="text-xs">Seating Assessment</Badge>
+                  <Badge variant="outline" className="text-xs">Cognitive Assessment</Badge>
+                  <Badge variant="outline" className="text-xs">ADL Training</Badge>
+                  <Badge variant="outline" className="text-xs">Holistic Approach</Badge>
+                </div>
+              </CardContent>
+            </Card>
 
           {/* Occupational Therapist */}
           <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
+              <CardTitle className="text-3xl flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
                 Our Occupational Therapist
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-lg">
                 We're proud to have a skilled Occupational Therapist (OT) on our team to provide comprehensive, holistic
                 care tailored to each individual's daily life needs.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <p className="text-muted-foreground">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                   Our OT works closely with clients to improve their independence and quality of life by focusing on
                   meaningful daily activities — whether at home, at work, or in the community. From helping you adapt
                   your environment to retraining skills after injury, our OT ensures that therapy is functional,
@@ -274,20 +289,20 @@ export default function TeamPage() {
                 </p>
 
                 <div>
-                  <h4 className="font-semibold mb-3">Services Include</h4>
+                  <h4 className="text-xl font-semibold mb-3">Services Include</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {otServices.map((service) => (
                       <div key={service} className="flex items-start gap-2">
                         <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{service}</span>
+                        <span className="text-base">{service}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="bg-primary/5 p-6 rounded-lg border border-primary/20">
-                  <h4 className="font-semibold mb-2">Why It Matters</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="text-xl font-semibold mb-2">Why It Matters</h4>
+                  <p className="text-base lg:text-lg text-muted-foreground">
                     Occupational therapy is about more than recovery — it's about regaining confidence, control, and
                     independence in the activities that matter most to you.
                   </p>
@@ -299,53 +314,53 @@ export default function TeamPage() {
           {/* Massage Therapist */}
           <Card className="border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
+              <CardTitle className="text-3xl flex items-center gap-2">
                 <Heart className="h-5 w-5 text-primary" />
                 Our Massage Therapist
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-lg">
                 We understand that healing isn't just about exercise and mobility — it's also about relaxation,
                 recovery, and relieving tension.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <p className="text-muted-foreground">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                   Our Registered Massage Therapist (RMT) brings expert hands-on care directly to your home, providing
                   therapeutic treatments designed to reduce pain, improve circulation, ease muscle tension, and support
                   your overall well-being.
                 </p>
 
                 <div>
-                  <h4 className="font-semibold mb-3">Services Offered</h4>
+                  <h4 className="text-xl font-semibold mb-3">Services Offered</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {massageServices.map((service) => (
                       <div key={service} className="flex items-start gap-2">
                         <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{service}</span>
+                        <span className="text-base">{service}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="bg-secondary/5 p-6 rounded-lg border border-secondary/20">
-                  <h4 className="font-semibold mb-3">Benefits of In-Home Massage Therapy</h4>
+                  <h4 className="text-xl font-semibold mb-3">Benefits of In-Home Massage Therapy</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="flex items-start gap-2">
                       <Heart className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Comfort and privacy of your own space</span>
+                      <span className="text-base">Comfort and privacy of your own space</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Heart className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">No need to travel post-treatment</span>
+                      <span className="text-base">No need to travel post-treatment</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Heart className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Custom-tailored sessions based on your needs</span>
+                      <span className="text-base">Custom-tailored sessions based on your needs</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Heart className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Seamless integration with other therapies</span>
+                      <span className="text-base">Seamless integration with other therapies</span>
                     </div>
                   </div>
                 </div>
@@ -359,8 +374,8 @@ export default function TeamPage() {
           <div className="text-center">
             <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-4">Ready to Meet Our Team?</h3>
-                <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                <h3 className="text-3xl font-bold mb-4">Ready to Meet Our Team?</h3>
+                <p className="text-lg lg:text-xl text-muted-foreground mb-6 max-w-2xl mx-auto">
                   Whether you're looking to regain strength after surgery, manage a chronic condition, or simply move
                   with more ease, our team is here to support you every step of the way.
                 </p>

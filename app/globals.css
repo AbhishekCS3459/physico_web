@@ -143,9 +143,25 @@ html.dark {
     @apply outline-2 outline-offset-2 outline-primary/50;
   }
   
-  /* Improved selection */
+  /* High-contrast selection for readability */
   ::selection {
-    @apply bg-primary/20 text-primary-foreground;
+    background-color: #6ee7b7;
+    color: #064e3b;
+  }
+
+  ::-moz-selection {
+    background-color: #6ee7b7;
+    color: #064e3b;
+  }
+
+  .dark ::selection {
+    background-color: #047857;
+    color: #ecfdf5;
+  }
+
+  .dark ::-moz-selection {
+    background-color: #047857;
+    color: #ecfdf5;
   }
 }
 

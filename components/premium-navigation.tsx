@@ -17,7 +17,7 @@ import {
   Shield,
   Users,
 } from "lucide-react"
-import Image from "next/image"
+import { BrandLogo } from "@/components/brand-logo"
 import { AnimatePresence, motion } from "motion/react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -65,11 +65,11 @@ export function PremiumNavigation() {
         <div className="container flex h-16 lg:h-20 items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center group" aria-label="Physio Rehab at Home">
             <motion.div
-              className="h-12 w-12 lg:h-14 lg:w-14 relative"
+              className="relative h-12 w-[178px] lg:h-14 lg:w-[208px]"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
+              <BrandLogo className="absolute inset-0" />
             </motion.div>
           </Link>
 
@@ -178,9 +178,7 @@ export function PremiumNavigation() {
               <div className="flex flex-col space-y-6 mt-8">
                 {/* Mobile logo */}
                 <div className="flex items-center gap-3 pb-6 border-b border-primary/10">
-                  <div className="h-12 w-12 relative flex-shrink-0">
-                    <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
-                  </div>
+                  <BrandLogo className="h-12 w-[178px]" />
                 </div>
 
                 {/* Mobile navigation items */}

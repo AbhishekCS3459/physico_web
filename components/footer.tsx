@@ -1,5 +1,5 @@
+import { BrandLogo } from "@/components/brand-logo"
 import Link from "next/link"
-import Image from "next/image"
 import { CoverageChecker } from "@/components/coverage-checker"
 import { Phone, Mail, MapPin, Clock, Shield } from "lucide-react"
 
@@ -24,12 +24,7 @@ export function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 relative shrink-0">
-                <Image src="/MainLogo.png" alt="Physio Rehab at Home" fill className="object-contain" />
-              </div>
-              <span className="font-bold text-lg">Physio Rehab at Home</span>
-            </div>
+            <BrandLogo className="h-10 w-[148px]" />
             <p className="text-sm text-muted-foreground leading-relaxed">
               Professional mobile rehabilitation services bringing expert care to your home across Calgary and
               surrounding areas.

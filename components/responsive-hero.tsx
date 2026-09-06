@@ -50,8 +50,8 @@ const slides = [
     title: "Guided progress, session after session",
     description:
       "Structured plans for recovery after surgery, sports injury, or ongoing pain — so you stay consistent, confident, and moving better at home.",
-    image: "/hero/mobility-care.jpg",
-    imageAlt: "Active recovery and core strengthening",
+    image: "/hero/guided-progress.jpg",
+    imageAlt: "Physiotherapist guiding a patient walking with crutches after knee injury",
     cta: "Start your recovery",
     points: ["Custom exercise plans", "Pain management", "Calgary & nearby areas"],
   },

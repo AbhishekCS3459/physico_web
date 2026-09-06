@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, CheckCircle } from "lucide-react"
 
 const serviceAreas = [
-  { city: "Calgary", zones: ["NW", "NE", "SW", "SE", "Downtown"], therapists: 8 },
-  { city: "Airdrie", zones: ["All Areas"], therapists: 3 },
-  { city: "Cochrane", zones: ["All Areas"], therapists: 2 },
-  { city: "Crossfield", zones: ["All Areas"], therapists: 1 },
+  { city: "Calgary", zones: ["NW", "NE", "SW", "SE", "Downtown"] },
+  { city: "Airdrie", zones: ["All Areas"] },
+  { city: "Cochrane", zones: ["All Areas"] },
+  { city: "Crossfield", zones: ["All Areas"] },
 ]
 
 export function AreasWeServe() {
@@ -41,12 +41,7 @@ export function AreasWeServe() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Zones: {area.zones.join(", ")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {area.therapists} therapist{area.therapists > 1 ? "s" : ""} available
-                    </p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">Zones: {area.zones.join(", ")}</p>
                   <CheckCircle className="h-5 w-5 text-primary" />
                 </div>
               </CardContent>

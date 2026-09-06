@@ -44,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${sourceSans.variable} ${playfairDisplay.variable} font-sans text-base leading-relaxed antialiased`}
+        className={`${sourceSans.variable} ${playfairDisplay.variable} font-sans text-lg leading-relaxed antialiased`}
       >
         <Suspense fallback={null}>
           <ThemeProvider

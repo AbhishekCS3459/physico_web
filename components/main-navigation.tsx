@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Clock, LogIn, MapPin, Menu, Phone, User } from "lucide-react"
-import Image from "next/image"
+import { BrandLogo } from "@/components/brand-logo"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -40,16 +40,10 @@ export function MainNavigation() {
         <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
-            <div className="h-[52px] w-[52px] sm:h-14 sm:w-14 lg:h-16 lg:w-16 shrink-0 relative">
-              <Image
-                src="/MainLogo.png"
-                alt="Physio Rehab at Home"
-                fill
-                className="object-contain"
-                sizes="(max-width: 640px) 52px, 64px"
-                priority
-              />
-            </div>
+            <BrandLogo
+              className="h-10 w-[148px] sm:h-12 sm:w-[178px] lg:h-14 lg:w-[208px]"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation - Enhanced for larger screens */}
@@ -138,14 +132,7 @@ export function MainNavigation() {
             <SheetContent side="right" className="w-[300px] sm:w-80">
               <div className="flex flex-col space-y-6 mt-6">
                 <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
-                  <div className="h-16 w-16 relative">
-                    <Image
-                      src="/MainLogo.png"
-                      alt="Physio Rehab at Home"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
+                  <BrandLogo className="h-12 w-[178px]" />
                 </Link>
 
                 <nav className="flex flex-col space-y-1">
