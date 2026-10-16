@@ -48,6 +48,7 @@ import {
     X,
     ClipboardList,
     DatabaseBackup,
+    DollarSign,
     Plus,
     Users,
 } from "lucide-react"
@@ -478,6 +479,14 @@ export default function AdminDashboard() {
                 Coverage pincodes
               </Link>
             </Button>
+            {adminInfo?.role === "super_admin" && (
+              <Button variant="outline" asChild className="w-full md:w-auto">
+                <Link href="/admin/pricing">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Pricing
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/admin/charts">
                 <ClipboardList className="h-4 w-4 mr-2" />

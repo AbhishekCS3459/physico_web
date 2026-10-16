@@ -14,8 +14,19 @@ import { useRef, useState } from "react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { formatDurations, formatPriceRange, getService, type PricingConfig, type ServiceId } from "@/lib/pricing-config"
 
-export function ResponsiveServices() {
+export function ResponsiveServices({ pricing }: { pricing: PricingConfig }) {
+  const pricingFor = (id: ServiceId) => {
+    const service = getService(pricing, id)
+    const comingSoon = service.status === "coming-soon"
+    return {
+      comingSoon,
+      price: formatPriceRange(service),
+      duration: comingSoon ? "—" : formatDurations(service),
+    }
+  }
+
   const [activeService, setActiveService] = useState(0)
   const sectionRef = useRef<HTMLElement | null>(null)
   const { scrollYProgress } = useScroll({
@@ -31,8 +42,7 @@ export function ResponsiveServices() {
       icon: <IconStethoscope className="h-8 w-8" />,
       title: "Physiotherapy",
       description: "Comprehensive rehabilitation for injuries, post-surgery recovery, and chronic conditions",
-      price: "$150",
-      duration: "60 mins initial / 45 mins follow-up",
+      ...pricingFor("physiotherapy"),
       features: [
         "Manual therapy techniques",
         "Exercise prescription",
@@ -45,8 +55,7 @@ export function ResponsiveServices() {
       icon: <IconBrain className="h-8 w-8" />,
       title: "Occupational Therapy",
       description: "Helping you regain independence in daily activities and work-related tasks",
-      price: "$130-150",
-      duration: "60 minutes",
+      ...pricingFor("occupational-therapy"),
       features: [
         "Activities of daily living training",
         "Cognitive rehabilitation",
@@ -58,11 +67,9 @@ export function ResponsiveServices() {
     {
       icon: <IconHeart className="h-8 w-8" />,
       title: "Massage Therapy",
-      description: "Coming soon.",
-      comingSoon: true,
-      price: "—",
-      duration: "—",
-      features: [],
+      description: "Therapeutic massage by registered massage therapists for pain relief and recovery.",
+      ...pricingFor("massage-therapy"),
+      features: [] as string[],
     },
   ]
 
@@ -154,7 +161,7 @@ export function ResponsiveServices() {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">{service.title}</h3>
                 <p className="text-muted-foreground text-sm mb-5 line-clamp-3 leading-relaxed">{service.description}</p>
-                {"comingSoon" in service && service.comingSoon && (
+                {service.comingSoon && (
                   <div className="mb-4">
                     <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                       Coming soon
@@ -197,7 +204,7 @@ export function ResponsiveServices() {
           style={{ y: detailY }}
           className="rounded-2xl border border-border bg-card p-6 sm:p-8 lg:p-10 mb-10 sm:mb-14 lg:mb-16 shadow-sm"
         >
-          {"comingSoon" in services[activeService] && (services[activeService] as { comingSoon?: boolean }).comingSoon ? (
+          {services[activeService].comingSoon ? (
             <div className="text-center py-8">
               <h3 className="text-2xl font-bold text-foreground mb-2">{services[activeService].title}</h3>
               <p className="text-muted-foreground mb-4">Coming soon — booking will be available shortly.</p>

@@ -9,6 +9,16 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  DEFAULT_PRICING,
+  SERVICE_IDS,
+  formatSessionSummary,
+  getService,
+  hasVisiblePrices,
+  normalizePricing,
+  type PricingConfig,
+  type ServiceId,
+} from "@/lib/pricing-config"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import {
@@ -146,6 +156,13 @@ function formatSlugLabel(value: string) {
     .join(" ")
 }
 
+function describeAppointment(pricing: PricingConfig, serviceType: string, option: AppointmentTypeOption) {
+  if (!(SERVICE_IDS as readonly string[]).includes(serviceType)) return option.description
+  const service = getService(pricing, serviceType as ServiceId)
+  const session = hasVisiblePrices(service) ? service.sessions.find((s) => s.id === option.id) : undefined
+  return session ? formatSessionSummary(session) : option.description
+}
+
 function getServiceName(serviceType: string) {
   return BOOKING_SERVICES.find((s) => s.id === serviceType)?.name ?? formatSlugLabel(serviceType)
 }
@@ -199,6 +216,19 @@ export function BookingForm() {
       .then((res) => res.json())
       .then((data) => setIsUserLoggedIn(Boolean(data.authenticated)))
       .catch(() => setIsUserLoggedIn(false))
+  }, [])
+
+  const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch("/api/pricing", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (body?.success) setPricing(normalizePricing(body.data))
+      })
+      .catch(() => {})
+    return () => controller.abort()
   }, [])
 
   const [formData, setFormData] = useState<Partial<BookingFormData>>(INITIAL_FORM_DATA)
@@ -725,6 +755,7 @@ export function BookingForm() {
                   <motion.div layout className="grid gap-3 sm:grid-cols-2">
                     {selectedService.appointmentTypes.map((session) => {
                       const selected = formData.appointmentType === session.id
+                      const description = describeAppointment(pricing, selectedService.id, session)
                       return (
                         <button
                           key={session.id}
@@ -738,8 +769,8 @@ export function BookingForm() {
                           )}
                         >
                           <p className="font-semibold text-foreground">{session.label}</p>
-                          {session.description ? (
-                            <p className="text-sm text-muted-foreground mt-1">{session.description}</p>
+                          {description ? (
+                            <p className="text-sm text-muted-foreground mt-1">{description}</p>
                           ) : null}
                         </button>
                       )

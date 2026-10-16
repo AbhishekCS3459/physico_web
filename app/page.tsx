@@ -9,8 +9,13 @@ import { InteractivePricingContact } from "@/components/interactive-pricing-cont
 import { AreasWeServe } from "@/components/areas-we-serve"
 import { EnhancedFooter } from "@/components/enhanced-footer"
 import { PersistentCTA } from "@/components/persistent-cta"
+import { getPricing } from "@/lib/pricing"
 
-export default function HomePage() {
+export const revalidate = 300
+
+export default async function HomePage() {
+  const pricing = await getPricing()
+
   return (
     <div className="min-h-screen bg-background">
       <MainNavigation />
@@ -18,10 +23,10 @@ export default function HomePage() {
         <ResponsiveHero />
         <ProofStrip />
         <ValueProposition />
-        <ResponsiveServices />
+        <ResponsiveServices pricing={pricing} />
         <HowItWorks />
         <ResponsiveCarouselTestimonials />
-        <InteractivePricingContact />
+        <InteractivePricingContact pricing={pricing} />
         <AreasWeServe />
       </main>
       <EnhancedFooter />

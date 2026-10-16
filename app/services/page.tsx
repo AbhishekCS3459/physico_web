@@ -4,9 +4,19 @@ import { PersistentCTA } from "@/components/persistent-cta"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { getPricing } from "@/lib/pricing"
+import { formatStartingPrice, getService, type ServiceId } from "@/lib/pricing-config"
 import { Heart, Users, Zap, Shield, Clock, MapPin } from "lucide-react"
 
-const services = [
+export const revalidate = 300
+
+const services: {
+  title: string
+  description: string
+  icon: typeof Heart
+  features: string[]
+  pricedAs: ServiceId
+}[] = [
   {
     title: "Mobile Physiotherapy",
     description: "Comprehensive physiotherapy treatments in the comfort of your home",
@@ -18,32 +28,34 @@ const services = [
       "Movement assessment",
       "Fall prevention program",
     ],
-    price: "Starting at $120/session",
+    pricedAs: "physiotherapy",
   },
   {
     title: "Occupational Therapy",
     description: "Help you regain independence in daily activities and work tasks",
     icon: Users,
     features: ["Daily living skills", "Workplace assessments", "Adaptive equipment", "Cognitive rehabilitation"],
-    price: "Starting at $130/session",
+    pricedAs: "occupational-therapy",
   },
   {
     title: "Massage Therapy",
     description: "Therapeutic massage to reduce pain and improve mobility",
     icon: Zap,
     features: ["Deep tissue massage", "Relaxation therapy", "Sports massage", "Injury prevention"],
-    price: "Starting at $100/session",
+    pricedAs: "massage-therapy",
   },
   {
     title: "Seniors Care",
     description: "Specialized care programs designed for older adults",
     icon: Shield,
     features: ["Fall prevention", "Balance training", "Strength maintenance", "Home safety assessments"],
-    price: "Starting at $110/session",
+    pricedAs: "physiotherapy",
   },
 ]
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const pricing = await getPricing()
+
   return (
     <div className="min-h-screen bg-background">
       <MainNavigation />
@@ -73,7 +85,7 @@ export default function ServicesPage() {
                     <div className="min-w-0 flex-1">
                       <CardTitle className="font-serif text-xl sm:text-xl text-balance">{service.title}</CardTitle>
                       <Badge variant="secondary" className="mt-1 text-xs">
-                        {service.price}
+                        {formatStartingPrice(getService(pricing, service.pricedAs))}
                       </Badge>
                     </div>
                   </div>

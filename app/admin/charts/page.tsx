@@ -36,11 +36,13 @@ import {
   ArrowLeft,
   Calendar,
   ChevronRight,
+  Eye,
   FileText,
   Loader2,
   LogOut,
   Mail,
   MapPin,
+  PencilLine,
   Plus,
   RefreshCw,
   Search,
@@ -423,81 +425,152 @@ export default function AdminChartsPage() {
   const viewOnlyChartsCount = charts.length - editableChartsCount
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
-      <div className="container mx-auto max-w-6xl">
-        {/* Header */}
-        <header className="mb-8 rounded-2xl border border-border/60 bg-card/85 backdrop-blur-md p-6 md:p-8 shadow-xl shadow-primary/5">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            <div className="flex gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-sm">
-                <Stethoscope className="h-7 w-7" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
-                  Patient Charting
-                </h1>
-                <p className="text-muted-foreground/90 mt-1.5 max-w-xl">
-                  View and edit shared patient charts. Only doctors with access can see each chart.
-                </p>
-                {adminInfo && (
-                  <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/60 px-3 py-1.5">
-                    <Avatar className="h-7 w-7 border border-border">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {adminInfo.email.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-muted-foreground">Logged in as {adminInfo.email}</span>
-                  </div>
-                )}
-              </div>
+    <div className="min-h-screen bg-muted/30">
+      {/* Top bar */}
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md">
+        <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+              <Stethoscope className="h-5 w-5" />
             </div>
-            <div className="flex gap-2 flex-wrap items-center shrink-0">
-              <ThemeToggle />
-              <NotificationsBell />
-              {adminInfo?.role === "super_admin" && (
-                <Button variant="outline" asChild className="border-border rounded-lg">
-                  <Link href="/admin">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </Link>
-                </Button>
-              )}
-              <Button variant="outline" asChild className="border-border rounded-lg">
-                <Link href="/admin/coverage">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  Coverage
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="border-border rounded-lg">
-                <Link href="/admin/charts/forms">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Form templates
-                </Link>
-              </Button>
-              <Button onClick={openNewChart} className="bg-primary hover:bg-primary/90 shadow-md rounded-lg">
-                <Plus className="h-4 w-4 mr-2" />
-                New chart
-              </Button>
-              <Button variant="outline" onClick={handleLogout} className="border-border rounded-lg">
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold leading-tight text-foreground">Patient Charting</p>
+              <p className="hidden text-xs leading-tight text-muted-foreground sm:block">Clinical workspace</p>
             </div>
           </div>
-        </header>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {adminInfo?.role === "super_admin" && (
+              <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                <Link href="/admin">
+                  <ArrowLeft className="mr-1.5 h-4 w-4" />
+                  Dashboard
+                </Link>
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+              <Link href="/admin/coverage">
+                <MapPin className="mr-1.5 h-4 w-4" />
+                Coverage
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+              <Link href="/admin/charts/forms">
+                <FileText className="mr-1.5 h-4 w-4" />
+                Form templates
+              </Link>
+            </Button>
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            <ThemeToggle />
+            <NotificationsBell />
+            <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
+            {adminInfo && (
+              <div className="hidden items-center gap-2 rounded-full py-1 pl-1 pr-3 lg:flex" title={`Logged in as ${adminInfo.email}`}>
+                <Avatar className="h-7 w-7 border border-border">
+                  <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                    {adminInfo.email.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="leading-tight">
+                  <p className="text-[11px] text-muted-foreground">Logged in as</p>
+                  <p className="max-w-[180px] truncate text-xs font-medium text-foreground">{adminInfo.email}</p>
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-muted-foreground hover:text-foreground"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile nav */}
+        <nav className="flex gap-1 overflow-x-auto border-t border-border/60 px-4 py-2 md:hidden">
+          {adminInfo?.role === "super_admin" && (
+            <Button variant="ghost" size="sm" asChild className="shrink-0 text-muted-foreground">
+              <Link href="/admin">
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                Dashboard
+              </Link>
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" asChild className="shrink-0 text-muted-foreground">
+            <Link href="/admin/coverage">
+              <MapPin className="mr-1.5 h-4 w-4" />
+              Coverage
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild className="shrink-0 text-muted-foreground">
+            <Link href="/admin/charts/forms">
+              <FileText className="mr-1.5 h-4 w-4" />
+              Form templates
+            </Link>
+          </Button>
+        </nav>
+      </header>
+
+      <main className="container mx-auto max-w-6xl space-y-6 px-4 py-8 md:px-8 md:py-10">
+        {/* Page heading */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Patient charts</h1>
+            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+              View and edit shared patient charts. Only doctors with access can see each chart.
+            </p>
+          </div>
+          <Button onClick={openNewChart} className="shrink-0 rounded-lg shadow-sm">
+            <Plus className="mr-2 h-4 w-4" />
+            New chart
+          </Button>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {[
+            { label: "Total charts", value: charts.length, icon: FileText, accent: "bg-foreground/5 text-foreground" },
+            { label: "Can edit", value: editableChartsCount, icon: PencilLine, accent: "bg-primary/10 text-primary" },
+            { label: "View only", value: viewOnlyChartsCount, icon: Eye, accent: "bg-muted text-muted-foreground" },
+          ].map(({ label, value, icon: Icon, accent }) => (
+            <div
+              key={label}
+              className="flex items-center gap-4 rounded-xl border border-border/60 bg-card px-4 py-4 shadow-sm"
+            >
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${accent}`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <p className="text-2xl font-semibold leading-tight text-foreground">{loading ? "–" : value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Pending invitations */}
         {!pendingLoading && pendingInvitations.length > 0 && (
-          <Card className="mb-6 border border-primary/30 shadow-sm overflow-hidden bg-card/90">
-            <CardHeader className="border-b border-border/60 bg-primary/5 py-4">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-primary" />
+          <Card className="overflow-hidden border-primary/30 bg-primary/[0.03] shadow-sm">
+            <CardHeader className="py-4">
+              <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                  <UserPlus className="h-4 w-4 text-primary" />
+                </span>
                 Pending invitations
+                <Badge variant="outline" className="ml-1 border-primary/30 text-primary">
+                  {pendingInvitations.length}
+                </Badge>
               </CardTitle>
               <CardDescription>You have been invited to access these charts. Accept to add them to your list.</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4">
-              <ul className="space-y-3">
+            <CardContent className="pt-0">
+              <ul className="space-y-2">
                 {pendingInvitations.map((inv) => {
                   const chartName = inv.chart.booking
                     ? `${inv.chart.booking.firstName} ${inv.chart.booking.lastName}`
@@ -508,7 +581,7 @@ export default function AdminChartsPage() {
                   return (
                     <li
                       key={inv.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 p-3.5 bg-muted/25"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-card p-3.5"
                     >
                       <div className="min-w-0">
                         <p className="font-medium text-foreground">{chartName}</p>
@@ -543,87 +616,72 @@ export default function AdminChartsPage() {
           </Card>
         )}
 
-        {/* Search */}
-        <Card className="mb-5 border shadow-sm overflow-hidden bg-card/90">
-          <CardHeader className="border-b border-border/60 bg-muted/30 py-4">
-            <CardTitle className="text-base font-medium flex items-center gap-2">
-              <Search className="h-4 w-4 text-primary" />
-              Find charts
-            </CardTitle>
-            <CardDescription>Search by patient name or email</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="e.g. John Smith, john@example.com..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 rounded-lg border-border bg-background/90 focus-visible:ring-primary/40"
-                />
-              </div>
-              <Button variant="outline" onClick={fetchCharts} className="h-11 rounded-lg shrink-0 border-border/80">
-                <RefreshCw className="h-4 w-4 mr-2" />
+        {/* Chart list */}
+        <Card className="gap-0 overflow-hidden border-border/60 py-0 shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-border/60 p-4 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by patient name or email…"
+                aria-label="Search charts by patient name or email"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-10 rounded-lg border-border/70 bg-background pl-10 focus-visible:ring-primary/40"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3 sm:justify-end">
+              {!loading && (
+                <p className="whitespace-nowrap text-sm text-muted-foreground">
+                  Showing {filtered.length} chart{filtered.length !== 1 ? "s" : ""}
+                  {searchTerm && " (filtered)"}
+                </p>
+              )}
+              <Button
+                variant="outline"
+                onClick={fetchCharts}
+                disabled={loading}
+                className="h-10 shrink-0 rounded-lg border-border/70"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Refresh
               </Button>
             </div>
-          </CardContent>
-        </Card>
-        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-border/70 bg-card/70 px-4 py-3 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Total charts</p>
-            <p className="mt-1 text-2xl font-semibold text-foreground">{charts.length}</p>
           </div>
-          <div className="rounded-xl border border-border/70 bg-card/70 px-4 py-3 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Can edit</p>
-            <p className="mt-1 text-2xl font-semibold text-primary">{editableChartsCount}</p>
-          </div>
-          <div className="rounded-xl border border-border/70 bg-card/70 px-4 py-3 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">View only</p>
-            <p className="mt-1 text-2xl font-semibold text-foreground">{viewOnlyChartsCount}</p>
-          </div>
-        </div>
 
         {loading ? (
-          <Card className="border shadow-sm overflow-hidden bg-card/90">
-            <CardContent className="py-16">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="relative mb-6">
-                  <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                </div>
-                <p className="text-lg font-medium text-foreground">Loading charts</p>
-                <p className="text-sm text-muted-foreground mt-1">Fetching your patient charts...</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+            <p className="font-medium text-foreground">Loading charts</p>
+            <p className="mt-1 text-sm text-muted-foreground">Fetching your patient charts...</p>
+          </div>
         ) : filtered.length === 0 ? (
-          <Card className="border shadow-sm overflow-hidden border-dashed bg-card/90">
-            <CardContent className="py-16">
-              <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto">
-                <div className="h-20 w-20 rounded-2xl bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center mb-6">
-                  <FileText className="h-10 w-10 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground">No charts yet</h3>
-                <p className="text-muted-foreground mt-2 leading-relaxed">
-                  Create your first patient chart to start documenting care. You can link a booking, pick an existing patient, or add a new patient.
-                </p>
-                <Button onClick={openNewChart} className="mt-6 bg-primary hover:bg-primary/90 shadow-sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New chart
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-4">
-              Showing {filtered.length} chart{filtered.length !== 1 ? "s" : ""}
-              {searchTerm && " (filtered)"}
+          <div className="mx-auto flex max-w-md flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
+              {searchTerm ? <Search className="h-7 w-7 text-primary" /> : <FileText className="h-7 w-7 text-primary" />}
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">
+              {searchTerm ? "No matching charts" : "No charts yet"}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {searchTerm
+                ? `No charts match "${searchTerm}". Try a different name or email.`
+                : "Create your first patient chart to start documenting care. You can link a booking, pick an existing patient, or add a new patient."}
             </p>
-            <div className="space-y-4">
+            {searchTerm ? (
+              <Button variant="outline" onClick={() => setSearchTerm("")} className="mt-6 rounded-lg">
+                Clear search
+              </Button>
+            ) : (
+              <Button onClick={openNewChart} className="mt-6 rounded-lg shadow-sm">
+                <Plus className="mr-2 h-4 w-4" />
+                New chart
+              </Button>
+            )}
+          </div>
+        ) : (
+            <ul className="divide-y divide-border/60">
               {filtered.map((chart) => {
                 const displayName = chart.booking
                   ? `${chart.booking.firstName} ${chart.booking.lastName}`
@@ -642,77 +700,89 @@ export default function AdminChartsPage() {
                   .join("")
                   .slice(0, 2)
                   .toUpperCase()
+                const canEdit = chart.myPermission === "edit"
                 return (
-                  <Card
+                  <li
                     key={chart.id}
-                    className="border-2 border-l-4 border-l-primary hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group overflow-hidden"
+                    className="group relative flex cursor-pointer flex-col gap-4 px-4 py-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:px-5"
                     onClick={() => router.push(`/admin/charts/${chart.id}`)}
                   >
-                    <CardContent className="pt-6 pb-6 flex flex-col sm:flex-row sm:items-center gap-4">
-                      <div className="flex gap-4 flex-1 min-w-0">
-                        <Avatar className="h-12 w-12 shrink-0 rounded-xl border-2 border-border bg-primary/10">
-                          <AvatarFallback className="text-sm font-medium text-primary rounded-xl">
-                            {initials || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                              {displayName}
-                            </h3>
-                            <Badge variant={chart.myPermission === "edit" ? "default" : "secondary"} className="shrink-0 text-xs">
-                              {chart.myPermission === "edit" ? "Can edit" : "View only"}
-                            </Badge>
-                          </div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span
+                      aria-hidden
+                      className="absolute inset-y-0 left-0 w-0.5 bg-primary opacity-0 transition-opacity group-hover:opacity-100"
+                    />
+                    <div className="flex min-w-0 flex-1 gap-4">
+                      <Avatar className="h-11 w-11 shrink-0 rounded-full">
+                        <AvatarFallback className="rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                          {initials || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate font-semibold text-foreground transition-colors group-hover:text-primary">
+                            {displayName}
+                          </h3>
+                          <Badge
+                            variant="outline"
+                            className={
+                              canEdit
+                                ? "shrink-0 border-primary/25 bg-primary/10 text-[11px] font-medium text-primary"
+                                : "shrink-0 border-border bg-muted text-[11px] font-medium text-muted-foreground"
+                            }
+                          >
+                            {canEdit ? <PencilLine className="mr-1 h-3 w-3" /> : <Eye className="mr-1 h-3 w-3" />}
+                            {canEdit ? "Can edit" : "View only"}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <Mail className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{displayEmail}</span>
+                          </span>
+                          {displayDate && (
                             <span className="flex items-center gap-1.5">
-                              <Mail className="h-3.5 w-3.5 shrink-0" />
-                              <span className="truncate">{displayEmail}</span>
+                              <Calendar className="h-3.5 w-3.5 shrink-0" />
+                              {displayDate}
                             </span>
-                            {displayDate && (
-                              <span className="flex items-center gap-1.5">
-                                <Calendar className="h-3.5 w-3.5 shrink-0" />
-                                {displayDate}
-                              </span>
-                            )}
-                          </div>
-                          {chart.createdBy && (
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Chart by {chart.createdBy.name || chart.createdBy.email} · Updated{" "}
-                              {format(new Date(chart.updatedAt), "MMM d, yyyy HH:mm")}
-                            </p>
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button asChild variant="outline" size="sm" className="rounded-lg" onClick={(e) => e.stopPropagation()}>
-                          <Link href={`/admin/charts/${chart.id}`} className="flex items-center gap-1">
-                            Open chart
-                            <ChevronRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        {chart.isOwner && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setChartToDelete(chart.id)
-                            }}
-                            title="Delete chart"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        {chart.createdBy && (
+                          <p className="mt-1.5 text-xs text-muted-foreground/80">
+                            Chart by {chart.createdBy.name || chart.createdBy.email} · Updated{" "}
+                            {format(new Date(chart.updatedAt), "MMM d, yyyy HH:mm")}
+                          </p>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 pl-15 sm:pl-0">
+                      <Button asChild variant="outline" size="sm" className="rounded-lg" onClick={(e) => e.stopPropagation()}>
+                        <Link href={`/admin/charts/${chart.id}`} className="flex items-center gap-1">
+                          Open chart
+                          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                        </Link>
+                      </Button>
+                      {chart.isOwner && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="shrink-0 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setChartToDelete(chart.id)
+                          }}
+                          title="Delete chart"
+                          aria-label={`Delete chart for ${displayName}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </li>
                 )
               })}
-            </div>
-          </>
+            </ul>
         )}
+        </Card>
 
         <Dialog open={showNewChart} onOpenChange={setShowNewChart}>
           <DialogContent className="max-w-md">
@@ -903,7 +973,7 @@ export default function AdminChartsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
+      </main>
     </div>
   )
 }

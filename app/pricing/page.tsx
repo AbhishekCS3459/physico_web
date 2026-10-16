@@ -4,9 +4,22 @@ import { PersistentCTA } from "@/components/persistent-cta"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Clock, DollarSign, FileText, MapPin } from "lucide-react"
+import { getPricing } from "@/lib/pricing"
+import { formatPrice, hasVisiblePrices, type ServicePricing } from "@/lib/pricing-config"
+import { cn } from "@/lib/utils"
+import { Clock, DollarSign, FileText, MapPin } from "lucide-react"
 
-export default function PricingPage() {
+export const revalidate = 300
+
+const SERVICE_TAGLINES: Record<ServicePricing["id"], string> = {
+  physiotherapy: "Expert rehabilitation therapy",
+  "occupational-therapy": "Daily living & independence",
+  "massage-therapy": "Therapeutic massage by RMT",
+}
+
+export default async function PricingPage() {
+  const pricing = await getPricing()
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -29,49 +42,55 @@ export default function PricingPage() {
 
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {/* Physiotherapy */}
-            <Card className="relative border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group">
-              <CardHeader>
-                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Physiotherapy</CardTitle>
-                <CardDescription>Expert rehabilitation therapy</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span>Initial Assessment (60 mins)</span>
-                    <span className="font-semibold">$150</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Follow-Up Session (45 mins)</span>
-                    <span className="font-semibold">$150</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Occupational Therapy */}
-            <Card className="relative border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group">
-              <CardHeader>
-                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Occupational Therapy</CardTitle>
-                <CardDescription>Daily living & independence</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-sm">Contact us for pricing and availability.</p>
-              </CardContent>
-            </Card>
-
-            {/* Massage Therapy */}
-            <Card className="relative border-2 border-dashed border-muted-foreground/40 hover:border-primary/20 transition-all duration-300 group">
-              <CardHeader>
-                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Massage Therapy</CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Coming Soon</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">Therapeutic massage by RMT — booking available soon.</p>
-              </CardContent>
-            </Card>
+            {pricing.services.map((service) => {
+              const comingSoon = service.status === "coming-soon"
+              return (
+                <Card
+                  key={service.id}
+                  className={cn(
+                    "relative border-2 transition-all duration-300 group",
+                    comingSoon
+                      ? "border-dashed border-muted-foreground/40 hover:border-primary/20"
+                      : "hover:border-primary/20 hover:shadow-xl hover:scale-[1.02]"
+                  )}
+                >
+                  <CardHeader>
+                    <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      {service.name}
+                    </CardTitle>
+                    {comingSoon ? (
+                      <CardDescription className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                          Coming Soon
+                        </span>
+                      </CardDescription>
+                    ) : (
+                      <CardDescription>{SERVICE_TAGLINES[service.id]}</CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {hasVisiblePrices(service) ? (
+                      <div className="space-y-3">
+                        {service.sessions.map((session) => (
+                          <div key={session.id} className="flex justify-between items-center gap-3">
+                            <span>
+                              {session.label} ({session.durationMinutes} mins)
+                            </span>
+                            <span className="font-semibold">{formatPrice(session.price)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">
+                        {comingSoon
+                          ? `${SERVICE_TAGLINES[service.id]} — booking available soon.`
+                          : "Contact us for pricing and availability."}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
 
           {/* Additional Services */}
@@ -83,14 +102,12 @@ export default function PricingPage() {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span>Travel Fee (outside service area)</span>
-                    <span className="font-semibold">$15–$25</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Documentation/Forms/Reports</span>
-                    <span className="font-semibold">From $40</span>
-                  </div>
+                  {pricing.additionalFees.map((fee) => (
+                    <div key={fee.id} className="flex justify-between items-center gap-3">
+                      <span>{fee.label}</span>
+                      <span className="font-semibold">{fee.amount}</span>
+                    </div>
+                  ))}
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">

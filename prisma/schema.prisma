@@ -261,6 +261,15 @@ model CoveragePincode {
   updatedAt  DateTime @updatedAt
 }
 
+model SiteSetting {
+  id          String   @id @default(cuid()) @map("_id")
+  key         String   @unique
+  value       Json
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Admin {
   id                   String   @id @default(cuid()) @map("_id")
   email                String   @unique

@@ -25,53 +25,25 @@ import {
   Users
 } from "lucide-react"
 import { CoverageChecker } from "@/components/coverage-checker"
+import { formatPrice, hasVisiblePrices, type PricingConfig, type ServiceId } from "@/lib/pricing-config"
 import { motion } from "motion/react"
 import { useState } from "react"
 
-const pricingData = {
-  physiotherapy: {
-    icon: Activity,
-    title: "Physiotherapy",
-    color: "from-emerald-500 to-teal-600",
-    services: [
-      { name: "Initial Assessment", duration: "60 mins", price: 150 },
-      { name: "Follow-Up Session", duration: "45 mins", price: 150 },
-    ],
-  },
-  occupationalTherapy: {
-    icon: Brain,
-    title: "Occupational Therapy",
-    color: "from-blue-500 to-indigo-600",
-    services: [
-      { name: "Initial Assessment", duration: "60 mins", price: 150 },
-      { name: "Follow-Up Session", duration: "45 mins", price: 130 },
-    ],
-  },
-  massageTherapy: {
-    icon: MassageIcon,
-    title: "Massage Therapy",
-    subtitle: "Coming Soon",
-    color: "from-purple-500 to-pink-600",
-    services: [], // Coming soon – booking disabled
-  },
+const SERVICE_UI: Record<ServiceId, { icon: typeof Activity; color: string }> = {
+  physiotherapy: { icon: Activity, color: "from-emerald-500 to-teal-600" },
+  "occupational-therapy": { icon: Brain, color: "from-blue-500 to-indigo-600" },
+  "massage-therapy": { icon: MassageIcon, color: "from-purple-500 to-pink-600" },
 }
-
-const additionalServices = [
-  { name: "Travel Fee (outside service area)", price: "15-25" },
-  { name: "Documentation/Forms/Reports", price: "From 40" },
-]
 
 const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield"]
 
-export function InteractivePricingContact() {
-  const [selectedService, setSelectedService] = useState("physiotherapy")
+export function InteractivePricingContact({ pricing }: { pricing: PricingConfig }) {
+  const [selectedService, setSelectedService] = useState<ServiceId>("physiotherapy")
   const [selectedSession, setSelectedSession] = useState(0)
   const [sessionCount, setSessionCount] = useState(1)
-  const calculateTotal = () => {
-    const service = pricingData[selectedService as keyof typeof pricingData]
-    const sessionPrice = service.services[selectedSession]?.price || 0
-    return sessionPrice * sessionCount
-  }
+  const current = pricing.services.find((s) => s.id === selectedService) ?? pricing.services[0]
+  const currentSession = current.sessions[selectedSession] ?? current.sessions[0]
+  const calculateTotal = () => formatPrice((currentSession?.price ?? 0) * sessionCount)
 
   return (
     <section className="py-16 md:py-24 lg:py-28 bg-gradient-to-br from-background via-muted/10 to-primary/5 relative overflow-hidden">
@@ -126,38 +98,39 @@ export function InteractivePricingContact() {
                   <div className="space-y-3">
                     <Label className="text-base font-semibold">Select Service</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {Object.entries(pricingData).map(([key, service]) => (
-                        <Button
-                          key={key}
-                          variant={selectedService === key ? "default" : "outline"}
-                          className={`p-3.5 h-auto min-h-[92px] flex-col gap-2 ${
-                            selectedService === key
-                              ? `bg-gradient-to-r ${service.color} text-white border-0`
-                              : "bg-transparent"
-                          }`}
-                          onClick={() => {
-                            setSelectedService(key)
-                            setSelectedSession(0)
-                          }}
-                        >
-                          <service.icon className="h-5 w-5" />
-                          <span className="text-xs text-center leading-tight">{service.title}</span>
-                        </Button>
-                      ))}
+                      {pricing.services.map((service) => {
+                        const ui = SERVICE_UI[service.id]
+                        return (
+                          <Button
+                            key={service.id}
+                            variant={selectedService === service.id ? "default" : "outline"}
+                            className={`p-3.5 h-auto min-h-[92px] flex-col gap-2 ${
+                              selectedService === service.id
+                                ? `bg-gradient-to-r ${ui.color} text-white border-0`
+                                : "bg-transparent"
+                            }`}
+                            onClick={() => {
+                              setSelectedService(service.id)
+                              setSelectedSession(0)
+                            }}
+                          >
+                            <ui.icon className="h-5 w-5" />
+                            <span className="text-xs text-center leading-tight">{service.name}</span>
+                          </Button>
+                        )
+                      })}
                     </div>
                   </div>
 
                   {(() => {
-                    const current = pricingData[selectedService as keyof typeof pricingData]
-                    const hasRates = current.services && current.services.length > 0
-                    const subtitle = "subtitle" in current ? (current as { subtitle?: string }).subtitle : null
-                    if (!hasRates) {
+                    const comingSoon = current.status === "coming-soon"
+                    if (!hasVisiblePrices(current)) {
                       return (
                         <>
                           <div className="rounded-xl border border-border bg-muted/30 p-4 text-center">
                             <p className="text-muted-foreground">
-                              {subtitle === "Coming Soon"
-                                ? "Massage therapy booking will be available soon."
+                              {comingSoon
+                                ? `${current.name} booking will be available soon.`
                                 : "Contact us for pricing and availability."}
                             </p>
                             <Button variant="outline" className="mt-4" asChild>
@@ -165,7 +138,7 @@ export function InteractivePricingContact() {
                             </Button>
                           </div>
                           <div className="flex flex-col sm:flex-row gap-3">
-                            {subtitle === "Coming Soon" ? (
+                            {comingSoon ? (
                               <Button className="flex-1" variant="secondary" disabled>
                                 <Calendar className="h-4 w-4 mr-2" />Coming Soon
                               </Button>
@@ -193,9 +166,9 @@ export function InteractivePricingContact() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {current.services.map((session, index) => (
-                                <SelectItem key={index} value={index.toString()}>
-                                  {session.name} - {session.duration} - ${session.price}
+                              {current.sessions.map((session, index) => (
+                                <SelectItem key={session.id} value={index.toString()}>
+                                  {session.label} - {session.durationMinutes} mins - {formatPrice(session.price)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -212,12 +185,12 @@ export function InteractivePricingContact() {
                         <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-6 border border-primary/10">
                           <div className="flex justify-between items-center mb-4">
                             <span className="text-lg font-semibold">Estimated Total:</span>
-                            <span className="text-3xl font-bold text-primary">${calculateTotal()}</span>
+                            <span className="text-3xl font-bold text-primary">{calculateTotal()}</span>
                           </div>
                           <div className="space-y-2 text-sm text-muted-foreground">
                             <div className="flex justify-between">
                               <span>Per Session:</span>
-                              <span>${current.services[selectedSession]?.price ?? 0}</span>
+                              <span>{formatPrice(currentSession?.price ?? 0)}</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Sessions:</span>
@@ -281,10 +254,10 @@ export function InteractivePricingContact() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {additionalServices.map((service, index) => (
-                    <div key={index} className="flex justify-between items-center text-sm">
-                      <span>{service.name}</span>
-                      <span className="font-semibold text-accent">${service.price}</span>
+                  {pricing.additionalFees.map((fee) => (
+                    <div key={fee.id} className="flex justify-between items-center gap-3 text-sm">
+                      <span>{fee.label}</span>
+                      <span className="font-semibold text-accent">{fee.amount}</span>
                     </div>
                   ))}
                 </CardContent>
