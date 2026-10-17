@@ -65,7 +65,7 @@ export function PremiumNavigation() {
         <div className="container flex h-16 lg:h-20 items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center group" aria-label="Physio Rehab at Home">
             <motion.div
-              className="relative h-12 w-[178px] lg:h-14 lg:w-[208px]"
+              className="relative h-12 w-[185px] sm:h-14 sm:w-[216px] lg:h-16 lg:w-[246px]"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >

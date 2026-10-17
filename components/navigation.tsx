@@ -21,7 +21,7 @@ export function Navigation() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 lg:h-18 items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center" aria-label="Physio Rehab at Home">
-          <BrandLogo className="h-12 w-[178px] lg:h-14 lg:w-[208px]" />
+          <BrandLogo className="h-12 w-[185px] sm:h-14 sm:w-[216px] lg:h-16 lg:w-[246px]" />
         </Link>
 
         {/* Desktop Navigation */}

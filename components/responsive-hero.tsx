@@ -19,8 +19,8 @@ const slides = [
     title: "Personalized recovery where you feel best",
     description:
       "From post-surgery rehabilitation to ongoing pain management, our clinicians bring structured, evidence-based care to your home so progress stays consistent and convenient.",
-    image: "/hero/stretching.jpg",
-    imageAlt: "Guided mobility and stretching session",
+    image: "/hero/balance-training.jpg",
+    imageAlt: "Physiotherapist supporting a patient during single-leg balance training",
     cta: "Book your first visit",
     points: ["Licensed physiotherapists", "Direct billing support", "In-home appointments across Calgary"],
   },
@@ -29,8 +29,8 @@ const slides = [
     title: "Expert care without the clinic wait",
     description:
       "We come to you with everything needed for assessment and treatment — at home, work, or a care facility. Same-week visits when available.",
-    image: "/hero/home-rehab.jpg",
-    imageAlt: "Therapist guiding a rehabilitation exercise",
+    image: "/hero/home-band-exercise.jpg",
+    imageAlt: "Physiotherapist guiding a resistance band exercise in a patient's living room",
     cta: "Schedule a home visit",
     points: ["One-on-one sessions", "No travel for you", "Evening appointments on request"],
   },
@@ -39,8 +39,8 @@ const slides = [
     title: "Care that feels personal and professional",
     description:
       "Work with licensed therapists who listen first, then build a plan around your goals, your home, and your daily routine.",
-    image: "/hero/clinician.jpg",
-    imageAlt: "Smiling licensed healthcare clinician",
+    image: "/hero/knee-manual-therapy.jpg",
+    imageAlt: "Physiotherapist providing hands-on knee treatment",
     cta: "Meet our approach",
     href: "/team",
     points: ["Evidence-based treatment", "Seniors welcome", "Family-friendly visits"],

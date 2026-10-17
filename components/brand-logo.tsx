@@ -10,7 +10,7 @@ type BrandLogoProps = {
 export function BrandLogo({
   className,
   priority = false,
-  sizes = "(max-width: 640px) 148px, (max-width: 1024px) 178px, 208px",
+  sizes = "(max-width: 640px) 185px, (max-width: 1024px) 216px, 246px",
 }: BrandLogoProps) {
   return (
     <div className={cn("relative shrink-0", className)}>

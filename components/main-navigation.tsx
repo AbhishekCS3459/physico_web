@@ -41,7 +41,7 @@ export function MainNavigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Physio Rehab at Home">
             <BrandLogo
-              className="h-10 w-[148px] sm:h-12 sm:w-[178px] lg:h-14 lg:w-[208px]"
+              className="h-11 w-[170px] sm:h-14 sm:w-[216px] lg:h-16 lg:w-[246px]"
               priority
             />
           </Link>

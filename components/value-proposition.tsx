@@ -64,7 +64,7 @@ export function ValueProposition() {
               >
                 <CardHeader className="pb-3">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <Icon className="h-6 w-6 text-primary" />
+                    <Icon className="h-6 w-6 text-primary transition-colors group-hover:text-primary-foreground" />
                   </div>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl tracking-tight">{prop.title}</CardTitle>
