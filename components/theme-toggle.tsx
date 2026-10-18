@@ -17,11 +17,15 @@ export function ThemeToggle() {
   }
 
   const buttonClass =
-    'flex size-9 items-center justify-center rounded-full border-2 border-emerald-500 bg-transparent text-emerald-600 transition-colors hover:border-emerald-600 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:border-emerald-400 dark:text-emerald-400 dark:hover:border-emerald-300 dark:hover:text-emerald-300 [&_svg]:size-4'
+    'flex size-9 items-center justify-center rounded-full border-2 border-emerald-400 bg-transparent text-emerald-400 transition-colors hover:border-emerald-300 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:size-4'
 
   if (!mounted) {
     return (
-      <button type="button" className={buttonClass} aria-label="Theme">
+      <button
+        type="button"
+        className={buttonClass}
+        aria-label="Theme"
+      >
         <Sun className="size-4" />
       </button>
     )
@@ -32,7 +36,11 @@ export function ThemeToggle() {
       type="button"
       className={buttonClass}
       onClick={toggle}
-      aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={
+        resolvedTheme === 'dark'
+          ? 'Switch to light mode'
+          : 'Switch to dark mode'
+      }
     >
       {resolvedTheme === 'dark' ? (
         <Sun className="size-4" />
