@@ -87,6 +87,10 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/MainLogo.png", type: "image/png" }],
   },
+  // Keep this tag permanently so Search Console stays verified.
+  verification: {
+    google: "kigAOEkumdvHjlt5k04LxGxHQdXJh6jVR7QPgTFFARE",
+  },
 }
 
 export default function RootLayout({
