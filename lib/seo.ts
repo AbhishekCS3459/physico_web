@@ -24,7 +24,7 @@ export const siteConfig = {
   ogImagePath: "/professional-physiotherapy-home-visit.jpg",
 } as const
 
-const PRODUCTION_FALLBACK = "https://physiorehabhome.ca"
+const PRODUCTION_FALLBACK = "https://www.physiorehabathome.ca"
 
 /** Absolute site origin. Prefers NEXT_PUBLIC_APP_URL; ignores localhost for public SEO URLs. */
 export function getSiteUrl(): string {
