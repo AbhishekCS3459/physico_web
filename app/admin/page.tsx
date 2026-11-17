@@ -59,6 +59,8 @@ import toast from "react-hot-toast"
 import { InitialAssessmentForm } from "@/components/assessment-forms/initial-assessment-form"
 import { FollowupAssessmentForm } from "@/components/assessment-forms/followup-assessment-form"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { notifyCalendarResult } from "@/lib/calendar-sync-toast"
+import { VISIT_DURATION_OPTIONS, formatClinicTimeRange, toClinicLocalParts } from "@/lib/schedule"
 
 interface TherapyBooking {
   id: string
@@ -83,9 +85,16 @@ interface TherapyBooking {
   emergencyContact: string | null
   specialInstructions: string | null
   status: string
+  scheduledStart: string | null
+  scheduledEnd: string | null
+  assignedAdminId: string | null
+  googleEventId: string | null
+  calendarSyncError: string | null
   createdAt: string
   updatedAt: string
 }
+
+type ScheduleDraft = { date: string; startTime: string; durationMinutes: string; assignedAdminId: string }
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -99,7 +108,15 @@ export default function AdminDashboard() {
   const [editFormData, setEditFormData] = useState<Partial<TherapyBooking>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; name?: string; role?: "staff" | "super_admin" } | null>(null)
-  const [staffList, setStaffList] = useState<{ id: string; email: string; name: string | null; role: string }[]>([])
+  const [staffList, setStaffList] = useState<
+    { id: string; email: string; name: string | null; role: string; calendarConnected?: boolean }[]
+  >([])
+  const [scheduleDraft, setScheduleDraft] = useState<ScheduleDraft>({
+    date: "",
+    startTime: "",
+    durationMinutes: "60",
+    assignedAdminId: "",
+  })
   const [updatingRoleFor, setUpdatingRoleFor] = useState<string | null>(null)
   const [showAssessmentDialog, setShowAssessmentDialog] = useState(false)
   const [assessmentType, setAssessmentType] = useState<"initial" | "followup" | null>(null)
@@ -312,10 +329,52 @@ export default function AdminDashboard() {
       endDate: booking.endDate ? format(new Date(booking.endDate), "yyyy-MM-dd") : null,
       dateOfBirth: booking.dateOfBirth ? format(new Date(booking.dateOfBirth), "yyyy-MM-dd") : null,
     })
+    if (booking.scheduledStart && booking.scheduledEnd) {
+      const { date, time } = toClinicLocalParts(booking.scheduledStart)
+      const minutes = Math.round(
+        (new Date(booking.scheduledEnd).getTime() - new Date(booking.scheduledStart).getTime()) / 60_000
+      )
+      setScheduleDraft({
+        date,
+        startTime: time,
+        durationMinutes: String(minutes),
+        assignedAdminId: booking.assignedAdminId ?? "",
+      })
+    } else {
+      setScheduleDraft({
+        date: booking.preferredDate ? format(new Date(booking.preferredDate), "yyyy-MM-dd") : "",
+        startTime: "",
+        durationMinutes: booking.appointmentType === "followup" ? "45" : "60",
+        assignedAdminId: "",
+      })
+    }
+  }
+
+  const buildSchedulePayload = (): { ok: true; value?: unknown } | { ok: false; error: string } => {
+    const { date, startTime, durationMinutes, assignedAdminId } = scheduleDraft
+    const filled = [date, startTime, assignedAdminId].filter(Boolean).length
+    const hadSchedule = !!editingBooking?.scheduledStart
+
+    if (!startTime && !assignedAdminId) {
+      return { ok: true, value: hadSchedule ? null : undefined }
+    }
+    if (filled < 3) {
+      return { ok: false, error: "To schedule the visit, fill in the visit date, start time and clinician (or clear them)." }
+    }
+    return {
+      ok: true,
+      value: { date, startTime, durationMinutes: Number.parseInt(durationMinutes, 10), assignedAdminId },
+    }
   }
 
   const handleSaveEdit = async () => {
     if (!editingBooking) return
+
+    const schedule = buildSchedulePayload()
+    if (!schedule.ok) {
+      toast.error(schedule.error)
+      return
+    }
 
     setIsSaving(true)
     try {
@@ -324,17 +383,18 @@ export default function AdminDashboard() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify({ ...editFormData, schedule: schedule.value }),
       })
 
       const data = await response.json()
       if (data.success) {
         toast.success("Booking updated successfully")
+        notifyCalendarResult(data.calendar)
         setEditingBooking(null)
         setEditFormData({})
         fetchBookings()
       } else {
-        toast.error(data.error || "Failed to update booking")
+        toast.error(data.details?.[0]?.message || data.error || "Failed to update booking")
       }
     } catch (error) {
       console.error("Error updating booking:", error)
@@ -379,6 +439,7 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         toast.success("Status updated successfully")
+        notifyCalendarResult(data.calendar)
         fetchBookings()
       } else {
         toast.error(data.error || "Failed to update status")
@@ -487,6 +548,12 @@ export default function AdminDashboard() {
                 </Link>
               </Button>
             )}
+            <Button variant="outline" asChild className="w-full md:w-auto">
+              <Link href="/admin/calendar">
+                <Calendar className="h-4 w-4 mr-2" />
+                Google Calendar
+              </Link>
+            </Button>
             <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/admin/charts">
                 <ClipboardList className="h-4 w-4 mr-2" />
@@ -712,6 +779,15 @@ export default function AdminDashboard() {
                             }
                           </span>
                         </div>
+                        {booking.scheduledStart && booking.scheduledEnd && (
+                          <div className="flex items-center gap-2 font-medium text-foreground">
+                            <Clock className="h-4 w-4" />
+                            <span>
+                              {formatClinicTimeRange(booking.scheduledStart, booking.scheduledEnd)}
+                              {booking.googleEventId ? " · on Google Calendar" : ""}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4" />
                           <span className="capitalize">{booking.serviceType.replace("-", " ")}</span>
@@ -841,6 +917,23 @@ export default function AdminDashboard() {
                         }
                       </p>
                     </div>
+                    {selectedBooking.scheduledStart && selectedBooking.scheduledEnd && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Scheduled Visit</p>
+                        <p>{formatClinicTimeRange(selectedBooking.scheduledStart, selectedBooking.scheduledEnd)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(() => {
+                            const clinician = staffList.find((member) => member.id === selectedBooking.assignedAdminId)
+                            return clinician ? clinician.name || clinician.email : "Unassigned"
+                          })()}
+                          {selectedBooking.calendarSyncError
+                            ? ` · Calendar sync failed: ${selectedBooking.calendarSyncError}`
+                            : selectedBooking.googleEventId
+                              ? " · On Google Calendar"
+                              : ""}
+                        </p>
+                      </div>
+                    )}
                     <div>
                       <p className="text-sm text-muted-foreground">Service Location</p>
                       <p className="capitalize">{selectedBooking.serviceLocation.replace("-", " ")}</p>
@@ -1814,6 +1907,93 @@ export default function AdminDashboard() {
                       <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-3 rounded-lg border border-border p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">Visit schedule</p>
+                      <p className="text-sm text-muted-foreground">
+                        Confirmed visits with a time and clinician are added to that clinician&apos;s Google Calendar.
+                      </p>
+                    </div>
+                    {(scheduleDraft.startTime || scheduleDraft.assignedAdminId) && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setScheduleDraft({ ...scheduleDraft, startTime: "", assignedAdminId: "" })}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <div>
+                    <Label>Clinician</Label>
+                    <Select
+                      value={scheduleDraft.assignedAdminId}
+                      onValueChange={(value) => setScheduleDraft({ ...scheduleDraft, assignedAdminId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select clinician" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {staffList.map((member) => (
+                          <SelectItem key={member.id} value={member.id}>
+                            {member.name || member.email}
+                            {member.calendarConnected ? "" : " (calendar not connected)"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div>
+                      <Label>Visit date</Label>
+                      <Input
+                        type="date"
+                        value={scheduleDraft.date}
+                        onChange={(e) => setScheduleDraft({ ...scheduleDraft, date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Start time</Label>
+                      <Input
+                        type="time"
+                        step={300}
+                        value={scheduleDraft.startTime}
+                        onChange={(e) => setScheduleDraft({ ...scheduleDraft, startTime: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Duration</Label>
+                      <Select
+                        value={scheduleDraft.durationMinutes}
+                        onValueChange={(value) => setScheduleDraft({ ...scheduleDraft, durationMinutes: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from(
+                            new Set([...VISIT_DURATION_OPTIONS, Number.parseInt(scheduleDraft.durationMinutes, 10)])
+                          )
+                            .filter((minutes) => Number.isFinite(minutes))
+                            .sort((a, b) => a - b)
+                            .map((minutes) => (
+                              <SelectItem key={minutes} value={String(minutes)}>
+                                {minutes} min
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Times are in Calgary time (Mountain Time).</p>
+                  {editingBooking?.calendarSyncError ? (
+                    <p className="text-sm text-destructive">Last calendar sync failed: {editingBooking.calendarSyncError}</p>
+                  ) : editingBooking?.googleEventId ? (
+                    <p className="text-sm text-muted-foreground">This visit is on Google Calendar.</p>
+                  ) : null}
                 </div>
                 <div>
                   <Label>Full Address</Label>

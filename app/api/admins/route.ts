@@ -8,11 +8,14 @@ export async function GET() {
     await requireAuth()
 
     const admins = await prisma.admin.findMany({
-      select: { id: true, email: true, name: true, role: true },
+      select: { id: true, email: true, name: true, role: true, googleCalendar: { select: { id: true } } },
       orderBy: { email: 'asc' },
     })
 
-    return NextResponse.json({ success: true, data: admins })
+    return NextResponse.json({
+      success: true,
+      data: admins.map(({ googleCalendar, ...admin }) => ({ ...admin, calendarConnected: !!googleCalendar })),
+    })
   } catch (e: any) {
     if (e.message === 'Unauthorized') {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })

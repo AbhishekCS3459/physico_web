@@ -16,11 +16,11 @@ import { useCallback, useEffect, useState } from "react"
 const slides = [
   {
     badge: "Calgary home physiotherapy and rehab care",
-    title: "Personalized recovery where you feel best",
+    title: "Mobile physiotherapy at home in Calgary",
     description:
-      "From post-surgery rehabilitation to ongoing pain management, our clinicians bring structured, evidence-based care to your home so progress stays consistent and convenient.",
+      "From post-surgery rehabilitation to ongoing pain management, our licensed clinicians bring structured, evidence-based physiotherapy to your home across Calgary and nearby communities.",
     image: "/hero/balance-training.jpg",
-    imageAlt: "Physiotherapist supporting a patient during single-leg balance training",
+    imageAlt: "Physiotherapist supporting a patient during single-leg balance training at home in Calgary",
     cta: "Book your first visit",
     points: ["Licensed physiotherapists", "Direct billing support", "In-home appointments across Calgary"],
   },
@@ -47,7 +47,7 @@ const slides = [
   },
   {
     badge: "Post-surgery · injury · chronic pain",
-    title: "Guided progress, session after session",
+    title: "Guided progress session after session",
     description:
       "Structured plans for recovery after surgery, sports injury, or ongoing pain — so you stay consistent, confident, and moving better at home.",
     image: "/hero/guided-progress.jpg",
@@ -94,8 +94,7 @@ export default function ResponsiveHero() {
                 <div className="absolute inset-0">
                   <img
                     src={slide.image}
-                    alt=""
-                    aria-hidden="true"
+                    alt={slide.imageAlt}
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/55 to-background/20 dark:from-background/86 dark:via-background/62 dark:to-background/30" />
@@ -108,9 +107,16 @@ export default function ResponsiveHero() {
                       <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                       {slide.badge}
                     </Badge>
-                    <h1 className="text-4xl sm:text-5xl lg:text-7xl xl:text-8xl font-semibold tracking-tight text-foreground leading-[1.03]">
-                      {slide.title}
-                    </h1>
+                    {/* Only the first slide uses h1 so the page has a single primary heading for SEO. */}
+                    {slide.title === slides[0].title ? (
+                      <h1 className="text-4xl sm:text-5xl lg:text-7xl xl:text-8xl font-semibold tracking-tight text-foreground leading-[1.03]">
+                        {slide.title}
+                      </h1>
+                    ) : (
+                      <p className="text-4xl sm:text-5xl lg:text-7xl xl:text-8xl font-semibold tracking-tight text-foreground leading-[1.03]">
+                        {slide.title}
+                      </p>
+                    )}
                     <p className="mt-6 text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl leading-relaxed">
                       {slide.description}
                     </p>

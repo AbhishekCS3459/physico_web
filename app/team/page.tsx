@@ -4,9 +4,42 @@ import { PersistentCTA } from "@/components/persistent-cta"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Award, BookOpen, Heart, Shield, Star, Users } from "lucide-react"
+import { createPageMetadata } from "@/lib/seo"
+import { Award, BookOpen, Heart, Languages, Shield, Star, Users } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+
+export const metadata = createPageMetadata({
+  title: "Our Physiotherapy & Rehab Team",
+  description:
+    "Meet our licensed physiotherapists, occupational therapists, and massage therapists providing expert in-home care across Calgary and surrounding areas.",
+  path: "/team",
+  keywords: [
+    "physiotherapist Calgary home visit",
+    "occupational therapist Calgary",
+    "mobile rehab team Calgary",
+  ],
+})
+
+function LanguagesSpoken({ languages }: { languages: string[] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 border-t pt-4">
+      <span className="flex items-center gap-2 text-lg font-semibold text-foreground">
+        <Languages className="h-5 w-5 text-primary" aria-hidden="true" />
+        Languages spoken:
+      </span>
+      <ul className="flex flex-wrap gap-2" aria-label="Languages spoken">
+        {languages.map((language) => (
+          <li key={language}>
+            <Badge variant="secondary" className="px-3 py-1 text-sm">
+              {language}
+            </Badge>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 export default function TeamPage() {
   const teamQualities = [
@@ -60,8 +93,7 @@ export default function TeamPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-accent/15 blur-3xl" />
 
-            <div className="relative grid items-center gap-12 lg:grid-cols-[1.2fr_1fr] xl:gap-20">
-              <div className="text-center lg:text-left">
+            <div className="relative mx-auto max-w-4xl text-center">
                 <Badge className="mb-5 gap-1.5 rounded-full px-4 py-1.5 text-sm">
                   <Users className="h-4 w-4" />
                   Meet Our Team
@@ -73,12 +105,12 @@ export default function TeamPage() {
                   </span>{" "}
                   Professionals
                 </h1>
-                <p className="mx-auto max-w-3xl text-lg text-foreground text-pretty lg:mx-0 lg:text-xl">
+                <p className="mx-auto max-w-3xl text-lg text-foreground text-pretty lg:text-xl">
                   Our team is made up of experienced, licensed, and compassionate healthcare professionals dedicated to
                   delivering high-quality care wherever you are.
                 </p>
 
-                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4 lg:justify-start">
+                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
                   <Button asChild size="lg" className="w-full px-8 text-base shadow-lg transition-all duration-300 hover:shadow-xl sm:w-auto bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
                     <Link href="/book">
                       <Users className="mr-2 h-5 w-5" />
@@ -111,40 +143,6 @@ export default function TeamPage() {
                     </div>
                   ))}
                 </dl>
-              </div>
-
-              <div className="relative mx-auto w-full max-w-md lg:max-w-xl">
-                <div className="grid grid-cols-2 items-start gap-4 sm:gap-5">
-                  {[
-                    { src: "/team/bharat-vishembera.jpg", name: "Bharat Vishembera", role: "Physiotherapist", offset: "" },
-                    { src: "/team/binod-baranwal.jpg", name: "Binod Baranwal", role: "Occupational Therapist", offset: "mt-10 sm:mt-14" },
-                  ].map((member) => (
-                    <figure
-                      key={member.name}
-                      className={`overflow-hidden rounded-3xl border-4 border-background bg-card shadow-xl ${member.offset}`}
-                    >
-                      <div className="relative aspect-[3/4]">
-                        <Image
-                          src={member.src}
-                          alt={`${member.name}, ${member.role}`}
-                          fill
-                          sizes="(min-width: 1024px) 22vw, 45vw"
-                          className="object-cover object-top"
-                          priority
-                        />
-                      </div>
-                      <figcaption className="px-3 py-3 text-center">
-                        <p className="text-base font-semibold leading-tight sm:text-lg">{member.name}</p>
-                        <p className="text-sm text-primary sm:text-base">{member.role}</p>
-                      </figcaption>
-                    </figure>
-                  ))}
-                </div>
-                <div className="absolute -bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-primary/20 bg-background px-4 py-2 text-sm font-medium shadow-lg sm:text-base">
-                  <Star className="h-4 w-4 fill-primary text-primary" />
-                  Physiotherapy · OT · Massage
-                </div>
-              </div>
             </div>
           </section>
 
@@ -204,6 +202,7 @@ export default function TeamPage() {
                   empowering patients so they can better understand their condition and take an active role in their
                   recovery and long-term health.
                 </p>
+                <LanguagesSpoken languages={["English", "Hindi", "Urdu", "Punjabi"]} />
               </CardContent>
             </Card>
               </div>
@@ -331,6 +330,7 @@ export default function TeamPage() {
                   <Badge variant="outline" className="text-xs">ADL Training</Badge>
                   <Badge variant="outline" className="text-xs">Holistic Approach</Badge>
                 </div>
+                <LanguagesSpoken languages={["English", "Hindi"]} />
               </CardContent>
             </Card>
 

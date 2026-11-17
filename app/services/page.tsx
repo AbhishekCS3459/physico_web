@@ -6,9 +6,24 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getPricing } from "@/lib/pricing"
 import { formatStartingPrice, getService, type ServiceId } from "@/lib/pricing-config"
+import { JsonLd } from "@/components/json-ld"
+import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo"
 import { Heart, Users, Zap, Shield, Clock, MapPin } from "lucide-react"
 
 export const revalidate = 300
+
+export const metadata = createPageMetadata({
+  title: "In-Home Physiotherapy, OT & Massage Services",
+  description:
+    "Explore mobile physiotherapy, occupational therapy, and massage therapy delivered at home in Calgary and nearby communities. Injury rehab, post-surgery recovery, and seniors care.",
+  path: "/services",
+  keywords: [
+    "mobile physiotherapy services Calgary",
+    "home occupational therapy Calgary",
+    "in-home massage therapy Calgary",
+    "post surgery physiotherapy at home",
+  ],
+})
 
 const services: {
   title: string
@@ -58,12 +73,18 @@ export default async function ServicesPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Services", path: "/services" },
+        ])}
+      />
       <MainNavigation />
       <main className="container mx-auto px-3 sm:px-4 py-8 sm:py-12">
         {/* Hero Section */}
         <div className="text-center mb-12 sm:mb-16">
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 sm:mb-6 text-balance">
-            Our Services
+            In-Home Physiotherapy & Rehab Services in Calgary
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-pretty px-2">
             Professional rehabilitation services delivered to your home. Our experienced team provides personalized care

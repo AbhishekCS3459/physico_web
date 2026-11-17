@@ -1,15 +1,23 @@
 import { EnhancedFooter } from "@/components/enhanced-footer"
+import { JsonLd } from "@/components/json-ld"
 import { MainNavigation } from "@/components/main-navigation"
 import { PersistentCTA } from "@/components/persistent-cta"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { breadcrumbJsonLd, createPageMetadata, faqPageJsonLd } from "@/lib/seo"
 import { HelpCircle, MessageSquareText } from "lucide-react"
-import type { Metadata } from "next"
 
-export const metadata: Metadata = {
-  title: "FAQ | Physio Rehab at Home",
-  description: "Frequently asked questions about mobile physiotherapy, home visits, insurance coverage, and scheduling.",
-}
+export const metadata = createPageMetadata({
+  title: "FAQ — Home Physiotherapy in Calgary",
+  description:
+    "Answers about mobile physiotherapy, home visits, insurance coverage, referrals, and how to schedule an in-home assessment in Calgary.",
+  path: "/faq",
+  keywords: [
+    "mobile physiotherapy FAQ",
+    "do I need a referral for physiotherapy Alberta",
+    "is home physiotherapy covered by insurance",
+  ],
+})
 
 const faqs = [
   {
@@ -52,6 +60,15 @@ const faqs = [
 export default function FaqPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <JsonLd
+        data={faqPageJsonLd(faqs.map((item) => ({ question: item.q, answer: item.a })))}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "FAQ", path: "/faq" },
+        ])}
+      />
       <MainNavigation />
       <main className="py-16 flex-1 w-full">
         <div className="container px-4">
@@ -118,4 +135,3 @@ export default function FaqPage() {
     </div>
   )
 }
-

@@ -4,7 +4,21 @@ import { PersistentCTA } from "@/components/persistent-cta"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { createPageMetadata } from "@/lib/seo"
 import { AlertCircle, Check, FileText, Phone, Shield } from "lucide-react"
+
+export const metadata = createPageMetadata({
+  title: "Direct Billing for Physiotherapy",
+  description:
+    "We offer direct billing for physiotherapy and rehab services with major Alberta insurers including Blue Cross, Manulife, Sun Life, Canada Life, and Green Shield.",
+  path: "/direct-billing",
+  keywords: [
+    "physiotherapy direct billing Calgary",
+    "Blue Cross physiotherapy Calgary",
+    "Manulife physio home visit",
+    "insurance covered physiotherapy Calgary",
+  ],
+})
 
 export default function DirectBillingPage() {
   const insuranceProviders = [

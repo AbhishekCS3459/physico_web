@@ -10,8 +10,16 @@ import { AreasWeServe } from "@/components/areas-we-serve"
 import { EnhancedFooter } from "@/components/enhanced-footer"
 import { PersistentCTA } from "@/components/persistent-cta"
 import { getPricing } from "@/lib/pricing"
+import { createPageMetadata, defaultKeywords, siteConfig } from "@/lib/seo"
 
 export const revalidate = 300
+
+export const metadata = createPageMetadata({
+  title: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+  description: siteConfig.description,
+  path: "/",
+  keywords: defaultKeywords,
+})
 
 export default async function HomePage() {
   const pricing = await getPricing()

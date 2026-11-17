@@ -35,6 +35,7 @@ import { format } from "date-fns"
 import {
   ArrowLeft,
   Calendar,
+  CalendarDays,
   ChevronRight,
   Eye,
   FileText,
@@ -460,6 +461,12 @@ export default function AdminChartsPage() {
                 Form templates
               </Link>
             </Button>
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+              <Link href="/admin/calendar">
+                <CalendarDays className="mr-1.5 h-4 w-4" />
+                My schedule
+              </Link>
+            </Button>
           </nav>
 
           <div className="flex shrink-0 items-center gap-1.5">
@@ -512,6 +519,12 @@ export default function AdminChartsPage() {
             <Link href="/admin/charts/forms">
               <FileText className="mr-1.5 h-4 w-4" />
               Form templates
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild className="shrink-0 text-muted-foreground">
+            <Link href="/admin/calendar">
+              <CalendarDays className="mr-1.5 h-4 w-4" />
+              My schedule
             </Link>
           </Button>
         </nav>

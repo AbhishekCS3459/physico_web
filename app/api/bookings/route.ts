@@ -1,6 +1,8 @@
 import { getSession, getUserSession } from '@/lib/auth'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
+import { CLINIC_TIME_ZONE } from '@/lib/schedule'
+import { TZDate } from '@date-fns/tz'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -168,10 +170,47 @@ export async function GET(request: NextRequest) {
       where.userId = userSession.id
     }
 
+    // Admin's own upcoming scheduled visits, soonest first.
+    const assignedToMe = !userSession && adminSession && searchParams.get('assigned') === 'me'
+    if (assignedToMe) {
+      const startOfToday = new TZDate(Date.now(), CLINIC_TIME_ZONE)
+      startOfToday.setHours(0, 0, 0, 0)
+      where.assignedAdminId = adminSession.id
+      where.scheduledStart = { gte: new Date(startOfToday.getTime()) }
+    }
+
+    // Calendar view: visits scheduled within [scheduledFrom, scheduledTo), optionally for one clinician.
+    const scheduledFrom = searchParams.get('scheduledFrom')
+    const scheduledTo = searchParams.get('scheduledTo')
+    const inRange = !userSession && !!adminSession && !!scheduledFrom && !!scheduledTo
+    if (inRange) {
+      const from = new Date(scheduledFrom)
+      const to = new Date(scheduledTo)
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) {
+        return NextResponse.json({ success: false, error: 'Invalid scheduled range' }, { status: 400 })
+      }
+      where.scheduledStart = { gte: from, lt: to }
+      if (!status) where.status = { not: 'cancelled' }
+      const assignedTo = searchParams.get('assignedTo')
+      if (assignedTo) where.assignedAdminId = assignedTo === 'me' ? adminSession.id : assignedTo
+    }
+
+    // Bookings still waiting for a visit time.
+    const unscheduled = !userSession && !!adminSession && searchParams.get('unscheduled') === '1'
+    if (unscheduled) {
+      where.status = { in: ['pending', 'confirmed'] }
+      where.OR = [{ scheduledStart: null }, { scheduledStart: { isSet: false } }]
+    }
+
     const [bookings, total] = await Promise.all([
       prisma.therapyBooking.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy:
+          assignedToMe || inRange
+            ? { scheduledStart: 'asc' }
+            : unscheduled
+              ? { preferredDate: 'asc' }
+              : { createdAt: 'desc' },
         skip,
         take: limit,
       }),

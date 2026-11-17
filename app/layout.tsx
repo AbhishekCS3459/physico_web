@@ -1,5 +1,13 @@
+import { JsonLd } from "@/components/json-ld"
 import { ThemeProvider } from "@/components/theme-provider"
-import type { Metadata } from "next"
+import {
+  defaultKeywords,
+  getSiteUrl,
+  localBusinessJsonLd,
+  siteConfig,
+  websiteJsonLd,
+} from "@/lib/seo"
+import type { Metadata, Viewport } from "next"
 import { Playfair_Display, Source_Sans_3 } from "next/font/google"
 import type React from "react"
 import { Suspense } from "react"
@@ -18,21 +26,66 @@ const sourceSans = Source_Sans_3({
   weight: ["400", "600", "700"],
 })
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ecfdf5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+}
+
 export const metadata: Metadata = {
-  title: "Physio Rehab | Mobile Physiotherapy Calgary",
-  description:
-    "Professional mobile physiotherapy, occupational therapy, and massage services in Calgary. Direct billing available. Book your in-home rehab session today.",
-  keywords:
-    "mobile physiotherapy Calgary, home physiotherapy, occupational therapy, massage therapy, direct billing, seniors rehab",
-  generator: "v0.app",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  keywords: defaultKeywords,
+  authors: [{ name: siteConfig.name, url: getSiteUrl() }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  category: "health",
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    url: getSiteUrl(),
+    siteName: siteConfig.name,
+    title: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   icons: {
     icon: [
       { url: "/MainLogo.png", type: "image/png" },
       { url: "/MainLogo.png", type: "image/png", sizes: "any" },
     ],
-    apple: [
-      { url: "/MainLogo.png", type: "image/png" },
-    ],
+    apple: [{ url: "/MainLogo.png", type: "image/png" }],
   },
 }
 
@@ -42,10 +95,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-CA" suppressHydrationWarning>
       <body
         className={`${sourceSans.variable} ${playfairDisplay.variable} font-sans text-lg leading-relaxed antialiased`}
       >
+        <JsonLd data={localBusinessJsonLd()} />
+        <JsonLd data={websiteJsonLd()} />
         <Suspense fallback={null}>
           <ThemeProvider
             attribute="class"

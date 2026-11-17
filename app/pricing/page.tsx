@@ -6,10 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { getPricing } from "@/lib/pricing"
 import { formatPrice, hasVisiblePrices, type ServicePricing } from "@/lib/pricing-config"
+import { createPageMetadata } from "@/lib/seo"
 import { cn } from "@/lib/utils"
 import { Clock, DollarSign, FileText, MapPin } from "lucide-react"
 
 export const revalidate = 300
+
+export const metadata = createPageMetadata({
+  title: "Pricing for Home Physiotherapy in Calgary",
+  description:
+    "Transparent pricing for in-home physiotherapy, occupational therapy, and massage therapy in Calgary. Direct billing available with major insurers.",
+  path: "/pricing",
+  keywords: [
+    "physiotherapy pricing Calgary",
+    "home physio cost Calgary",
+    "occupational therapy rates Calgary",
+    "massage therapy at home price",
+  ],
+})
 
 const SERVICE_TAGLINES: Record<ServicePricing["id"], string> = {
   physiotherapy: "Expert rehabilitation therapy",

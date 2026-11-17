@@ -7,14 +7,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { JsonLd } from "@/components/json-ld"
+import { breadcrumbJsonLd, createPageMetadata, siteConfig } from "@/lib/seo"
 import { Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react"
 import Link from "next/link"
 
+export const metadata = createPageMetadata({
+  title: "Contact Us — Book In-Home Physio",
+  description:
+    "Call (587) 586-5566 or email info@physiorehabhome.ca to book mobile physiotherapy in Calgary, Airdrie, Cochrane, Crossfield, and Chestermere. Open 7 days a week.",
+  path: "/contact",
+  keywords: [
+    "contact physiotherapist Calgary",
+    "book home physiotherapy Calgary",
+    "mobile physio phone number Calgary",
+  ],
+})
+
 export default function ContactPage() {
-  const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield"]
+  const serviceAreas = ["Calgary", "Airdrie", "Cochrane", "Crossfield", "Chestermere"]
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Contact", path: "/contact" },
+        ])}
+      />
       <MainNavigation />
       <main className="py-16">
         <div className="container px-4">
@@ -25,7 +45,7 @@ export default function ContactPage() {
               Get In Touch
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-              Contact <span className="text-primary">Physio Rehab</span>
+              Contact <span className="text-primary">Physio Rehab at Home</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
               Ready to start your journey to better health? We're here to answer your questions and schedule your first
@@ -64,8 +84,8 @@ export default function ContactPage() {
                     <div>
                       <h4 className="font-semibold mb-1">Email</h4>
                       <p className="text-muted-foreground">
-                        <a href="mailto:info@physiorehab.com" className="hover:text-primary transition-colors">
-                          info@physiorehab.com
+                        <a href={`mailto:${siteConfig.email}`} className="hover:text-primary transition-colors">
+                          {siteConfig.email}
                         </a>
                       </p>
                     </div>

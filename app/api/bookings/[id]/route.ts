@@ -1,4 +1,6 @@
 import { getSession, getUserSession } from '@/lib/auth'
+import { resolveSchedule, scheduleSchema } from '@/lib/booking-schedule'
+import { removeBookingCalendarEvent, syncBookingCalendarEvent, type CalendarSyncResult } from '@/lib/google-calendar'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -7,10 +9,10 @@ const updateBookingSchema = z.object({
   // Service Information
   serviceType: z.string().min(1).optional(),
   appointmentType: z.string().min(1).optional(),
-  preferredDate: z.string().optional(),
-  preferredTime: z.string().min(1).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  preferredDate: z.string().nullable().optional(),
+  preferredTime: z.string().min(1).nullable().optional(),
+  startDate: z.string().nullable().optional(),
+  endDate: z.string().nullable().optional(),
   serviceLocation: z.string().min(1).optional(),
   fullAddress: z.string().min(1).optional(),
   
@@ -35,6 +37,9 @@ const updateBookingSchema = z.object({
   
   // Status
   status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+
+  // Exact visit time + clinician (admin only); null clears the schedule
+  schedule: scheduleSchema.nullable().optional(),
 })
 
 export async function PUT(
@@ -125,15 +130,40 @@ export async function PUT(
       }
     }
 
+    if (validatedData.schedule !== undefined) {
+      if (!adminSession) {
+        return NextResponse.json(
+          { success: false, error: 'Only admins can schedule visits' },
+          { status: 403 }
+        )
+      }
+
+      const resolved = await resolveSchedule(validatedData.schedule)
+      if (!resolved.ok) {
+        return NextResponse.json({ success: false, error: resolved.error }, { status: 400 })
+      }
+      Object.assign(updateData, resolved.data)
+    }
+
     const updatedBooking = await prisma.therapyBooking.update({
       where: { id },
       data: updateData,
     })
 
+    let calendar: CalendarSyncResult | null = null
+    if (updatedBooking.status === 'confirmed' || updatedBooking.googleEventId) {
+      calendar = await syncBookingCalendarEvent(updatedBooking.id)
+    }
+
+    const freshBooking = calendar
+      ? await prisma.therapyBooking.findUnique({ where: { id } })
+      : updatedBooking
+
     return NextResponse.json({
       success: true,
       message: 'Booking updated successfully',
-      data: updatedBooking,
+      data: freshBooking ?? updatedBooking,
+      calendar,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -204,6 +234,8 @@ export async function DELETE(
         )
       }
     }
+
+    await removeBookingCalendarEvent(booking)
 
     await prisma.therapyBooking.delete({
       where: { id },
