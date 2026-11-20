@@ -3,7 +3,6 @@ export type StaffMember = {
   email: string
   name: string | null
   role: string
-  calendarConnected?: boolean
 }
 
 export type Viewer = { id: string; role: "staff" | "super_admin" }
@@ -19,8 +18,6 @@ export type CalendarVisit = {
   scheduledStart: string
   scheduledEnd: string
   assignedAdminId: string | null
-  googleEventId: string | null
-  calendarSyncError: string | null
 }
 
 export const titleCase = (slug: string) => slug.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())

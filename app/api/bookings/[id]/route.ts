@@ -1,6 +1,5 @@
 import { getSession, getUserSession } from '@/lib/auth'
 import { resolveSchedule, scheduleSchema } from '@/lib/booking-schedule'
-import { removeBookingCalendarEvent, syncBookingCalendarEvent, type CalendarSyncResult } from '@/lib/google-calendar'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -150,20 +149,10 @@ export async function PUT(
       data: updateData,
     })
 
-    let calendar: CalendarSyncResult | null = null
-    if (updatedBooking.status === 'confirmed' || updatedBooking.googleEventId) {
-      calendar = await syncBookingCalendarEvent(updatedBooking.id)
-    }
-
-    const freshBooking = calendar
-      ? await prisma.therapyBooking.findUnique({ where: { id } })
-      : updatedBooking
-
     return NextResponse.json({
       success: true,
       message: 'Booking updated successfully',
-      data: freshBooking ?? updatedBooking,
-      calendar,
+      data: updatedBooking,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -234,8 +223,6 @@ export async function DELETE(
         )
       }
     }
-
-    await removeBookingCalendarEvent(booking)
 
     await prisma.therapyBooking.delete({
       where: { id },

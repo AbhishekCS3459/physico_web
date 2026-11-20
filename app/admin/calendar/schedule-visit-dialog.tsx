@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { notifyCalendarResult } from "@/lib/calendar-sync-toast"
 import { VISIT_DURATION_OPTIONS, clinicLocalToDate, formatClinicDateTime, toClinicLocalParts } from "@/lib/schedule"
 import { cn } from "@/lib/utils"
 import { TZDate } from "@date-fns/tz"
@@ -139,7 +138,6 @@ export function ScheduleVisitDialog({
         return
       }
       toast.success(schedule ? "Visit scheduled" : "Visit removed from the schedule")
-      notifyCalendarResult(data.calendar)
       onSaved()
     } catch {
       toast.error("Failed to save the visit")
@@ -237,7 +235,6 @@ export function ScheduleVisitDialog({
                   {staff.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {staffLabel(member)}
-                      {member.calendarConnected ? "" : " (calendar not connected)"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -284,7 +281,7 @@ export function ScheduleVisitDialog({
               <Checkbox checked={confirm} onCheckedChange={(checked) => setConfirm(checked === true)} />
               <span>
                 <span className="block font-medium">Confirm this booking</span>
-                <span className="text-muted-foreground">Only confirmed visits are added to Google Calendar.</span>
+                <span className="text-muted-foreground">Marks the booking as confirmed when you save the visit time.</span>
               </span>
             </label>
           )}
@@ -303,17 +300,6 @@ export function ScheduleVisitDialog({
                 .
               </span>
             </div>
-          )}
-
-          {clinician && !clinician.calendarConnected && (
-            <p className="text-sm text-muted-foreground">
-              {staffLabel(clinician)} hasn&apos;t connected Google Calendar, so this visit will be saved here but won&apos;t
-              appear on their Google Calendar until they connect.
-            </p>
-          )}
-
-          {editing?.calendarSyncError && (
-            <p className="text-sm text-destructive">Last calendar sync failed: {editing.calendarSyncError}</p>
           )}
         </div>
 

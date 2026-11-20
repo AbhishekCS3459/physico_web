@@ -36,20 +36,18 @@ const fromDayKey = (key: string) => {
 
 function visitTone(visit: CalendarVisit) {
   if (visit.status === "completed") return "completed"
-  if (visit.status !== "confirmed") return "pending"
-  return visit.googleEventId ? "synced" : "unsynced"
+  if (visit.status === "confirmed") return "confirmed"
+  return "pending"
 }
 
 const CHIP_CLASSES: Record<ReturnType<typeof visitTone>, string> = {
-  synced: "bg-primary text-primary-foreground",
-  unsynced: "border border-amber-500/50 bg-amber-500/15 text-amber-900 dark:text-amber-100",
+  confirmed: "bg-primary text-primary-foreground",
   pending: "border border-dashed border-muted-foreground/60 bg-background text-foreground",
   completed: "bg-muted text-muted-foreground",
 }
 
 const DOT_CLASSES: Record<ReturnType<typeof visitTone>, string> = {
-  synced: "bg-primary",
-  unsynced: "bg-amber-500",
+  confirmed: "bg-primary",
   pending: "bg-muted-foreground/60",
   completed: "bg-muted-foreground/30",
 }
@@ -254,10 +252,7 @@ export function ScheduleCalendar({ viewer, staff }: { viewer: Viewer; staff: Sta
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-2 p-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className={cn("h-2.5 w-2.5 rounded-sm", DOT_CLASSES.synced)} /> On Google Calendar
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className={cn("h-2.5 w-2.5 rounded-sm", DOT_CLASSES.unsynced)} /> Confirmed, not synced
+              <span className={cn("h-2.5 w-2.5 rounded-sm", DOT_CLASSES.confirmed)} /> Confirmed
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-muted-foreground" /> Pending
@@ -301,15 +296,9 @@ export function ScheduleCalendar({ viewer, staff }: { viewer: Viewer; staff: Sta
                 {visit.fullAddress}
               </p>
               <div>
-                {visitTone(visit) === "synced" ? (
-                  <Badge variant="secondary">On Google Calendar</Badge>
-                ) : visitTone(visit) === "unsynced" ? (
-                  <Badge variant="destructive" title={visit.calendarSyncError ?? undefined}>
-                    Not synced
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">{titleCase(visit.status)}</Badge>
-                )}
+                <Badge variant={visitTone(visit) === "confirmed" ? "secondary" : "outline"}>
+                  {titleCase(visit.status)}
+                </Badge>
               </div>
             </div>
           ))}

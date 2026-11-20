@@ -59,7 +59,6 @@ import toast from "react-hot-toast"
 import { InitialAssessmentForm } from "@/components/assessment-forms/initial-assessment-form"
 import { FollowupAssessmentForm } from "@/components/assessment-forms/followup-assessment-form"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { notifyCalendarResult } from "@/lib/calendar-sync-toast"
 import { VISIT_DURATION_OPTIONS, formatClinicTimeRange, toClinicLocalParts } from "@/lib/schedule"
 
 interface TherapyBooking {
@@ -88,8 +87,6 @@ interface TherapyBooking {
   scheduledStart: string | null
   scheduledEnd: string | null
   assignedAdminId: string | null
-  googleEventId: string | null
-  calendarSyncError: string | null
   createdAt: string
   updatedAt: string
 }
@@ -108,9 +105,7 @@ export default function AdminDashboard() {
   const [editFormData, setEditFormData] = useState<Partial<TherapyBooking>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; name?: string; role?: "staff" | "super_admin" } | null>(null)
-  const [staffList, setStaffList] = useState<
-    { id: string; email: string; name: string | null; role: string; calendarConnected?: boolean }[]
-  >([])
+  const [staffList, setStaffList] = useState<{ id: string; email: string; name: string | null; role: string }[]>([])
   const [scheduleDraft, setScheduleDraft] = useState<ScheduleDraft>({
     date: "",
     startTime: "",
@@ -389,7 +384,6 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         toast.success("Booking updated successfully")
-        notifyCalendarResult(data.calendar)
         setEditingBooking(null)
         setEditFormData({})
         fetchBookings()
@@ -439,7 +433,6 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         toast.success("Status updated successfully")
-        notifyCalendarResult(data.calendar)
         fetchBookings()
       } else {
         toast.error(data.error || "Failed to update status")
@@ -551,7 +544,7 @@ export default function AdminDashboard() {
             <Button variant="outline" asChild className="w-full md:w-auto">
               <Link href="/admin/calendar">
                 <Calendar className="h-4 w-4 mr-2" />
-                Google Calendar
+                Schedule
               </Link>
             </Button>
             <Button variant="outline" asChild className="w-full md:w-auto">
@@ -782,10 +775,7 @@ export default function AdminDashboard() {
                         {booking.scheduledStart && booking.scheduledEnd && (
                           <div className="flex items-center gap-2 font-medium text-foreground">
                             <Clock className="h-4 w-4" />
-                            <span>
-                              {formatClinicTimeRange(booking.scheduledStart, booking.scheduledEnd)}
-                              {booking.googleEventId ? " · on Google Calendar" : ""}
-                            </span>
+                            <span>{formatClinicTimeRange(booking.scheduledStart, booking.scheduledEnd)}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-2">
@@ -926,11 +916,6 @@ export default function AdminDashboard() {
                             const clinician = staffList.find((member) => member.id === selectedBooking.assignedAdminId)
                             return clinician ? clinician.name || clinician.email : "Unassigned"
                           })()}
-                          {selectedBooking.calendarSyncError
-                            ? ` · Calendar sync failed: ${selectedBooking.calendarSyncError}`
-                            : selectedBooking.googleEventId
-                              ? " · On Google Calendar"
-                              : ""}
                         </p>
                       </div>
                     )}
@@ -1913,7 +1898,7 @@ export default function AdminDashboard() {
                     <div>
                       <p className="font-medium">Visit schedule</p>
                       <p className="text-sm text-muted-foreground">
-                        Confirmed visits with a time and clinician are added to that clinician&apos;s Google Calendar.
+                        Set the exact visit time and clinician. Times use Calgary time.
                       </p>
                     </div>
                     {(scheduleDraft.startTime || scheduleDraft.assignedAdminId) && (
@@ -1940,7 +1925,6 @@ export default function AdminDashboard() {
                         {staffList.map((member) => (
                           <SelectItem key={member.id} value={member.id}>
                             {member.name || member.email}
-                            {member.calendarConnected ? "" : " (calendar not connected)"}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1989,11 +1973,6 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">Times are in Calgary time (Mountain Time).</p>
-                  {editingBooking?.calendarSyncError ? (
-                    <p className="text-sm text-destructive">Last calendar sync failed: {editingBooking.calendarSyncError}</p>
-                  ) : editingBooking?.googleEventId ? (
-                    <p className="text-sm text-muted-foreground">This visit is on Google Calendar.</p>
-                  ) : null}
                 </div>
                 <div>
                   <Label>Full Address</Label>

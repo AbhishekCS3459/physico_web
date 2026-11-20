@@ -1,6 +1,5 @@
 import { getSession } from '@/lib/auth'
 import { resolveSchedule, scheduleSchema } from '@/lib/booking-schedule'
-import { syncBookingCalendarEvent, type CalendarSyncResult } from '@/lib/google-calendar'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -9,12 +8,12 @@ export const dynamic = 'force-dynamic'
 
 const bodySchema = z.object({
   schedule: scheduleSchema.nullable(),
-  // Moves a pending booking to confirmed so it reaches Google Calendar.
+  // Moves a pending booking to confirmed when scheduling.
   confirm: z.boolean().optional(),
 })
 
 /**
- * Schedules (or unschedules) a single visit.
+ * Schedules (or unschedules) a single visit in the in-app calendar.
  * Super admins may schedule anyone; staff may only schedule visits for themselves.
  */
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
@@ -69,14 +68,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       },
     })
 
-    let calendar: CalendarSyncResult | null = null
-    if (updated.status === 'confirmed' || updated.googleEventId) {
-      calendar = await syncBookingCalendarEvent(updated.id)
-    }
-
-    const fresh = calendar ? await prisma.therapyBooking.findUnique({ where: { id: updated.id } }) : updated
-
-    return NextResponse.json({ success: true, data: fresh ?? updated, calendar })
+    return NextResponse.json({ success: true, data: updated })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
