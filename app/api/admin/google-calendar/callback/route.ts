@@ -6,14 +6,24 @@ import { GOOGLE_OAUTH_COOKIE, GOOGLE_OAUTH_COOKIE_PATH } from "../oauth-cookie"
 
 export const dynamic = "force-dynamic"
 
-type PendingAuthorization = { state: string; codeVerifier: string; adminId: string }
+type PendingAuthorization = {
+  state: string
+  codeVerifier: string
+  adminId: string
+  redirectUri?: string
+}
 
 function readPending(raw: string | undefined): PendingAuthorization | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw) as Partial<PendingAuthorization>
     if (typeof parsed.state === "string" && typeof parsed.codeVerifier === "string" && typeof parsed.adminId === "string") {
-      return parsed as PendingAuthorization
+      return {
+        state: parsed.state,
+        codeVerifier: parsed.codeVerifier,
+        adminId: parsed.adminId,
+        redirectUri: typeof parsed.redirectUri === "string" ? parsed.redirectUri : undefined,
+      }
     }
   } catch {
     // fall through
@@ -52,7 +62,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await connectGoogleCalendar(session.id, code, pending.codeVerifier)
+    // Must reuse the same redirect URI that started the OAuth request.
+    await connectGoogleCalendar(session.id, code, pending.codeVerifier, pending.redirectUri)
     return finish("connected=1")
   } catch (error) {
     if (error instanceof CalendarConnectError) {

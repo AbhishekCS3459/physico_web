@@ -15,15 +15,20 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { url, state, codeVerifier } = await createAuthorizationRequest()
+    // Use this request's origin so production never inherits a localhost APP_URL.
+    const { url, state, codeVerifier, redirectUri } = await createAuthorizationRequest(request.nextUrl.origin)
     const response = NextResponse.redirect(url)
-    response.cookies.set(GOOGLE_OAUTH_COOKIE, JSON.stringify({ state, codeVerifier, adminId: session.id }), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: GOOGLE_OAUTH_COOKIE_PATH,
-      maxAge: 10 * 60,
-    })
+    response.cookies.set(
+      GOOGLE_OAUTH_COOKIE,
+      JSON.stringify({ state, codeVerifier, adminId: session.id, redirectUri }),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" || request.nextUrl.protocol === "https:",
+        sameSite: "lax",
+        path: GOOGLE_OAUTH_COOKIE_PATH,
+        maxAge: 10 * 60,
+      }
+    )
     return response
   } catch (error) {
     console.error("GET /api/admin/google-calendar/connect", error)

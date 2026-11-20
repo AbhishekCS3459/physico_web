@@ -16,12 +16,42 @@ export type CalendarSyncResult =
 
 type OAuthConfig = { clientId: string; clientSecret: string; redirectUri: string }
 
-function getOAuthConfig(): OAuthConfig | null {
+const CALLBACK_PATH = "/api/admin/google-calendar/callback"
+const PRODUCTION_APP_URL = "https://www.physiorehabathome.ca"
+
+/**
+ * Resolves the OAuth redirect URI for the current environment.
+ * Prefer an explicit GOOGLE_REDIRECT_URI, then the request origin (so production
+ * never accidentally sends users back to localhost from a mis-set APP_URL).
+ */
+export function resolveGoogleRedirectUri(requestOrigin?: string): string | undefined {
+  const explicit = process.env.GOOGLE_REDIRECT_URI?.trim().replace(/\/$/, "")
+  if (explicit) return explicit.endsWith(CALLBACK_PATH) ? explicit : `${explicit}${CALLBACK_PATH}`
+
+  const origin = requestOrigin?.replace(/\/$/, "")
+  if (origin && !/localhost|127\.0\.0\.1/i.test(origin)) {
+    return `${origin}${CALLBACK_PATH}`
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "")
+  if (appUrl && !/localhost|127\.0\.0\.1/i.test(appUrl)) {
+    return `${appUrl}${CALLBACK_PATH}`
+  }
+
+  // Production deploys sometimes leave NEXT_PUBLIC_APP_URL as localhost — never use that live.
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL === "1") {
+    return `${PRODUCTION_APP_URL}${CALLBACK_PATH}`
+  }
+
+  if (origin) return `${origin}${CALLBACK_PATH}`
+  if (appUrl) return `${appUrl}${CALLBACK_PATH}`
+  return undefined
+}
+
+function getOAuthConfig(redirectUriOverride?: string): OAuthConfig | null {
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "")
-  const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI || (appUrl ? `${appUrl}/api/admin/google-calendar/callback` : undefined)
+  const redirectUri = redirectUriOverride || resolveGoogleRedirectUri()
 
   if (!clientId || !clientSecret || !redirectUri || !process.env.GOOGLE_TOKEN_ENCRYPTION_KEY) return null
   return { clientId, clientSecret, redirectUri }
@@ -31,8 +61,8 @@ export function isGoogleCalendarConfigured(): boolean {
   return getOAuthConfig() !== null
 }
 
-function createOAuthClient(): OAuth2Client {
-  const config = getOAuthConfig()
+function createOAuthClient(redirectUriOverride?: string): OAuth2Client {
+  const config = getOAuthConfig(redirectUriOverride)
   if (!config) throw new Error("Google Calendar integration is not configured")
   return new OAuth2Client({
     clientId: config.clientId,
@@ -41,8 +71,11 @@ function createOAuthClient(): OAuth2Client {
   })
 }
 
-export async function createAuthorizationRequest() {
-  const client = createOAuthClient()
+export async function createAuthorizationRequest(requestOrigin?: string) {
+  const redirectUri = resolveGoogleRedirectUri(requestOrigin)
+  if (!redirectUri) throw new Error("Google Calendar redirect URI is not configured")
+
+  const client = createOAuthClient(redirectUri)
   const state = randomBytes(32).toString("base64url")
   const { codeVerifier, codeChallenge } = await client.generateCodeVerifierAsync()
 
@@ -57,14 +90,19 @@ export async function createAuthorizationRequest() {
     code_challenge_method: CodeChallengeMethod.S256,
   })
 
-  return { url, state, codeVerifier }
+  return { url, state, codeVerifier, redirectUri }
 }
 
-export async function connectGoogleCalendar(adminId: string, code: string, codeVerifier: string) {
-  const config = getOAuthConfig()
+export async function connectGoogleCalendar(
+  adminId: string,
+  code: string,
+  codeVerifier: string,
+  redirectUriOverride?: string
+) {
+  const config = getOAuthConfig(redirectUriOverride)
   if (!config) throw new Error("Google Calendar integration is not configured")
 
-  const client = createOAuthClient()
+  const client = createOAuthClient(config.redirectUri)
   const { tokens } = await client.getToken({ code, codeVerifier })
 
   const grantedScopes = (tokens.scope ?? "").split(" ")
