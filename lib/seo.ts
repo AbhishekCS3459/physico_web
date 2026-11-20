@@ -6,7 +6,7 @@ export const siteConfig = {
   shortName: "Physio Rehab",
   tagline: "Expert Care That Comes to You",
   description:
-    "Mobile physiotherapy, occupational therapy, and massage therapy at home in Calgary, Airdrie, Cochrane, Crossfield, and Chestermere. Licensed clinicians, direct billing, and flexible scheduling.",
+    "Physio Rehab at Home brings licensed mobile physiotherapy, occupational therapy, and massage therapy to your door in Calgary, Airdrie, Cochrane, Crossfield, and Chestermere. Direct billing, evening visits, and same-week appointments when available.",
   phoneDisplay: "(587) 586-5566",
   phoneE164: "+15875865566",
   email: "info@physiorehabhome.ca",
@@ -94,35 +94,50 @@ export function createPageMetadata({
 }
 
 export const defaultKeywords = [
+  "Physio Rehab at Home",
+  "physiorehabathome",
   "mobile physiotherapy Calgary",
   "home physiotherapy Calgary",
   "in-home physio Calgary",
   "physiotherapy at home Calgary",
+  "physiotherapist comes to your home Calgary",
   "occupational therapy Calgary home visit",
   "massage therapy at home Calgary",
   "seniors physiotherapy Calgary",
   "post surgical rehab Calgary",
+  "hip replacement physiotherapy at home",
+  "knee surgery rehab Calgary home visit",
   "direct billing physiotherapy Calgary",
   "Airdrie physiotherapy home visit",
   "Cochrane mobile physiotherapy",
+  "Chestermere physiotherapy at home",
+  "Crossfield home physiotherapy",
 ]
 
 export function localBusinessJsonLd() {
   return {
     "@context": "https://schema.org",
-    "@type": "Physiotherapy",
+    "@type": ["MedicalBusiness", "LocalBusiness"],
     "@id": `${getSiteUrl()}/#business`,
     name: siteConfig.name,
-    alternateName: siteConfig.shortName,
+    alternateName: [siteConfig.shortName, "physiorehabathome.ca"],
     description: siteConfig.description,
     url: getSiteUrl(),
     telephone: siteConfig.phoneE164,
     email: siteConfig.email,
-    image: absoluteUrl(siteConfig.ogImagePath),
+    image: [absoluteUrl(siteConfig.ogImagePath), absoluteUrl("/MainLogo.png")],
     logo: absoluteUrl("/MainLogo.png"),
     priceRange: "$$",
     currenciesAccepted: "CAD",
     paymentAccepted: "Cash, Credit Card, Direct Billing",
+    knowAbout: [
+      "Mobile physiotherapy",
+      "In-home rehabilitation",
+      "Post-surgical physiotherapy",
+      "Occupational therapy",
+      "Massage therapy",
+      "Seniors physiotherapy",
+    ],
     areaServed: siteConfig.areaServed.map((name) => ({
       "@type": "City",
       name,
@@ -146,14 +161,50 @@ export function localBusinessJsonLd() {
       opens: siteConfig.openingHours.opens,
       closes: siteConfig.openingHours.closes,
     })),
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: siteConfig.phoneE164,
+        contactType: "customer service",
+        areaServed: "CA-AB",
+        availableLanguage: ["English", "Hindi", "Urdu", "Punjabi"],
+      },
+    ],
     sameAs: siteConfig.social,
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "In-home rehabilitation services",
       itemListElement: [
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Mobile Physiotherapy" } },
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Occupational Therapy" } },
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Massage Therapy" } },
+        {
+          "@type": "Offer",
+          url: absoluteUrl("/services"),
+          itemOffered: {
+            "@type": "Service",
+            name: "Mobile Physiotherapy",
+            areaServed: "Calgary, Alberta",
+            provider: { "@id": `${getSiteUrl()}/#business` },
+          },
+        },
+        {
+          "@type": "Offer",
+          url: absoluteUrl("/services"),
+          itemOffered: {
+            "@type": "Service",
+            name: "Occupational Therapy",
+            areaServed: "Calgary, Alberta",
+            provider: { "@id": `${getSiteUrl()}/#business` },
+          },
+        },
+        {
+          "@type": "Offer",
+          url: absoluteUrl("/services"),
+          itemOffered: {
+            "@type": "Service",
+            name: "Massage Therapy",
+            areaServed: "Calgary, Alberta",
+            provider: { "@id": `${getSiteUrl()}/#business` },
+          },
+        },
       ],
     },
   }
@@ -165,10 +216,23 @@ export function websiteJsonLd() {
     "@type": "WebSite",
     "@id": `${getSiteUrl()}/#website`,
     name: siteConfig.name,
+    alternateName: ["Physio Rehab", "physiorehabathome.ca"],
     url: getSiteUrl(),
     description: siteConfig.description,
     inLanguage: siteConfig.language,
     publisher: { "@id": `${getSiteUrl()}/#business` },
+    potentialAction: {
+      "@type": "ReserveAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: absoluteUrl("/book"),
+        actionPlatform: [
+          "http://schema.org/DesktopWebPlatform",
+          "http://schema.org/MobileWebPlatform",
+        ],
+      },
+      result: { "@type": "Reservation", name: "Home physiotherapy visit" },
+    },
   }
 }
 

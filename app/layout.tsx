@@ -47,7 +47,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+    default: `Physio Rehab at Home | Mobile Physiotherapy Calgary`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -70,12 +70,12 @@ export const metadata: Metadata = {
     locale: siteConfig.locale,
     url: getSiteUrl(),
     siteName: siteConfig.name,
-    title: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+    title: `Physio Rehab at Home | Mobile Physiotherapy Calgary`,
     description: siteConfig.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.shortName} | Mobile Physiotherapy Calgary`,
+    title: `Physio Rehab at Home | Mobile Physiotherapy Calgary`,
     description: siteConfig.description,
   },
   robots: {
@@ -90,11 +90,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: "/MainLogo.png", type: "image/png" },
-      { url: "/MainLogo.png", type: "image/png", sizes: "any" },
-    ],
-    apple: [{ url: "/MainLogo.png", type: "image/png" }],
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
   },
   // Keep this tag permanently so Search Console stays verified.
   verification: {

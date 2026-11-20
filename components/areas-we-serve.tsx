@@ -9,6 +9,7 @@ const serviceAreas = [
   { city: "Airdrie", zones: ["All Areas"] },
   { city: "Cochrane", zones: ["All Areas"] },
   { city: "Crossfield", zones: ["All Areas"] },
+  { city: "Chestermere", zones: ["All Areas"] },
 ]
 
 export function AreasWeServe() {

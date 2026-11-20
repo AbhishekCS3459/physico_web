@@ -1,14 +1,14 @@
 import { createPageMetadata } from "@/lib/seo"
 
 export const metadata = createPageMetadata({
-  title: "Book an In-Home Physiotherapy Assessment",
+  title: "Book a Home Physiotherapy Visit in Calgary",
   description:
-    "Book a mobile physiotherapy, occupational therapy, or massage therapy visit at your home in Calgary and surrounding areas. Flexible scheduling and direct billing available.",
+    "Book mobile physiotherapy, occupational therapy, or massage therapy at home in Calgary and nearby communities. Guest booking welcome. Call (587) 586-5566 for same-week visits.",
   path: "/book",
   keywords: [
-    "book physiotherapy Calgary",
-    "schedule home physio",
-    "book occupational therapy Calgary",
+    "book home physiotherapy Calgary",
+    "schedule mobile physio Calgary",
+    "online physio appointment Calgary",
   ],
 })
 
