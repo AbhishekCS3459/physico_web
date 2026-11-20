@@ -18,7 +18,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns"
-import { ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, Plus } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2, Pencil, Plus } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { staffLabel, titleCase, type CalendarVisit, type StaffMember, type Viewer } from "./calendar-types"
@@ -291,10 +291,6 @@ export function ScheduleCalendar({ viewer, staff }: { viewer: Viewer; staff: Sta
                 {titleCase(visit.serviceType)} · {titleCase(visit.appointmentType)}
               </p>
               <p className="text-sm text-muted-foreground">With {clinicianName(visit.assignedAdminId)}</p>
-              <p className="flex items-start gap-1 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                {visit.fullAddress}
-              </p>
               <div>
                 <Badge variant={visitTone(visit) === "confirmed" ? "secondary" : "outline"}>
                   {titleCase(visit.status)}

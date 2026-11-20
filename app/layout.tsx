@@ -8,22 +8,31 @@ import {
   websiteJsonLd,
 } from "@/lib/seo"
 import type { Metadata, Viewport } from "next"
-import { Playfair_Display, Source_Sans_3 } from "next/font/google"
+import localFont from "next/font/local"
 import type React from "react"
 import { Suspense } from "react"
 import { Toaster } from "react-hot-toast"
 import "./globals.css"
 
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
+// Self-hosted so Vercel builds never call Google Fonts (next/font/google can crash on
+// extensionless /l/font?kit= URLs: Cannot read properties of null (reading '1')).
+const playfairDisplay = localFont({
+  src: [
+    { path: "./fonts/playfair-display-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/playfair-display-700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-playfair",
-  weight: ["400", "700"],
+  display: "swap",
 })
 
-const sourceSans = Source_Sans_3({
-  subsets: ["latin"],
+const sourceSans = localFont({
+  src: [
+    { path: "./fonts/source-sans-3-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/source-sans-3-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/source-sans-3-700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-source-sans",
-  weight: ["400", "600", "700"],
+  display: "swap",
 })
 
 export const viewport: Viewport = {
